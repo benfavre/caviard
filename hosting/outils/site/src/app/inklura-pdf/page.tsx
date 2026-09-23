@@ -1,6 +1,7 @@
 import release from "../../lib/inklura-pdf-release.json";
 
 export const revalidate = 600;
+const previewVersion = "1.2.0-beta.1";
 const platforms = [
   { id: "windows", label: "Windows", detail: "PC · processeur Intel ou AMD 64 bits", suffix: "win-x64.exe", format: "Installateur .exe", mark: "⊞" },
   { id: "mac-apple", label: "Mac Apple Silicon", detail: "Mac avec puce Apple M1, M2, M3…", suffix: "mac-arm64.dmg", format: "Image disque .dmg", mark: "⌘" },
@@ -75,6 +76,16 @@ export default function Page(): any {
         <div className="ipdf-download-foot"><a href={"/downloads/inklura-pdf/" + release.version + "/SHA256SUMS.txt"}>Vérifier les empreintes SHA-256 ↗</a><a href={release.releaseUrl}>Notes de version ↗</a><a href="https://github.com/benfavre/caviard">Code source ↗</a></div>
       </section>
 
+      <section className="ipdf-section" id="preversion" aria-labelledby="preview-title">
+        <div className="ipdf-section-head"><div><p className="ipdf-eyebrow">POUR TESTER LA PROCHAINE VERSION</p><h2 id="preview-title">Un compte Inklura.<br />20 PDF d’essai.</h2></div><p>Préversion {previewVersion} · Connexion et suivi des crédits par Internet. Vos PDF restent sur votre ordinateur.</p></div>
+        <p>Cette préversion demande une connexion Inklura pour exporter. Vous disposez de 20 PDF d’essai par compte, une seule fois ; un crédit est consommé après enregistrement réussi. Les achats restent fermés : à quota épuisé, les nouveaux exports sont bloqués mais votre travail reste ouvert.</p>
+        <div className="ipdf-downloads">{platforms.map((platform) => {
+          const name = "Inklura-PDF-" + previewVersion + "-" + platform.suffix;
+          return <article><h3>{platform.label}</h3><p>{platform.detail}</p><a className="ipdf-primary" href={"/downloads/inklura-pdf/" + previewVersion + "/" + name} download={name} aria-label={"Télécharger la préversion pour " + platform.label}>Tester la préversion ↓</a></article>;
+        })}</div>
+        <p className="ipdf-small">Cette préversion n’est pas installée automatiquement sur la version stable. Une nouvelle connexion est nécessaire après fermeture de l’application. Les restrictions de signature ci-dessus s’appliquent également.</p>
+        <div className="ipdf-download-foot"><a href={"/downloads/inklura-pdf/" + previewVersion + "/SHA256SUMS.txt"}>Empreintes de la préversion ↗</a><a href={"https://github.com/benfavre/caviard/releases/tag/v" + previewVersion}>Notes de la préversion ↗</a></div>
+      </section>
       <section className="ipdf-examples" id="exemples"><div><p className="ipdf-eyebrow">ESSAYEZ AVEC DES DONNÉES FICTIVES</p><h2>171 PDF pour prendre la main.</h2><p>Des documents synthétiques pour explorer le caviardage, les scans, les rotations et l’assistant local.</p></div><div><a href={asset("example-pdfs.zip").url} download="example-pdfs.zip">159 PDF d’exemple <span>ZIP · 533 Ko ↓</span></a><a href={asset("inklura-ai-example-pdfs.zip").url} download="inklura-ai-example-pdfs.zip">12 exemples IA & OCR <span>ZIP · 360 Ko ↓</span></a></div></section>
       <section className="ipdf-faq" aria-labelledby="faq-title"><h2 id="faq-title">Quelques réponses avant de commencer.</h2>
         <details><summary>Puis-je utiliser l’application sans IA ?</summary><p>Oui. Importez un PDF, dessinez vos rectangles de caviardage, vérifiez les pages et exportez. Le téléchargement des modèles est facultatif.</p></details>
@@ -82,7 +93,7 @@ export default function Page(): any {
         <details><summary>Est-ce que cela fonctionne sur les PDF scannés ?</summary><p>Oui, le caviardage manuel fonctionne sur les scans. L’assistant propose aussi un OCR local français et anglais, avec des essais de rotation pour les scans de travers. Sa précision dépend de la lisibilité du document.</p></details>
         <details><summary>Quel fichier choisir pour mon Mac ?</summary><p>Ouvrez le menu Apple, puis « À propos de ce Mac ». Une puce Apple (M1, M2, M3…) correspond au téléchargement Apple Silicon. Un processeur Intel correspond au téléchargement Mac Intel.</p></details>
         <details><summary>Comment obtenir de l’aide ou signaler un problème ?</summary><p>Consultez le <a href="https://github.com/benfavre/caviard/blob/main/GUIDE.fr.md">guide de démarrage</a> ou <a href="https://github.com/benfavre/caviard/issues/new/choose">ouvrez un signalement sur GitHub</a> avec votre système, la version de l’application et les étapes pour reproduire le problème. Utilisez un PDF fictif : les signalements sont publics.</p></details>
-        <details><summary>Faut-il créer un compte Inklura ?</summary><p>La version d’évaluation actuelle peut être essayée sans compte. Les offres professionnelles seront rattachées à un compte Inklura, avec des packs de documents ou un abonnement. La facturation et les quotas ne sont pas encore activés dans cette version.</p></details>
+        <details><summary>Faut-il créer un compte Inklura ?</summary><p>La version stable d’évaluation {release.version} peut être essayée sans compte. La préversion {previewVersion} demande un compte Inklura pour exporter et inclut 20 PDF d’essai par compte. Les achats de packs et les abonnements sont encore fermés.</p></details>
       </section>
     </div>
   </main>;

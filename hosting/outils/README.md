@@ -58,6 +58,20 @@ Windows and Linux retain their integrated updater. macOS updates remain manual
 until Developer ID signing is configured. The optional AI models are downloaded
 by the application separately; they are not bundled with these installers.
 
+## Account preview releases
+
+The account-enabled 1.2 beta is a GitHub prerelease. Stable 1.1 users do not
+receive it automatically. Mirror an explicitly published beta separately:
+
+```sh
+python3 mirror-release.py 1.2.0-beta.1 /path/to/outils-inklura-prism --prerelease
+```
+
+This verifies the same installer hashes but writes `inklura-pdf-preview.json`;
+it never replaces the stable release manifest. Purchases remain closed pending
+tax configuration and Checkout verification. The separate account API service
+and its backup procedure are documented in [server/README.md](../../server/README.md).
+
 ## Verification
 
 `verify-live.mjs` fetches each file fully and verifies its exact size/hash,

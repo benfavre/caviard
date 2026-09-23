@@ -10,14 +10,19 @@ import sys
 import tempfile
 import urllib.request
 
-version, site_arg = sys.argv[1:]
-if not re.fullmatch(r'\d+\.\d+\.\d+', version):
-    raise SystemExit('Expected a stable semantic version')
+args = sys.argv[1:]
+preview = '--prerelease' in args
+if preview:
+    args.remove('--prerelease')
+version, site_arg = args
+pattern = r'\d+\.\d+\.\d+-beta\.\d+' if preview else r'\d+\.\d+\.\d+'
+if not re.fullmatch(pattern, version):
+    raise SystemExit('Expected an explicit stable or beta semantic version')
 site = Path(site_arg).resolve()
 with urllib.request.urlopen(f'https://api.github.com/repos/benfavre/caviard/releases/tags/v{version}') as response:
     release = json.load(response)
-if release['draft'] or release['prerelease']:
-    raise SystemExit('Only published stable releases may be mirrored')
+if release['draft'] or release['prerelease'] != preview:
+    raise SystemExit('Release status does not match the requested channel')
 names = [f'Inklura-PDF-{version}-{suffix}' for suffix in ('win-x64.exe', 'mac-arm64.dmg', 'mac-x64.dmg', 'linux-x86_64.AppImage')]
 names += ['example-pdfs.zip', 'inklura-ai-example-pdfs.zip']
 assets = {a['name']: a for a in release['assets']}
@@ -69,7 +74,7 @@ with tempfile.TemporaryDirectory(prefix='inklura-pdf-') as tmp:
                 import shutil
                 shutil.copy2(path, final / path.name)
     # The page imports the release manifest only after every artifact is verified.
-    target = site / 'src/lib/inklura-pdf-release.json'
+    target = site / 'src/lib' / ('inklura-pdf-preview.json' if preview else 'inklura-pdf-release.json')
     target.parent.mkdir(parents=True, exist_ok=True)
     temp = target.with_suffix('.json.tmp')
     temp.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + '\n')

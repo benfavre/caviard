@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "engines": {
-    "node": ">=22.16"
+    "node": "^22.16.0 || >=23.8.0"
   },
   "scripts": {
     "start": "node main.mjs",

@@ -19,7 +19,7 @@ cp -a "$SITE/src/app/page.tsx" "$BACKUP/home-page.tsx"
 cp -a "$SITE/src/lib/tools.ts" "$BACKUP/tools.ts"
 if test -f "$SITE/.gitignore"; then cp -a "$SITE/.gitignore" "$BACKUP/.gitignore"; fi
 # Back up only our owned paths, without overwriting unrelated work.
-for p in src/app/inklura-pdf src/lib/inklura-pdf-release.json public/inklura-pdf; do
+for p in src/app/inklura-pdf src/lib/inklura-pdf-release.json src/lib/inklura-pdf-preview.json public/inklura-pdf; do
   if test -e "$SITE/$p"; then mkdir -p "$BACKUP/$(dirname "$p")"; cp -a "$SITE/$p" "$BACKUP/$p"; fi
 done
 python3 "$STAGE/mirror-release.py" "$VERSION" "$SITE"

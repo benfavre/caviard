@@ -4,7 +4,7 @@ set -euo pipefail
 STAGE="${1:?staging directory required}"
 [[ "$STAGE" == /home/infra-sj278/inklura-pdf-stage-* ]] || exit 2
 [ -f "$STAGE/server/package-lock.json" ] || exit 2
-/usr/local/bin/node -e 'const [major,minor]=process.versions.node.split(".").map(Number);if(major<22||(major===22&&minor<16))process.exit(1)'
+/usr/local/bin/node --input-type=module -e 'import { backup } from "node:sqlite"; if(typeof backup!=="function")process.exit(1)'
 id inklura-pdf >/dev/null 2>&1 || useradd --system --home-dir /var/lib/inklura-pdf --no-create-home --shell /usr/sbin/nologin inklura-pdf
 RELEASE="/opt/inklura-pdf/releases/$(date -u +%Y%m%dT%H%M%SZ)"
 install -d -m 755 "$RELEASE" /opt/inklura-pdf/releases

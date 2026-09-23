@@ -16,7 +16,7 @@ Les réservations ne sont pas libérées automatiquement avec le temps : une app
 
 ## Lancer en développement
 
-Node >= 22.16 (SQLite natif encore marqué expérimental sur Node 22).
+Node 22.16+ ou 23.8+ (SQLite natif encore marqué expérimental sur Node 22).
 
 ```bash
 npm ci --prefix server
@@ -62,7 +62,7 @@ Les achats restent désactivés pour deux vérifications restantes :
 
 Pour une nouvelle installation :
 
-1. Installer les dépendances verrouillées avec `npm ci --omit=dev --prefix server`, puis copier `server/` et `electron/commerce-catalog.mjs` dans un répertoire de staging. `deploy/install.sh` installe une release, un utilisateur système dédié, le service et le timer de sauvegarde. Node >=22.16 requis ; ici `/usr/local/bin/node`.
+1. Installer les dépendances verrouillées avec `npm ci --omit=dev --prefix server`, puis copier `server/` et `electron/commerce-catalog.mjs` dans un répertoire de staging. `deploy/install.sh` installe une release, un utilisateur système dédié, le service et le timer de sauvegarde. Node 22.16+ ou 23.8+ requis ; ici `/usr/local/bin/node`.
 2. Configurer `/etc/inklura-pdf.env` (root, mode 600). Pour les clés anciennes sans préfixe, `INKLURA_PDF_STRIPE_MODE=live` ou `test` est obligatoire. Un préfixe moderne contradictoire fait échouer le démarrage. Une clé live nécessite toujours l’activation distincte `INKLURA_PDF_ALLOW_LIVE_PAYMENTS=true`.
 3. `provision-stripe.mjs --output=/chemin/prive/stripe-setup.json` prépare le catalogue, le portail et le webhook de façon idempotente. Exige `INKLURA_PDF_EXPECTED_STRIPE_ACCOUNT`, vérifie le compte et son environnement avant toute création ; en production, ajouter `--live`. Conserver le fichier privé, qui contient le secret du webhook, et installer les six prix, le portail et le secret dans l’environnement du service.
 4. `deploy/install-proxy.py` ajoute uniquement le préfixe `/api/inklura-pdf/`, sauvegarde le vhost et valide la syntaxe avant relecture de la configuration. L’upstream nommé est nécessaire : Bext intercepte autrement le proxy littéral loopback. Ne pas redémarrer nginx/Bext.
