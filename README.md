@@ -2,7 +2,7 @@
 
 A private, offline PDF redaction application by Inklura, built with React, Vite and Electron.
 
-Desktop installers for Windows, macOS, and Linux are published at [Inklura PDF Releases](https://github.com/benfavre/caviard/releases). Run `npm run desktop` for development or `npm run desktop:dist` to package. See [DESKTOP.md](DESKTOP.md) for automatic updates, signing, and release instructions.
+Download the Windows, macOS, and Linux installers from [Inklura PDF](https://outils.inklura.fr/inklura-pdf). Release history is available on [GitHub](https://github.com/benfavre/caviard/releases). See [website deployment](hosting/outils/README.md) for hosting and download verification. Run `npm run desktop` for development or `npm run desktop:dist` to package. See [DESKTOP.md](DESKTOP.md) for automatic updates, signing, and release instructions.
 
 ## Run
 
