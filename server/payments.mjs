@@ -1,8 +1,8 @@
 import { DOCUMENT_PLANS, planById } from '../electron/commerce-catalog.mjs';
 import { BillingError, addMonths, operationId } from './ledger.mjs';
 export class Payments {
-  constructor({ ledger, stripe, webhookSecret, priceIds = {}, enabled = false, publicUrl, live = false, allowLive = false }) {
-    Object.assign(this, { ledger, stripe, webhookSecret, priceIds, publicUrl, live });
+  constructor({ ledger, stripe, webhookSecret, priceIds = {}, enabled = false, publicUrl, live = false, allowLive = false, portalConfiguration }) {
+    Object.assign(this, { ledger, stripe, webhookSecret, priceIds, publicUrl, live, portalConfiguration });
     this.enabled = enabled && !!stripe && !!webhookSecret && (!live || allowLive);
   }
   catalog() {
@@ -15,7 +15,7 @@ export class Payments {
     if (!plan || !priceId) throw new BillingError('offer_not_available', 400);
     if (this.ledger.getAccount(account).blocked) throw new BillingError('account_under_review', 403);
     const price = await this.stripe.prices.retrieve(priceId);
-    if (!price.active || price.currency !== 'eur' || !Number.isSafeInteger(price.unit_amount) || price.unit_amount <= 0 ||
+    if (!price.active || price.currency !== 'eur' || price.unit_amount !== plan.priceCentsHt || price.tax_behavior !== 'exclusive' ||
       (plan.kind === 'subscription' ? price.recurring?.interval !== 'month' || price.recurring?.interval_count !== 1 : !!price.recurring)) throw new BillingError('offer_misconfigured', 503);
     const order = this.ledger.transaction(() => this.ledger.createOrder(account, operation, plan));
     operation = order.operation;
@@ -47,7 +47,8 @@ export class Payments {
     if (!this.enabled) throw new BillingError('purchases_not_enabled', 503);
     const customer = this.ledger.getAccount(account).customer;
     if (!customer) throw new BillingError('no_billing_account', 404);
-    const session = await this.stripe.billingPortal.sessions.create({ customer, return_url: 'https://outils.inklura.fr/inklura-pdf' });
+    if (!this.portalConfiguration) throw new BillingError('portal_not_configured', 503);
+    const session = await this.stripe.billingPortal.sessions.create({ customer, configuration: this.portalConfiguration, return_url: 'https://outils.inklura.fr/inklura-pdf' });
     const url = new URL(session.url);
     if (url.protocol !== 'https:' || url.hostname !== 'billing.stripe.com') throw new BillingError('invalid_payment_url', 502);
     return { url: url.href };
@@ -64,6 +65,7 @@ export class Payments {
     if (['checkout.session.completed', 'checkout.session.async_payment_succeeded'].includes(event.type)) {
       // Retrieve authoritative state/line items, including delayed payment completion.
       const session = await this.stripe.checkout.sessions.retrieve(obj.id, { expand: ['line_items'] });
+      if (!session.metadata?.inkluraPdfAccount) return { received: true, ignored: true };
       const order = this.ledger.db.prepare('SELECT * FROM orders WHERE checkout=?').get(session.id);
       if (!order) throw new BillingError('unknown_checkout', 409);
       const plan = planById(order.plan), owner = this.ledger.getAccount(order.account);
@@ -90,6 +92,7 @@ export class Payments {
       if (typeof subscriptionId !== 'string') throw new BillingError('invalid_subscription', 400);
       const subscription = await this.stripe.subscriptions.retrieve(subscriptionId);
       const { inkluraPdfAccount: accountId, inkluraPdfOrder: operation, inkluraPdfPlan: planId } = subscription.metadata || {};
+      if (!accountId) return { received: true, ignored: true };
       const plan = planById(planId), owner = this.ledger.getAccount(accountId);
       const order = this.ledger.db.prepare('SELECT * FROM orders WHERE account=? AND operation=?').get(accountId, operation);
       if (!plan || plan.kind !== 'subscription' || order?.plan !== planId || owner.customer !== invoice.customer || owner.customer !== subscription.customer) throw new BillingError('invoice_account_mismatch', 400);

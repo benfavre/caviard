@@ -11,8 +11,8 @@ function fixture({enabled=true}={}) {
  const subscription={id:'sub_fixture',customer:'cus_fixture',metadata:{inkluraPdfAccount:account.id,inkluraPdfOrder:'order-month-1234567890',inkluraPdfPlan:'business-20'}};
  const start=Math.floor(now/1000),end=Math.floor(addMonths(now,1)/1000);
  const invoice={id:'in_fixture',status:'paid',billing_reason:'subscription_cycle',customer:'cus_fixture',parent:{subscription_details:{subscription:'sub_fixture'}},lines:{data:[{quantity:1,pricing:{price_details:{price:'price_month'}},period:{start,end}}],has_more:false}};
- const stripe={webhooks:signing.webhooks, prices:{retrieve:async id=>({id,active:true,currency:'eur',unit_amount:1000,...(id==='price_month'?{recurring:{interval:'month',interval_count:1}}:{})})}, customers:{create:async()=>({id:'cus_fixture'})}, checkout:{sessions:{create:async body=>{calls++;Object.assign(checkout,{metadata:body.metadata,mode:body.mode});return checkout;},retrieve:async()=>checkout}},subscriptions:{retrieve:async()=>subscription},invoices:{retrieve:async()=>invoice},charges:{retrieve:async()=>({customer:'cus_fixture'})},billingPortal:{sessions:{create:async()=>({url:'https://billing.stripe.com/p/session/test'})}}};
- const payments=new Payments({ledger,stripe,webhookSecret:secret,priceIds:{'volume-100':'price_volume','business-20':'price_month'},enabled,publicUrl:'https://outils.inklura.fr/api/inklura-pdf'});
+ const stripe={webhooks:signing.webhooks, prices:{retrieve:async id=>({id,active:true,currency:'eur',unit_amount:id==='price_month'?490:2900,tax_behavior:'exclusive',...(id==='price_month'?{recurring:{interval:'month',interval_count:1}}:{})})}, customers:{create:async()=>({id:'cus_fixture'})}, checkout:{sessions:{create:async body=>{calls++;Object.assign(checkout,{metadata:body.metadata,mode:body.mode});return checkout;},retrieve:async()=>checkout}},subscriptions:{retrieve:async()=>subscription},invoices:{retrieve:async()=>invoice},charges:{retrieve:async()=>({customer:'cus_fixture'})},billingPortal:{sessions:{create:async()=>({url:'https://billing.stripe.com/p/session/test'})}}};
+ const payments=new Payments({ledger,stripe,webhookSecret:secret,priceIds:{'volume-100':'price_volume','business-20':'price_month'},enabled,portalConfiguration:'bpc_fixture',publicUrl:'https://outils.inklura.fr/api/inklura-pdf'});
  const event=async(type,obj={id:checkout.id},id='evt_'+type)=>{const payload=JSON.stringify({id,type,created:Math.floor(now/1000),livemode:false,data:{object:obj}});const signature=signing.webhooks.generateTestHeaderString({payload,secret});return payments.webhook(Buffer.from(payload),signature);};
  return {ledger,account,stripe,payments,checkout,subscription,invoice,event,get calls(){return calls;}};
 }
@@ -77,4 +77,24 @@ test('current Stripe invoice status gates credits; an open invoice never grants 
 test('late paid invoice for a canceled subscription cannot restore the active subscription lock',async()=>{
  const f=fixture();await f.payments.checkout(f.account.id,'business-20','order-month-1234567890');f.subscription.status='canceled';
  await f.event('invoice.paid',{id:f.invoice.id});assert.equal(f.ledger.getAccount(f.account.id).subscription,null);assert.equal(f.ledger.balance(f.account.id).remaining,40);f.ledger.close();
+});
+test('approved price amount and exclusive tax behavior are mandatory before checkout',async()=>{
+ const f=fixture(), retrieve=f.stripe.prices.retrieve;
+ for(const override of [{unit_amount:1},{tax_behavior:'inclusive'},{currency:'usd'},{recurring:{interval:'year'}}]) {
+  f.stripe.prices.retrieve=async id=>({...await retrieve(id),...override});
+  await assert.rejects(()=>f.payments.checkout(f.account.id,'volume-100','order-wrong-price-1234'),{code:'offer_misconfigured'});
+ }
+ assert.equal(f.calls,0);f.ledger.close();
+});
+test('shared Stripe account ignores unrelated checkouts and subscriptions',async()=>{
+ const f=fixture();f.checkout.metadata={};f.subscription.metadata={};
+ assert.equal((await f.event('checkout.session.completed')).ignored,true);
+ assert.equal((await f.event('invoice.paid',{id:'other_invoice'})).ignored,true);
+ assert.equal(f.ledger.balance(f.account.id).remaining,20);f.ledger.close();
+});
+test('billing portal always uses the dedicated Inklura PDF configuration',async()=>{
+ const f=fixture();await f.payments.checkout(f.account.id,'volume-100','order-1234567890');
+ let sent;f.stripe.billingPortal.sessions.create=async body=>{sent=body;return {url:'https://billing.stripe.com/p/session/test'};};
+ await f.payments.portal(f.account.id);assert.equal(sent.configuration,'bpc_fixture');assert.equal(sent.customer,'cus_fixture');
+ f.payments.portalConfiguration=undefined;await assert.rejects(()=>f.payments.portal(f.account.id),{code:'portal_not_configured'});f.ledger.close();
 });

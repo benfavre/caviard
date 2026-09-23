@@ -43,6 +43,22 @@ async function edit() {
   await page.mouse.up();
   await expect(page.locator(".redaction:not(.draft)")).toHaveCount(1);
 }
+// Substitute only the account boundary inside the Playwright-controlled main
+// process. The shipped application has no test flag or authentication bypass.
+async function fixtureAccount() {
+  await app.evaluate(async ({ app }) => {
+    const require = process.getBuiltinModule('module').createRequire(app.getAppPath() + '/package.json');
+    const { AccountController } = require(app.getAppPath() + '/electron/account.mjs');
+    AccountController.prototype.refresh = async function () {
+      this.account = { accountId: 'packaged-test', remaining: 20, reserved: 0 };
+      this.phase = 'signed-in'; return this.publish();
+    };
+    AccountController.prototype.request = async function (route) {
+      if (!['/v1/exports/reserve', '/v1/exports/commit', '/v1/exports/release'].includes(route)) throw Error('Unexpected fixture request');
+      return { remaining: 20 };
+    };
+  });
+}
 test("sandboxed renderer and bundled assets work without a server", async () => {
   expect(page.url()).toBe("caviard://app/");
   await expect(page).toHaveTitle("Inklura PDF — Caviardage");
@@ -73,6 +89,7 @@ test("sandboxed renderer and bundled assets work without a server", async () => 
   else if (info.platform !== "darwin") await expect(button).toBeDisabled();
 });
 test("native Save dialog exports black pixels and removes searchable text", async ({}, info) => {
+  await fixtureAccount();
   await edit();
   const destination = info.outputPath("redacted.pdf");
   await app.evaluate(({ dialog }, filePath) => {
@@ -91,6 +108,20 @@ test("native Save dialog exports black pixels and removes searchable text", asyn
   } finally {
     await result.task.destroy();
   }
+});
+test('account-enabled build refuses unauthenticated export and preserves edits', async ({}, info) => {
+  const configured = await app.evaluate(async ({ app }) => {
+    const { readFile } = process.getBuiltinModule('fs/promises');
+    return !!JSON.parse(await readFile(app.getAppPath() + '/package.json', 'utf8')).accountApi || !!process.env.INKLURA_PDF_ACCOUNT_API;
+  });
+  test.skip(!configured, 'Evaluation build has no account gate');
+  await edit();
+  await app.evaluate(({ dialog }, filePath) => { dialog.showSaveDialog = async () => ({ canceled: false, filePath }); }, info.outputPath('must-not-exist.pdf'));
+  await page.getByRole('button', { name: /Exporter/ }).click();
+  await expect(page.getByRole('alert')).toContainText('Connectez-vous');
+  await expect(page.locator('.redaction:not(.draft)')).toHaveCount(1);
+  const { existsSync } = await import('node:fs');
+  expect(existsSync(info.outputPath('must-not-exist.pdf'))).toBe(false);
 });
 test("canceling native Save preserves selections and does not report success", async () => {
   await edit();

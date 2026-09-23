@@ -31,8 +31,8 @@ export default function AccountStatus({ busy }) {
     {!!state.account?.reserved && <p>{state.account.reserved} export(s) en attente de synchronisation. Cliquez sur Actualiser après reconnexion.</p>}
     {offers && state.phase === 'signed-in' && <div className="account-offers">
       <p>Un crédit par export réussi. Importer, analyser ou annuler l’enregistrement ne consomme pas de crédit. Les packs sont valables 12 mois ; les quotas mensuels ne sont pas reportés.</p>
-      {!state.paymentsEnabled && <p>Les achats ne sont pas encore activés. Les tarifs seront présentés avant tout paiement.</p>}
-      <div>{state.plans.map(plan => <article key={plan.id}><strong>{plan.label}</strong><span>{plan.documents} PDF {plan.kind === 'subscription' ? '/ mois / compte' : '· valables 12 mois'}</span><button disabled={working || busy || !plan.purchasable} onClick={() => run(() => desktop.checkout(plan.id))}>{plan.purchasable ? 'Voir le prix et payer' : 'Bientôt disponible'}</button></article>)}</div>
+      {!state.paymentsEnabled && <p>Les achats ne sont pas encore activés. Les tarifs sont validés ; l’ouverture des paiements est en préparation.</p>}
+      <div>{state.plans.map(plan => <article key={plan.id}><strong>{plan.label}</strong><span>{plan.documents} PDF {plan.kind === 'subscription' ? '/ mois / compte' : '· valables 12 mois'}</span><span>{(plan.priceCentsHt / 100).toLocaleString("fr-FR", { style: "currency", currency: "EUR" })} HT{plan.kind === "subscription" ? " / mois" : ""}</span><button disabled={working || busy || !plan.purchasable} onClick={() => run(() => desktop.checkout(plan.id))}>{plan.purchasable ? 'Voir le prix et payer' : 'Bientôt disponible'}</button></article>)}</div>
       <small>Vos documents restent sur cet ordinateur. La connexion au compte, les crédits et le paiement utilisent Internet. Le mot de passe et le paiement sont saisis dans votre navigateur.</small>
     </div>}
   </aside>;

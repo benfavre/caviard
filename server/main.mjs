@@ -1,6 +1,7 @@
 import { mkdirSync } from 'node:fs';
 import path from 'node:path';
 import Stripe from 'stripe';
+import { stripeLiveMode } from './stripe-mode.mjs';
 import { Ledger } from './ledger.mjs';
 import { Payments } from './payments.mjs';
 import { createAuthenticator } from './auth.mjs';
@@ -18,7 +19,8 @@ const key = env.STRIPE_SECRET_KEY || '';
 const stripe = key ? new Stripe(key, { maxNetworkRetries: 2, timeout: 15000 }) : null;
 const priceIds = Object.fromEntries(DOCUMENT_PLANS.map(plan => [plan.id, env['INKLURA_PDF_PRICE_' + plan.id.replaceAll('-', '_').toUpperCase()]]));
 const payments = new Payments({ ledger, stripe, priceIds, webhookSecret: env.STRIPE_WEBHOOK_SECRET,
-  enabled: env.INKLURA_PDF_PAYMENTS_ENABLED === 'true', live: key.startsWith('sk_live_') || key.startsWith('rk_live_'),
+  portalConfiguration: env.INKLURA_PDF_PORTAL_CONFIGURATION,
+  enabled: env.INKLURA_PDF_PAYMENTS_ENABLED === 'true', live: stripeLiveMode(key, env.INKLURA_PDF_STRIPE_MODE),
   allowLive: env.INKLURA_PDF_ALLOW_LIVE_PAYMENTS === 'true', publicUrl: publicUrl.replace(/\/$/, '') });
 const server = createApi({ ledger, payments, clientId, publicUrl, authenticate: createAuthenticator({ clientId }) });
 server.requestTimeout = 15000; server.headersTimeout = 10000;

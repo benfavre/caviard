@@ -1,10 +1,10 @@
 # Service de comptes et crédits Inklura PDF
 
-Première intégration, testée localement, **non déployée et achats désactivés**. Les tarifs sont proposés dans [COMMERCIAL.md](../COMMERCIAL.md) et attendent validation. Aucun secret ne doit être ajouté au dépôt ou à Electron.
+Service **déployé sur outils.inklura.fr ; achats désactivés**. Les tarifs sont validés dans [COMMERCIAL.md](../COMMERCIAL.md). La connexion réelle, les 20 crédits d’essai, la réservation/libération et le renouvellement de session ont été vérifiés le 23 septembre 2026. Aucun secret ne doit être ajouté au dépôt ou à Electron.
 
 ## Architecture
 
-Electron ouvre le navigateur système pour la connexion par code d’appareil RFC 8628 auprès du fournisseur Inklura existant (`https://auth.1clic.pro`). Un client OAuth public dédié reste à enregistrer : scopes `openid profile email offline_access`, grants `urn:ietf:params:oauth:grant-type:device_code` et `refresh_token`. Aucun secret client dans l’application. Ne pas réutiliser un client confidentiel du site SEO.
+Electron ouvre le navigateur système pour la connexion par code d’appareil RFC 8628 auprès du fournisseur Inklura existant (`https://auth.1clic.pro`). Le client OAuth public dédié `inklura-pdf-desktop` est enregistré : scopes `openid profile email offline_access`, grants `urn:ietf:params:oauth:grant-type:device_code` et `refresh_token`. Aucun secret client dans l’application. Ne pas réutiliser un client confidentiel du site SEO.
 
 Le processus principal conserve les jetons uniquement en mémoire. Le rendu React reçoit le solde et le code de connexion, jamais les jetons. Une nouvelle connexion est nécessaire après fermeture de l’application. Le service vérifie signature JWT, émetteur, audience dédiée, expiration, sujet et scope `openid`. L’identité du compte est le couple issuer/sub ; elle ne dépend pas d’un e-mail fourni par le client.
 
@@ -16,7 +16,7 @@ Les réservations ne sont pas libérées automatiquement avec le temps : une app
 
 ## Lancer en développement
 
-Node >= 22.13 (SQLite natif encore marqué expérimental sur Node 22).
+Node >= 22.16 (SQLite natif encore marqué expérimental sur Node 22).
 
 ```bash
 npm ci --prefix server
@@ -53,14 +53,30 @@ L’API authentifiée exige un jeton d’accès Bearer et refuse les champs supp
 
 ## Stripe et mise en service
 
-1. Créer un client OAuth public dédié et vérifier une vraie connexion de bout en bout. Le fournisseur existant annonce les endpoints `/oauth2/device` et `/oauth2/token` dans sa découverte OIDC. La compatibilité est testée avec doubles de protocole, pas encore avec un compte réel sur ce nouveau client.
-2. Installer le service avec un utilisateur dédié, Node, répertoire de données privé persistant, redémarrage supervisé et reverse proxy TLS. Configurer sauvegardes et tester leur restauration. Pour SQLite WAL, utiliser l’API de sauvegarde SQLite ou arrêter proprement le service avant de copier la base ; ne pas copier uniquement le `.sqlite` pendant les écritures.
-3. En environnement Stripe **test**, créer les six prix en EUR : trois achats uniques, trois récurrences mensuelles sans tarification à l’usage. Les montants HT, la configuration fiscale et les conditions de vente doivent correspondre à la grille validée. Configurer les six variables `INKLURA_PDF_PRICE_*` côté serveur. L’application ne choisit ni montant ni identifiant de prix Stripe.
-4. Configurer le webhook pour `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.expired`, `invoice.paid`, `customer.subscription.deleted`, `charge.refunded`, `charge.dispute.created`. Renseigner le secret du webhook. Les événements en double ne créditent qu’une fois. Le SDK est fixé par `package-lock.json` (API `2026-08-26.dahlia`). La facture est créditée uniquement avec `status: paid`, conformément au [schéma Stripe actuel](https://docs.stripe.com/api/invoices/object) ; le champ historique `paid` n’est plus utilisé.
-5. Configurer Stripe Tax et le portail client : mise à jour des moyens de paiement et résiliation en fin de période. Ne pas permettre changements de palier/prorata, coupons ou essais Stripe dans ce premier parcours. Tester paiement réussi/refusé/différé, abandon puis reprise, renouvellement, résiliation, remboursement et événement rejoué avec Stripe test. Les tests automatisés utilisent de vraies signatures Stripe mais des appels REST simulés ; aucun vrai checkout Stripe n’a encore été exécuté.
-6. Remboursement ou litige : le service bloque les nouveaux exports du compte pour vérification humaine. Avant la vente, prévoir une procédure opérateur pour retirer ou restaurer les crédits concernés et débloquer le compte. Aucun portail d’administration, automatisme de remboursement partiel ou mutualisation d’équipe n’est livré dans cette première étape.
-7. Après validation des tarifs, les achats live nécessitent **les deux** variables `INKLURA_PDF_PAYMENTS_ENABLED=true` et `INKLURA_PDF_ALLOW_LIVE_PAYMENTS=true`, les clés live et leurs six prix. Ne jamais mettre les clés dans le client. Tester le service et son alerte de disponibilité avant de publier un installateur dépendant de lui.
-8. Construire la future version avec `INKLURA_PDF_ACCOUNT_API=https://outils.inklura.fr/api/inklura-pdf`. Sans cette variable de build, le compte est désactivé et le comportement d’évaluation existant reste inchangé. Ne pas publier de version commerciale sans elle. Les installateurs 1.1.0 déjà publiés ne sont pas modifiés par cette intégration.
+Le catalogue des six prix EUR HT, un portail de facturation dédié et le webhook sont créés sur le compte **ACTIV communication** enregistré dans Manage. Les paramètres globaux de Manage et ses autres produits Stripe ne sont pas modifiés. Le webhook utilise la version de payload `2022-08-01`, déjà disponible sur ce compte ancien ; les objets de paiement sont relus avec le SDK fixé par `package-lock.json` (API `2026-08-26.dahlia`). Le contrôle des factures repose sur `status: paid`.
+
+Les achats restent désactivés pour deux vérifications restantes :
+
+- Activ n’a aucune immatriculation configurée dans Stripe Tax ; ses inscriptions fiscales réelles (dont OSS éventuel) sont inconnues. Faire confirmer la situation par la comptabilité puis renseigner les inscriptions applicables. Créer une inscription dans [Stripe Tax](https://docs.stripe.com/api/tax/registrations) ne réalise pas l’inscription auprès de l’administration fiscale. Ne pas inventer une inscription ni ouvrir les ventes avec un calcul incomplet.
+- Les clés de test enregistrées dans Manage appartiennent à un autre compte. Elles ne sont pas utilisées. Le transport public du webhook a été vérifié avec une signature réelle et un événement synthétique sans effet, et les scénarios de paiement sont simulés dans les tests. **Aucun paiement Checkout réel ou en sandbox Activ n’a été effectué.**
+
+Pour une nouvelle installation :
+
+1. Installer les dépendances verrouillées avec `npm ci --omit=dev --prefix server`, puis copier `server/` et `electron/commerce-catalog.mjs` dans un répertoire de staging. `deploy/install.sh` installe une release, un utilisateur système dédié, le service et le timer de sauvegarde. Node >=22.16 requis ; ici `/usr/local/bin/node`.
+2. Configurer `/etc/inklura-pdf.env` (root, mode 600). Pour les clés anciennes sans préfixe, `INKLURA_PDF_STRIPE_MODE=live` ou `test` est obligatoire. Un préfixe moderne contradictoire fait échouer le démarrage. Une clé live nécessite toujours l’activation distincte `INKLURA_PDF_ALLOW_LIVE_PAYMENTS=true`.
+3. `provision-stripe.mjs --output=/chemin/prive/stripe-setup.json` prépare le catalogue, le portail et le webhook de façon idempotente. Exige `INKLURA_PDF_EXPECTED_STRIPE_ACCOUNT`, vérifie le compte et son environnement avant toute création ; en production, ajouter `--live`. Conserver le fichier privé, qui contient le secret du webhook, et installer les six prix, le portail et le secret dans l’environnement du service.
+4. `deploy/install-proxy.py` ajoute uniquement le préfixe `/api/inklura-pdf/`, sauvegarde le vhost et valide la syntaxe avant relecture de la configuration. L’upstream nommé est nécessaire : Bext intercepte autrement le proxy littéral loopback. Ne pas redémarrer nginx/Bext.
+5. Vérifier connexion, export, expiration, reprise et paiements avant ouverture. Les événements reçus en double ne créditent qu’une fois ; les paiements des autres produits sont ignorés. Les PDF restent locaux.
+6. Après configuration fiscale et validation du parcours de paiement, activer **les deux** variables `INKLURA_PDF_PAYMENTS_ENABLED=true` et `INKLURA_PDF_ALLOW_LIVE_PAYMENTS=true` pour la production. Remboursement ou litige bloque les exports pour revue humaine : prévoir la procédure opérateur de régularisation avant vente. Aucun portail d’administration, remboursement partiel automatique ou mutualisation d’équipe n’est livré.
+7. Construire les installateurs avec `INKLURA_PDF_ACCOUNT_API=https://outils.inklura.fr/api/inklura-pdf`. La préversion 1.2.0-beta.1 active les comptes avec achats fermés. Les installateurs 1.1.0 existants restent des versions d’évaluation sans compte et ne reçoivent pas la préversion automatiquement.
+
+## Exploitation déployée
+
+- Service : `inklura-pdf.service`, loopback 4387 ; release sous `/opt/inklura-pdf/current`.
+- Données : `/var/lib/inklura-pdf/inklura-pdf.sqlite`, répertoire privé ; aucun document PDF.
+- Sauvegardes SQLite cohérentes : `inklura-pdf-backup.timer`, chaque jour vers 03:25 UTC, conservation 30 jours, contrôle d’intégrité. Sauvegardes locales uniquement : une copie hors serveur reste à prévoir.
+- Restaurer : arrêter **uniquement** `inklura-pdf.service`, conserver la base et ses fichiers WAL/SHM, restaurer une sauvegarde vérifiée avec propriétaire `inklura-pdf`, supprimer les anciens WAL/SHM correspondants, redémarrer le service puis vérifier `/health` et un compte réel. Ne pas remplacer une base ouverte.
+- La connexion Google réelle a révélé une association d’organisation obsolète sur le compte de vérification. Seule cette association a été alignée sur l’organisation canonique du même utilisateur, avec trace privée de l’ancienne valeur ; les rôles et contrôles d’identité n’ont pas été modifiés. Si d’autres comptes rencontrent `device code subject tenant mismatch`, vérifier cette cohérence dans le fournisseur d’identité.
 
 Les packs durent 12 mois calendaires. Les quotas mensuels correspondent à la période de facture payée et ne sont pas reportés. Une réservation créée avant expiration peut se terminer après expiration. Les crédits qui expirent le plus tôt sont consommés en premier. Un abonnement actif ou en cours de paiement empêche une deuxième souscription ; le même paiement peut être repris après un redémarrage.
 

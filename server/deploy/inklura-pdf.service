@@ -1,0 +1,28 @@
+[Unit]
+Description=Inklura PDF account and document credits API
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=inklura-pdf
+Group=inklura-pdf
+WorkingDirectory=/opt/inklura-pdf/current/server
+EnvironmentFile=/etc/inklura-pdf.env
+ExecStart=/usr/local/bin/node /opt/inklura-pdf/current/server/main.mjs
+Restart=on-failure
+RestartSec=3
+StateDirectory=inklura-pdf
+StateDirectoryMode=0700
+UMask=0077
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/var/lib/inklura-pdf
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+MemoryMax=384M
+TasksMax=64
+
+[Install]
+WantedBy=multi-user.target

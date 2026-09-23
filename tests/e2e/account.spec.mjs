@@ -16,7 +16,7 @@ async function setup(page, signedIn = true) {
   await page.goto('/');
   await expect(page.getByRole('button', { name: 'Choisir des fichiers', exact: true })).toBeEnabled();
 }
-test('all approved plans are visible but purchases stay disabled pending pricing approval', async ({ page }) => {
+test('all approved plans are visible but purchases stay disabled pending payment activation', async ({ page }) => {
   await setup(page);
   await expect(page.getByText('0 PDF disponibles')).toBeVisible();
   await page.getByRole('button', { name: 'Offres et crédits' }).click();

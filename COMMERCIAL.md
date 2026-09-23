@@ -1,10 +1,10 @@
-# Inklura PDF — proposition commerciale
+# Inklura PDF — offres validées
 
-Proposition du 23 septembre 2026, **à valider avant activation**. Aucun de ces prix n’est publié dans le catalogue d’achat, ni créé dans Stripe. La version publique 1.1.0 reste une version d’évaluation sans quota ; le compte et la facturation sont en cours d’intégration.
+Grille et modalités **validées le 23 septembre 2026**. La mise en service du compte et des paiements est autorisée ; les achats seront ouverts après configuration et vérification du parcours. La version publique 1.1.0 reste une version d’évaluation sans quota ; le compte et la facturation sont en cours d’intégration.
 
-## Grille proposée, en euros HT
+## Grille validée, en euros HT
 
-| Offre | Documents par compte | Prix proposé | Coût par PDF si tout est utilisé |
+| Offre | Documents par compte | Prix HT | Coût par PDF si tout est utilisé |
 |---|---:|---:|---:|
 | Essai | 20, une seule fois | Gratuit | — |
 | Volume 100 | 100, valables 12 mois | 29 € | 0,290 € |
@@ -26,7 +26,7 @@ Quotas et unité approuvés par le porteur du projet : 20 PDF d’essai par comp
 - Les quotas appartiennent au compte, pas à l’ordinateur. Reconnexion ou réinstallation ne réinitialisent pas l’essai.
 - Les PDF restent locaux. L’autorisation d’export et le solde nécessitent Internet dans la future version avec compte.
 
-Modalités proposées à présenter avec les prix : pas de report mensuel, packs cumulables, utilisation des crédits expirant le plus tôt, abonnement mensuel résiliable pour la prochaine échéance, pas de quota mutualisé entre comptes. Le portail Stripe doit proposer résiliation et moyens de paiement ; ne pas activer les changements de formule au prorata avant leur implémentation.
+Modalités validées à présenter avec les prix : pas de report mensuel, packs cumulables, utilisation des crédits expirant le plus tôt, abonnement mensuel résiliable pour la prochaine échéance, pas de quota mutualisé entre comptes. Le portail Stripe doit proposer résiliation et moyens de paiement ; ne pas activer les changements de formule au prorata avant leur implémentation.
 
 ## Repères concurrents
 
@@ -43,6 +43,6 @@ Positionnement recommandé : caviardage spécialisé, assistant IA et OCR exécu
 
 ## État et activation
 
-Le dépôt contient le service de crédits, l’authentification du compte Inklura, le parcours Stripe et les tests de reprise. Aucun service de facturation n’est déployé et aucun achat réel n’est activé. Il reste à enregistrer le client OAuth dédié, déployer le service et ses sauvegardes, configurer Stripe en test et réaliser un paiement complet en environnement de test. Voir [le guide technique](server/README.md).
+Le dépôt contient le service de crédits, l’authentification du compte Inklura, le parcours Stripe et les tests de reprise. Le service est déployé, le client OAuth dédié est enregistré et la connexion réelle avec 20 crédits est vérifiée. Les six tarifs, le portail et le webhook Stripe sont configurés sur Activ Communication ; aucun achat réel n’est activé. Les inscriptions fiscales internationales restent à confirmer et le parcours Checkout à vérifier avec le bon environnement Stripe. Les clés de test disponibles appartiennent à Webdesign29 et ne sont pas utilisées. Voir [le guide technique](server/README.md).
 
-La publication d’une nouvelle version avec comptes nécessite ensuite la validation des tarifs et modalités, les identifiants Stripe correspondants, puis l’activation explicite. L’ancienne version 1.1.0 et le code public peuvent toujours fonctionner sans quota ; cette intégration ne constitue pas une protection contre la modification du logiciel.
+La publication d’une nouvelle version avec comptes nécessite ensuite les identifiants Stripe correspondants et la vérification de bout en bout avant activation. L’ancienne version 1.1.0 et le code public peuvent toujours fonctionner sans quota ; cette intégration ne constitue pas une protection contre la modification du logiciel.
