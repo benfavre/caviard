@@ -1,7 +1,7 @@
 import { readFile, writeFile } from "node:fs/promises";
 const nodeLog = await readFile("output/test-report/node.log", "utf8");
 const count = (name) =>
-  Number(nodeLog.match(new RegExp(`ℹ ${name} (\\d+)`))?.[1] ?? NaN);
+  Number(nodeLog.match(new RegExp(`(?:ℹ|#) ${name} (\\d+)`))?.[1] ?? NaN);
 const browser = JSON.parse(
   await readFile("output/test-report/browser.json", "utf8"),
 );
