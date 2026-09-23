@@ -177,13 +177,53 @@ export async function analyzeDocument(
           signal?.removeEventListener("abort", abort);
         }
         check();
-        const { data } = await abortable(
+        let { data } = await abortable(
           worker.recognize(canvas, {}, { blocks: true, text: true }),
         );
-        const index = ocrIndex(data, canvas.width, canvas.height);
+        let orientation = 0,
+          recognizedWidth = canvas.width,
+          recognizedHeight = canvas.height;
+        // Scanners sometimes rotate the pixels without a PDF /Rotate entry.
+        // Retry orthogonal orientations only when the first recognition is weak.
+        if (data.confidence < 75 || !data.text?.trim()) {
+          for (const angle of [90, 180, 270]) {
+            check();
+            onProgress(
+              `Page ${number} / ${pdf.numPages} — orientation des images (${angle}°)`,
+            );
+            const rotated = document.createElement("canvas");
+            rotated.width = angle === 180 ? canvas.width : canvas.height;
+            rotated.height = angle === 180 ? canvas.height : canvas.width;
+            const context = rotated.getContext("2d");
+            if (angle === 90) context.translate(rotated.width, 0);
+            if (angle === 180) context.translate(rotated.width, rotated.height);
+            if (angle === 270) context.translate(0, rotated.height);
+            context.rotate((angle * Math.PI) / 180);
+            context.drawImage(canvas, 0, 0);
+            const candidate = (
+              await abortable(
+                worker.recognize(rotated, {}, { blocks: true, text: true }),
+              )
+            ).data;
+            if (
+              candidate.text?.trim() &&
+              candidate.confidence > data.confidence
+            ) {
+              data = candidate;
+              orientation = angle;
+              recognizedWidth = rotated.width;
+              recognizedHeight = rotated.height;
+            }
+            rotated.width = rotated.height = 1;
+            if (data.confidence >= 85) break;
+          }
+        }
+        const index = ocrIndex(data, recognizedWidth, recognizedHeight);
         index.items = index.items.map((item) => ({
           ...item,
-          rect: item.rect ? rotateRect(item.rect, page.rotate) : null,
+          rect: item.rect
+            ? rotateRect(rotateRect(item.rect, 360 - orientation), page.rotate)
+            : null,
         }));
         canvas.width = canvas.height = 1;
         ocrText = index.text;
