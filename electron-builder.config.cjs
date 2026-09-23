@@ -1,3 +1,9 @@
+// GitHub exposes absent optional secrets as empty strings. The builder treats
+// an empty certificate link as a path, so omit it entirely when unconfigured.
+for (const name of ["CSC_LINK", "WIN_CSC_LINK"]) {
+  if (!process.env[name]?.trim()) delete process.env[name];
+}
+
 module.exports = {
   appId: "com.benfavre.caviard",
   productName: "Caviard",
