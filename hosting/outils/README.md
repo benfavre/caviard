@@ -66,5 +66,9 @@ Chromium at desktop/mobile sizes, light/dark themes and with JavaScript disabled
 It checks the catalog search and a pre-existing PDF tool. Reports and screenshots
 are written under `output/hosting-verification/` (not committed).
 
+For page-only edits, use `node hosting/outils/verify-live.mjs --pages-only` to
+check the browser behavior without downloading the unchanged installers again.
+It still checks a real example ZIP download through the browser.
+
 No installers are executed by this verification. The release's existing desktop
 CI covers installation/application behavior.

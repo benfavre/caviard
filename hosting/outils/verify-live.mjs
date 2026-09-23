@@ -7,8 +7,9 @@ const origin = process.env.INKLURA_DOWNLOAD_ORIGIN || 'https://outils.inklura.fr
 const release = JSON.parse(await readFile(new URL('./site/src/lib/inklura-pdf-release.json', import.meta.url)));
 const output = new URL('../../output/hosting-verification/', import.meta.url);
 await mkdir(output, { recursive: true });
-const results = { origin, version: release.version, downloads: [], pages: [] };
-for (const asset of release.assets) {
+const pagesOnly = process.argv.includes("--pages-only");
+const results = { origin, version: release.version, downloadsSkipped: pagesOnly, downloads: [], pages: [] };
+for (const asset of pagesOnly ? [] : release.assets) {
   const url = origin + asset.url;
   const head = await fetch(url, { method: 'HEAD' });
   assert.equal(head.status, 200, asset.name);
@@ -41,6 +42,12 @@ try {
     assert.equal(await page.locator('h1').count(), 1);
     assert.equal(await page.locator('link[rel=canonical]').getAttribute('href'), origin + '/inklura-pdf');
     assert.equal(await page.locator('#telecharger a[download]').count(), 4);
+    assert.equal(await page.locator('.ipdf-start li').count(), 3);
+    assert.equal(await page.locator('#exemples a[download]').count(), 2);
+    for (const id of ['windows', 'mac-apple', 'mac-intel', 'linux']) {
+      assert.equal(await page.locator('#' + id + ' a[download]').count(), 1);
+    }
+    assert.ok(await page.getByRole('link', { name: 'Lire le guide de démarrage' }).getAttribute('href'));
     for (const link of await page.locator('#telecharger a[download]').all()) {
       const href = await link.getAttribute("href");
       assert.ok(release.assets.some(a => a.url === href));
@@ -67,8 +74,17 @@ try {
   await tile.click();
   await page.waitForURL('**/inklura-pdf');
   assert.match(await page.title(), /^Inklura PDF/);
+  await page.goto(origin + '/inklura-pdf#mac-apple');
+  const target = page.locator('#mac-apple');
+  await target.waitFor({ state: 'visible' });
+  assert.equal(await target.evaluate(el => getComputedStyle(el).borderTopColor), 'rgb(20, 107, 255)');
+  const downloadEvent = page.waitForEvent('download');
+  await page.getByRole('link', { name: '159 PDF d’exemple' }).click();
+  const download = await downloadEvent;
+  assert.equal(download.suggestedFilename(), 'example-pdfs.zip');
+  assert.equal(await download.failure(), null);
   const previous = await page.goto(origin + '/fusionner-pdf');
   assert.equal(previous.status(), 200);
   console.log('Page, mobile, dark mode, no-JS, catalog search and existing tool verified');
 } finally { await browser.close(); }
-await writeFile(new URL('report.json', output), JSON.stringify(results, null, 2) + '\n');
+await writeFile(new URL(pagesOnly ? 'pages-report.json' : 'report.json', output), JSON.stringify(results, null, 2) + '\n');

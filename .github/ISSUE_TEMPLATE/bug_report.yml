@@ -1,0 +1,51 @@
+name: Signaler un problème
+description: Un problème de caviardage, d’installation, d’export ou d’assistant local.
+title: "[Bug] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Merci de nous aider à améliorer Inklura PDF.
+        Ce signalement sera public. Utilisez un [PDF fictif](https://outils.inklura.fr/inklura-pdf#exemples) et ne joignez pas de document confidentiel.
+  - type: input
+    id: app-version
+    attributes:
+      label: Version d’Inklura PDF
+      placeholder: "Exemple : 1.1.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: operating-system
+    attributes:
+      label: Système
+      options:
+        - Windows (Intel / AMD)
+        - macOS (Apple Silicon)
+        - macOS (Intel)
+        - Linux (Intel / AMD)
+        - Version web / développement
+    validations:
+      required: true
+  - type: input
+    id: system-version
+    attributes:
+      label: Version du système
+      placeholder: "Exemple : Windows 11, version de macOS ou distribution Linux"
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Étapes pour reproduire
+      description: Précisez le nom du PDF fictif utilisé, la page et le mode de l’assistant si nécessaire.
+      placeholder: |
+        1. Importer…
+        2. Cliquer sur…
+        3. Observer…
+    validations:
+      required: true
+  - type: textarea
+    id: expected-actual
+    attributes:
+      label: Résultat attendu et résultat obtenu
+      description: Copiez le message d’erreur éventuel après en avoir retiré les données personnelles.
+    validations:
+      required: true

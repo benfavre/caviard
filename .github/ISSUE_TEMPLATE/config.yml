@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Guide de démarrage
+    url: https://github.com/benfavre/caviard/blob/main/GUIDE.fr.md
+    about: Installation, caviardage, assistant local et questions fréquentes.
+  - name: Télécharger Inklura PDF
+    url: https://outils.inklura.fr/inklura-pdf
+    about: Installateurs Windows, macOS et Linux et PDF d’exemple.
