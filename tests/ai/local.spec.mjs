@@ -1,5 +1,6 @@
 import { test, expect, _electron as electron } from "@playwright/test";
 import path from "node:path";
+import { loadPdf, render } from "../helpers.mjs";
 let app,
   page,
   requests = [];
@@ -90,7 +91,7 @@ test("real detector and OCR propose French PII, preview and undo remain local", 
   });
 });
 for (const angle of [0, 90, 180, 270])
-  test(`automatic banking policy scans ${angle}° image-only pages and adds one undoable preview`, async () => {
+  test(`automatic banking policy scans ${angle}° image-only pages and adds one undoable preview`, async ({}, info) => {
     await open(`scan-${angle}.pdf`);
     await page.getByRole("tab", { name: "Politique automatique" }).click();
     await page.locator(".policy-select select").selectOption("finance");
@@ -101,6 +102,40 @@ for (const angle of [0, 90, 180, 270])
       timeout: 180000,
     });
     await expect(page.locator(".assistant-results")).toContainText("4111");
+    await expect(page.locator(".assistant-results")).toContainText("FR76");
+    const destination = info.outputPath(`banking-${angle}.pdf`);
+    await app.evaluate(({ dialog }, filePath) => {
+      dialog.showSaveDialog = async () => ({ canceled: false, filePath });
+    }, destination);
+    await page
+      .getByRole("button", { name: "Exporter le PDF", exact: true })
+      .click();
+    await expect(page.getByRole("status")).toContainText("enregistré");
+    const output = await loadPdf(destination),
+      source = await loadPdf(
+        path.resolve("output/pdf/ai-examples", `contact-${angle}.pdf`),
+      );
+    try {
+      const resultPage = await output.pdf.getPage(1),
+        canvas = await render(resultPage),
+        viewport = (await source.pdf.getPage(1)).getViewport({ scale: 1 });
+      expect((await resultPage.getTextContent()).items).toHaveLength(0);
+      // Known positions in the synthetic source, independently mapped by PDF.js.
+      for (const [x, y] of [
+        [110, 487],
+        [150, 442],
+      ]) {
+        const [px, py] = viewport.convertToViewportPoint(x, y);
+        expect([
+          ...canvas
+            .getContext("2d")
+            .getImageData(Math.round(px), Math.round(py), 1, 1).data,
+        ]).toEqual([0, 0, 0, 255]);
+      }
+    } finally {
+      await output.task.destroy();
+      await source.task.destroy();
+    }
     expect(
       await page.locator(".redaction:not(.draft)").count(),
     ).toBeGreaterThan(0);
