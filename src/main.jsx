@@ -1,42 +1,34 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useReducer } from "react";
 import { createRoot } from "react-dom/client";
 import * as pdfjs from "pdfjs-dist";
 import workerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import {
-  faUserSecret,
-  faLayerGroup,
   faShieldHalved,
   faPenRuler,
   faTriangleExclamation,
-  faWifi,
   faFilePdf,
-  faGlobe,
-  faEnvelope,
   faXmark,
   faChevronLeft,
   faChevronRight,
   faRotateLeft,
+  faRotateRight,
   faTrashCan,
   faDownload,
   faPlus,
   faMagnifyingGlassPlus,
   faMagnifyingGlassMinus,
-  faFile,
-  faScissors,
-  faArrowsRotate,
+  faCircleQuestion,
+  faArrowUpRightFromSquare,
+  faCheck,
   faLock,
-  faImage,
-  faSignature,
-  faCompress,
+  faExpand,
 } from "@fortawesome/free-solid-svg-icons";
-import "@fontsource/roboto/latin-200.css";
-import "@fontsource/roboto/latin-400.css";
-import "@fontsource/roboto/latin-500.css";
-import "@fontsource/roboto/latin-700.css";
+import "@fontsource-variable/inter";
+import { emptyHistory, redactionHistory } from "./history.mjs";
 import { exportRedacted, normalizeRect } from "./pdf.mjs";
 import "./styles.css";
 import DesktopStatus from "./DesktopStatus.jsx";
-if (window.caviardDesktop) document.title = "Caviard — Caviarder un PDF";
+document.title = "Inklura PDF — Caviardage";
 
 pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
 // Load the worker with the page so local files can also be opened offline.
@@ -53,78 +45,6 @@ const Icon = ({ icon, className = "" }) => (
     <path d={icon.icon[4]} />
   </svg>
 );
-const features = [
-  [
-    faUserSecret,
-    "Caviardage permanent",
-    "Le contenu des zones sélectionnées est définitivement supprimé des images des pages, et pas simplement recouvert de rectangles modifiables.",
-  ],
-  [
-    faLayerGroup,
-    "Aucun contenu original caché",
-    "Le nouveau PDF est créé à partir des images des pages après caviardage. Les textes, images, annotations et calques d’origine ne sont pas conservés en tant qu’éléments séparés.",
-  ],
-  [
-    faShieldHalved,
-    "Votre vie privée est respectée",
-    "Votre PDF est traité localement dans votre navigateur et n’est jamais envoyé sur un serveur.",
-  ],
-  [
-    faPenRuler,
-    "Plusieurs zones de caviardage",
-    "Dessinez autant de rectangles de caviardage que nécessaire sur toutes les pages.",
-  ],
-  [
-    faTriangleExclamation,
-    "PDF composé uniquement d’images",
-    "Pour garantir un caviardage irréversible, le PDF obtenu ne contient que des images : il n’est plus possible de sélectionner du texte ni d’y effectuer des recherches.",
-  ],
-  [
-    faWifi,
-    "Fonctionne hors ligne",
-    "Une fois chargé, l’outil peut caviarder des PDF sans connexion Internet.",
-  ],
-];
-const tools = [
-  ["FUSIONNER", "fusionner-pdf", faLayerGroup],
-  ["DIVISER", "diviser-pdf", faScissors],
-  ["EXTRAIRE", "extraire-pages-pdf", faFile],
-  ["SUPPRIMER", "supprimer-pages-pdf", faTrashCan],
-  ["RÉORGANISER", "reorganiser-pages-pdf", faLayerGroup],
-  ["INVERSER", "inverser-pages-pdf", faArrowsRotate],
-  ["PIVOTER", "faire-pivoter-pages-pdf", faArrowsRotate],
-  ["NUMÉROTER", "numeroter-pages-pdf", faFile],
-  ["NUMÉROTATION BATES", "numerotation-bates-pdf", faFile],
-  ["FILIGRANE", "filigrane-pdf", faFile],
-  ["SIGNER", "signer-pdf", faSignature],
-  ["SUPPRIMER LE FILIGRANE", "supprimer-filigrane-pdf", faFile],
-  ["CAVIARDER", "caviarder-pdf", faUserSecret],
-  ["ALTERNER LES PAGES", "entrelacer-pdf", faLayerGroup],
-  ["RÉPÉTER", "repeter-pdf", faFile],
-  ["INSPECTER", "inspecter-pdf", faFile],
-  ["AJOUTER DES PAGES VIERGES", "ajouter-pages-vierges-pdf", faPlus],
-  ["CRÉER UNE ARCHIVE ZIP", "zipper-pdf", faFile],
-  ["AJOUTER DES PIÈCES JOINTES", "ajouter-pieces-jointes-pdf", faPlus],
-  ["COMPRESSER", "compresser-pdf", faCompress],
-  ["REDIMENSIONNER", "redimensionner-pages-pdf", faFile],
-  ["RECADRER", "recadrer-pdf", faFile],
-  ["MULTIPAGE ET LIVRET", "pdf-n-up-livret", faLayerGroup],
-  ["METTRE EN MIROIR", "miroir-pages-pdf", faFile],
-  ["MODIFIER LES MÉTADONNÉES", "modifier-metadonnees-pdf", faFile],
-  ["SUPPRIMER LES MÉTADONNÉES", "supprimer-metadonnees-pdf", faFile],
-  ["AJOUTER UN MOT DE PASSE", "ajouter-mot-de-passe-pdf", faLock],
-  ["RETIRER LE MOT DE PASSE", "retirer-mot-de-passe-pdf", faLock],
-  ["SCANNER", "scanner-pdf", faImage],
-  ["PDF EN JPEG", "convertir-pdf-en-jpeg", faImage],
-  ["JPEG EN PDF", "convertir-jpeg-en-pdf", faImage],
-  ["PDF EN PNG", "convertir-pdf-en-png", faImage],
-  ["PNG EN PDF", "convertir-png-en-pdf", faImage],
-  ["PDF EN TIFF", "convertir-pdf-en-tiff", faImage],
-  ["TIFF EN PDF", "convertir-tiff-en-pdf", faImage],
-  ["EXTRAIRE LES IMAGES D’UN PDF", "extraire-images-pdf", faImage],
-  ["OCR", "ocr-pdf", faFile],
-  ["COMMENTER", "commenter-pdf", faFile],
-];
 function Page({
   pdf,
   number,
@@ -280,9 +200,10 @@ function App() {
   const [documents, setDocuments] = useState([]),
     [active, setActive] = useState(0),
     [page, setPage] = useState(1);
-  const [savedSignature, setSavedSignature] = useState(null);
-  const [marks, setMarks] = useState({}),
-    [zoom, setZoom] = useState(1);
+  const [savedMarks, setSavedMarks] = useState({});
+  const [history, dispatch] = useReducer(redactionHistory, emptyHistory);
+  const marks = history.marks;
+  const [zoom, setZoom] = useState(1);
   const [loading, setLoading] = useState(false),
     [busy, setBusy] = useState(false),
     [progress, setProgress] = useState("");
@@ -290,9 +211,11 @@ function App() {
     [notice, setNotice] = useState(""),
     [dragging, setDragging] = useState(false);
   const input = useRef(null),
-    drawer = useRef(null),
-    languages = useRef(null),
+    help = useRef(null),
+    privacy = useRef(null),
+    discard = useRef(null),
     docsRef = useRef([]);
+  const [pendingClose, setPendingClose] = useState(null);
   const current = documents[active];
   const currentMarks = current ? marks[current.id] || [] : [];
   const count = documents.reduce(
@@ -345,34 +268,47 @@ function App() {
     setLoading(false);
     if (input.current) input.current.value = "";
   }
+  const isDirty = (doc) =>
+    (marks[doc.id]?.length || 0) > 0 &&
+    JSON.stringify(marks[doc.id]) !== JSON.stringify(savedMarks[doc.id] || []);
+  const dirty = documents.some(isDirty);
+  function edit(type, extra = {}) {
+    if (!current || busy || loading) return;
+    setNotice("");
+    dispatch({ type, id: current.id, ...extra });
+  }
   function addMark(mark) {
-    setNotice("");
-    setMarks((previous) => ({
-      ...previous,
-      [current.id]: [...(previous[current.id] || []), mark],
-    }));
+    edit("add", { mark });
   }
-  function removeMark(id) {
-    setNotice("");
-    setMarks((previous) => ({
-      ...previous,
-      [current.id]: previous[current.id].filter((mark) => mark.id !== id),
-    }));
+  function removeMark(markId) {
+    edit("remove", { markId });
   }
-  function closeDocument() {
-    const removed = current;
+  function removeDocument(removed) {
     setDocuments((previous) => previous.filter((doc) => doc.id !== removed.id));
-    setMarks((previous) => {
-      const next = { ...previous };
-      delete next[removed.id];
-      return next;
-    });
+    dispatch({ type: "close", id: removed.id });
     setActive(0);
     setPage(1);
     setNotice("");
-    // Wait for React to unmount the page and cancel any active render.
+    setPendingClose(null);
     setTimeout(() => removed.task.destroy(), 0);
   }
+  function closeDocument() {
+    if (isDirty(current)) {
+      setPendingClose(current);
+      discard.current.showModal();
+    } else removeDocument(current);
+  }
+  useEffect(() => {
+    const beforeUnload = (event) => {
+      if (dirty || busy || loading) {
+        event.preventDefault();
+        event.returnValue = "";
+      }
+    };
+    if (!window.caviardDesktop)
+      window.addEventListener("beforeunload", beforeUnload);
+    return () => window.removeEventListener("beforeunload", beforeUnload);
+  }, [dirty, busy, loading]);
   async function download() {
     setBusy(true);
     setError("");
@@ -386,17 +322,29 @@ function App() {
         const filename = `${doc.name.replace(/\.pdf$/i, "")}-caviarde.pdf`;
         if (window.caviardDesktop) {
           const result = await window.caviardDesktop.savePdf(filename, bytes);
-          if (!result.saved) { setNotice("Enregistrement annulé. Les caviardages restent disponibles."); return; }
+          if (!result.saved) {
+            setNotice(
+              "Enregistrement annulé. Les caviardages restent disponibles.",
+            );
+            return;
+          }
         } else {
-          const url = URL.createObjectURL(new Blob([bytes], { type: "application/pdf" }));
-          const link = document.createElement("a"); link.href = url; link.download = filename; link.click();
+          const url = URL.createObjectURL(
+            new Blob([bytes], { type: "application/pdf" }),
+          );
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = filename;
+          link.click();
           setTimeout(() => URL.revokeObjectURL(url), 60000);
         }
       }
-      setSavedSignature(JSON.stringify(marks));
-      setNotice(window.caviardDesktop
-        ? "Votre PDF caviardé a été enregistré. Le contenu des zones sélectionnées a été supprimé."
-        : "Votre PDF caviardé a été téléchargé. Le contenu des zones sélectionnées a été supprimé.");
+      setSavedMarks(marks);
+      setNotice(
+        window.caviardDesktop
+          ? "Votre PDF caviardé a été enregistré. Le contenu des zones sélectionnées a été supprimé."
+          : "Votre PDF caviardé a été téléchargé. Le contenu des zones sélectionnées a été supprimé.",
+      );
     } catch {
       setError(
         "Le PDF n’a pas pu être exporté. Essayez avec un document plus petit.",
@@ -407,56 +355,107 @@ function App() {
     }
   }
   useEffect(() => {
-    const undo = (event) => {
+    const shortcut = (event) => {
+      if (
+        event.target.closest(
+          "input, select, textarea, [contenteditable=true]",
+        ) ||
+        document.querySelector("dialog[open]")
+      )
+        return;
       if (
         (event.ctrlKey || event.metaKey) &&
-        event.key.toLowerCase() === "z" &&
+        ["z", "y"].includes(event.key.toLowerCase()) &&
         current &&
-        !busy
+        !busy &&
+        !loading
       ) {
         event.preventDefault();
         setNotice("");
-        setMarks((previous) => ({
-          ...previous,
-          [current.id]: (previous[current.id] || []).slice(0, -1),
-        }));
+        dispatch({
+          type:
+            event.shiftKey || event.key.toLowerCase() === "y" ? "redo" : "undo",
+          id: current.id,
+        });
+      }
+      if (event.key === "F1") {
+        event.preventDefault();
+        help.current.showModal();
       }
     };
-    window.addEventListener("keydown", undo);
-    return () => window.removeEventListener("keydown", undo);
-  }, [current, busy]);
+    window.addEventListener("keydown", shortcut);
+    return () => window.removeEventListener("keydown", shortcut);
+  }, [current, busy, loading]);
   return (
     <>
       <header className="header">
-        <a href="/" className="logo" aria-label={window.caviardDesktop ? "Caviard, accueil" : "pdfux, accueil"} onClick={event => { if (window.caviardDesktop) event.preventDefault(); }}>
-          <img src={window.caviardDesktop ? "/caviard-icon.png" : "/logo-header.png"} alt="" />
-          {window.caviardDesktop ? <span>Caviard</span> : <span>pdf<span className="logo-blue">ux</span></span>}
+        <a
+          href="/"
+          className="logo"
+          aria-label="Inklura, accueil"
+          onClick={(event) => event.preventDefault()}
+        >
+          <img src="/inklura-icon.svg" alt="" />
+          <span>
+            Inklura<span className="brand-dot">.</span>
+          </span>
         </a>
-        <nav>
-          <a
-            className="support"
-            href="https://buymeacoffee.com/pdfux"
-            target="_blank"
-            rel="noreferrer"
-          >
-            Soutenez pdfux
-          </a>
+        <span className="product-label">
+          PDF <span>/</span> Caviardage
+        </span>
+        <nav aria-label="Navigation principale">
+          <span className="local-badge">
+            <span />
+            Sur votre appareil
+          </span>
           <button
-            className="tools-toggle"
-            onClick={() => drawer.current.showModal()}
+            className="help-toggle"
+            onClick={() => help.current.showModal()}
           >
-            TOUS LES OUTILS PDF
+            <Icon icon={faCircleQuestion} /> Aide
           </button>
         </nav>
       </header>
-      <main>
-        <DesktopStatus dirty={count > 0 && savedSignature !== JSON.stringify(marks)} busy={busy || loading} />
+      <main className={current ? "app-main editing" : "app-main"}>
         <section className="intro">
-          <h1>
-            <Icon icon={faUserSecret} /> Caviarder un PDF
-          </h1>
-          <h2>Supprimez définitivement le contenu sensible d’un PDF</h2>
+          <div>
+            <p className="eyebrow">VOS DOCUMENTS, EN CONFIANCE</p>
+            <h1>
+              Caviarder un PDF<span className="brand-dot">.</span>
+            </h1>
+            <p className="intro-description">
+              Partagez l’essentiel. Gardez les informations sensibles pour vous.
+            </p>
+          </div>
+          {current && (
+            <span className={`edit-status ${dirty ? "unsaved" : ""}`}>
+              {dirty
+                ? "Modifications à exporter"
+                : count
+                  ? "Modifications exportées"
+                  : "Prêt à caviarder"}
+            </span>
+          )}
         </section>
+        <ol className="steps" aria-label="Étapes du caviardage">
+          {["Importer", "Caviarder", "Exporter"].map((label, index) => (
+            <li
+              key={label}
+              className={
+                index === (current ? (count ? 2 : 1) : 0) ? "current-step" : ""
+              }
+            >
+              <span>
+                {current && index === 0 ? (
+                  <Icon icon={faCheck} />
+                ) : (
+                  `0${index + 1}`
+                )}
+              </span>
+              {label}
+            </li>
+          ))}
+        </ol>
         <input
           ref={input}
           type="file"
@@ -475,46 +474,100 @@ function App() {
         )}
         {notice && (
           <div className="message success" role="status">
-            {notice}
+            <Icon icon={faCheck} />
+            <span>{notice}</span>
           </div>
         )}
         {!current ? (
-          <section
-            className={`dropzone ${dragging ? "dragging" : ""}`}
-            onDragOver={(event) => {
-              event.preventDefault();
-              setDragging(true);
-            }}
-            onDragLeave={(event) => {
-              if (!event.currentTarget.contains(event.relatedTarget))
+          <>
+            <section
+              className={`dropzone ${dragging ? "dragging" : ""}`}
+              aria-label="Importer des fichiers PDF"
+              onDragOver={(event) => {
+                event.preventDefault();
+                setDragging(true);
+              }}
+              onDragLeave={(event) => {
+                if (!event.currentTarget.contains(event.relatedTarget))
+                  setDragging(false);
+              }}
+              onDrop={(event) => {
+                event.preventDefault();
                 setDragging(false);
-            }}
-            onDrop={(event) => {
-              event.preventDefault();
-              setDragging(false);
-              openFiles(Array.from(event.dataTransfer.files));
-            }}
-            aria-label="Importer des fichiers PDF"
-          >
-            <Icon icon={faFilePdf} className="upload-icon" />
-            <p>
-              {loading
-                ? "Ouverture de vos fichiers PDF…"
-                : "Déposez vos fichiers PDF ici ou"}
-            </p>
-            <button
-              className="primary choose"
-              disabled={loading || !workerReady}
-              onClick={() => input.current.click()}
+                openFiles(Array.from(event.dataTransfer.files));
+              }}
             >
-              {!workerReady
-                ? "Initialisation…"
-                : loading
-                  ? "Chargement…"
-                  : "Choisir des fichiers"}
-            </button>
-            <Privacy />
-          </section>
+              <div className="upload-art" aria-hidden="true">
+                <div className="paper-back" />
+                <div className="paper-front">
+                  <span>PDF</span>
+                  <i />
+                  <i />
+                  <i />
+                  <b />
+                </div>
+                <span className="upload-lock">
+                  <Icon icon={faLock} />
+                </span>
+              </div>
+              <h2>
+                {loading
+                  ? "Ouverture de vos documents…"
+                  : "Déposez vos PDF ici"}
+              </h2>
+              <p>Un document ou plusieurs. Tout reste sur votre appareil.</p>
+              <button
+                className="primary choose"
+                disabled={loading || !workerReady}
+                onClick={() => input.current.click()}
+              >
+                <Icon icon={faPlus} />
+                {!workerReady
+                  ? "Initialisation…"
+                  : loading
+                    ? "Chargement…"
+                    : "Choisir des fichiers"}
+              </button>
+              <span className="file-hint">
+                Fichiers PDF · Sans compte · Sans envoi de documents
+              </span>
+            </section>
+            <section
+              className="features"
+              aria-label="Les avantages du caviardage"
+            >
+              <article>
+                <Icon icon={faShieldHalved} />
+                <div>
+                  <h3>Confidentiel, par défaut</h3>
+                  <p>
+                    Vos documents sont traités localement. Ils ne quittent pas
+                    votre appareil.
+                  </p>
+                </div>
+              </article>
+              <article>
+                <Icon icon={faPenRuler} />
+                <div>
+                  <h3>Quelques gestes suffisent</h3>
+                  <p>
+                    Dessinez sur les zones sensibles, vérifiez chaque page, puis
+                    exportez.
+                  </p>
+                </div>
+              </article>
+              <article>
+                <Icon icon={faLock} />
+                <div>
+                  <h3>Un export définitif</h3>
+                  <p>
+                    Le PDF exporté ne conserve ni texte caché, ni annotations,
+                    ni pièces jointes.
+                  </p>
+                </div>
+              </article>
+            </section>
+          </>
         ) : (
           <section className="editor" aria-label="Éditeur de caviardage">
             <div className="editor-top">
@@ -537,8 +590,9 @@ function App() {
                   ))}
                 </select>
                 <span>
-                  {current.pdf.numPages} page
-                  {current.pdf.numPages > 1 ? "s" : ""}
+                  {documents.length > 1
+                    ? `${documents.length} documents`
+                    : `${current.pdf.numPages} page${current.pdf.numPages > 1 ? "s" : ""}`}
                 </span>
               </div>
               <div className="actions">
@@ -546,7 +600,8 @@ function App() {
                   disabled={busy || loading}
                   onClick={() => input.current.click()}
                 >
-                  <Icon icon={faPlus} /> Ajouter des fichiers
+                  <Icon icon={faPlus} />
+                  <span>Ajouter des fichiers</span>
                 </button>
                 <button
                   title="Fermer ce document"
@@ -558,29 +613,42 @@ function App() {
                 </button>
               </div>
             </div>
-            <div className="editor-instructions">
-              <Icon icon={faPenRuler} />
-              <span>Dessinez des rectangles sur les zones à caviarder.</span>
-              <span className="mark-count">
-                {count} zone{count > 1 ? "s" : ""} sélectionnée
-                {count > 1 ? "s" : ""}
-              </span>
-            </div>
             <div className="toolbar">
-              <div className="actions">
+              <div className="actions page-navigation">
                 <button
                   aria-label="Page précédente"
-                  disabled={page <= 1 || busy}
+                  disabled={page <= 1 || busy || loading}
                   onClick={() => setPage(page - 1)}
                 >
                   <Icon icon={faChevronLeft} />
                 </button>
-                <span>
-                  Page <strong>{page}</strong> / {current.pdf.numPages}
-                </span>
+                <label>
+                  Page{" "}
+                  <input
+                    key={`${current.id}-${page}`}
+                    aria-label="Aller à la page"
+                    type="number"
+                    min="1"
+                    max={current.pdf.numPages}
+                    defaultValue={page}
+                    disabled={busy || loading}
+                    onBlur={(event) => {
+                      const number = Math.min(
+                        current.pdf.numPages,
+                        Math.max(1, Number(event.target.value) || 1),
+                      );
+                      event.target.value = number;
+                      setPage(number);
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter") event.currentTarget.blur();
+                    }}
+                  />{" "}
+                  <span>/ {current.pdf.numPages}</span>
+                </label>
                 <button
                   aria-label="Page suivante"
-                  disabled={page >= current.pdf.numPages || busy}
+                  disabled={page >= current.pdf.numPages || busy || loading}
                   onClick={() => setPage(page + 1)}
                 >
                   <Icon icon={faChevronRight} />
@@ -604,52 +672,119 @@ function App() {
                 >
                   <Icon icon={faMagnifyingGlassPlus} />
                 </button>
-              </div>
-              <div className="actions">
                 <button
-                  disabled={!currentMarks.length || busy}
-                  onClick={() => {
-                    setNotice("");
-                    setMarks((previous) => ({
-                      ...previous,
-                      [current.id]: currentMarks.slice(0, -1),
-                    }));
-                  }}
-                  title="Annuler (Ctrl+Z)"
+                  aria-label="Ajuster à la largeur"
+                  title="Ajuster à la largeur"
+                  disabled={busy}
+                  onClick={() => setZoom(1)}
+                >
+                  <Icon icon={faExpand} />
+                </button>
+              </div>
+              <div className="actions history-actions">
+                <button
+                  disabled={
+                    !history.undo[current.id]?.length || busy || loading
+                  }
+                  onClick={() => edit("undo")}
+                  title="Annuler (Ctrl/Cmd+Z)"
                 >
                   <Icon icon={faRotateLeft} />
                   <span>Annuler</span>
                 </button>
                 <button
-                  disabled={!currentMarks.length || busy}
-                  onClick={() => {
-                    setNotice("");
-                    setMarks((previous) => ({ ...previous, [current.id]: [] }));
-                  }}
+                  disabled={
+                    !history.redo[current.id]?.length || busy || loading
+                  }
+                  onClick={() => edit("redo")}
+                  title="Rétablir (Ctrl/Cmd+Maj+Z)"
+                >
+                  <Icon icon={faRotateRight} />
+                  <span>Rétablir</span>
+                </button>
+                <button
+                  disabled={!currentMarks.length || busy || loading}
+                  onClick={() => edit("clear")}
+                  title="Effacer toutes les zones de ce document"
                 >
                   <Icon icon={faTrashCan} />
                   <span>Tout effacer</span>
                 </button>
               </div>
             </div>
-            <div className="workspace">
-              <Page
-                key={`${current.id}-${page}`}
-                pdf={current.pdf}
-                number={page}
-                marks={currentMarks}
-                addMark={addMark}
-                removeMark={removeMark}
-                zoom={zoom}
-                busy={busy}
-                onError={setError}
-              />
+            <div className="editor-instructions">
+              <Icon icon={faPenRuler} />
+              <span>
+                Dessinez un rectangle sur chaque information à masquer.
+              </span>
+              <span className="mark-count">
+                {currentMarks.length} zone{currentMarks.length > 1 ? "s" : ""}{" "}
+                dans ce document
+              </span>
+            </div>
+            <div className="editor-body">
+              <aside className="page-sidebar" aria-label="Pages du document">
+                <div className="sidebar-title">
+                  PAGES <span>{current.pdf.numPages}</span>
+                </div>
+                <div className="page-list">
+                  {Array.from({ length: current.pdf.numPages }, (_, index) => {
+                    const number = index + 1,
+                      regions = currentMarks.filter(
+                        (mark) => mark.page === number,
+                      ).length;
+                    return (
+                      <button
+                        key={number}
+                        disabled={busy || loading}
+                        className={number === page ? "selected" : ""}
+                        aria-current={number === page ? "page" : undefined}
+                        aria-label={`Afficher la page ${number}${regions ? `, ${regions} zone${regions > 1 ? "s" : ""}` : ""}`}
+                        onClick={() => setPage(number)}
+                      >
+                        <span className="page-symbol">
+                          <Icon icon={faFilePdf} />
+                        </span>
+                        <span>
+                          Page {number}
+                          <small>
+                            {regions
+                              ? `${regions} zone${regions > 1 ? "s" : ""}`
+                              : "Aucune zone"}
+                          </small>
+                        </span>
+                        {regions > 0 && <i />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </aside>
+              <div className="workspace">
+                <Page
+                  key={`${current.id}-${page}`}
+                  pdf={current.pdf}
+                  number={page}
+                  marks={currentMarks}
+                  addMark={addMark}
+                  removeMark={removeMark}
+                  zoom={zoom}
+                  busy={busy || loading}
+                  onError={setError}
+                />
+              </div>
             </div>
             <div className="export-area">
-              <p>
-                <Icon icon={faTriangleExclamation} /> Le PDF obtenu contiendra
-                uniquement des images. Le texte ne sera plus sélectionnable.
-              </p>
+              <div className="export-description">
+                <strong>
+                  {count
+                    ? `${count} zone${count > 1 ? "s" : ""} à caviarder · ${documents.length} document${documents.length > 1 ? "s" : ""}`
+                    : "Sélectionnez les zones sensibles"}
+                </strong>
+                <p>
+                  Le PDF exporté sera composé d’images. Son texte ne sera plus
+                  sélectionnable.
+                </p>
+              </div>
               <button
                 className="primary download"
                 disabled={busy || loading || !count}
@@ -658,155 +793,179 @@ function App() {
                 <Icon icon={faDownload} />
                 {busy
                   ? "Caviardage en cours…"
-                  : `Appliquer et télécharger ${documents.length > 1 ? "les PDF" : "le PDF"}`}
+                  : `Exporter ${documents.length > 1 ? "les PDF" : "le PDF"}`}
               </button>
-              {busy && <p role="status">{progress || "Préparation du PDF…"}</p>}
-              <Privacy />
+              {busy && (
+                <p className="export-progress" role="status">
+                  {progress || "Préparation du PDF…"}
+                </p>
+              )}
             </div>
           </section>
         )}
-        <section className="features" aria-label="Les avantages du caviardage">
-          {features.map(([icon, title, text]) => (
-            <article key={title}>
-              <h3>
-                <Icon icon={icon} /> {title}
-              </h3>
-              <p>{text}</p>
-            </article>
-          ))}
-        </section>
+        <div className="privacy-note">
+          <Icon icon={faShieldHalved} />
+          <span>
+            Vos originaux restent intacts. Vous exportez une nouvelle copie
+            caviardée.
+          </span>
+          <button onClick={() => privacy.current.showModal()}>
+            En savoir plus
+          </button>
+        </div>
       </main>
       <footer>
-        <div className="footer-links">
-          <button onClick={() => languages.current.showModal()}>
-            <Icon icon={faGlobe} /> Français
-          </button>
-          <a href="https://pdfux.com/blog" target="_blank" rel="noreferrer">
-            Blog
+        <span>
+          Un outil{" "}
+          <a href="https://www.inklura.fr/" target="_blank" rel="noreferrer">
+            Inklura
+            <Icon icon={faArrowUpRightFromSquare} />
           </a>
-          <a
-            href="https://pdfux.com/privacy-policy/"
-            target="_blank"
-            rel="noreferrer"
-          >
+        </span>
+        <div>
+          <button onClick={() => privacy.current.showModal()}>
             Confidentialité
-          </a>
-          <a
-            href="https://buymeacoffee.com/pdfux"
-            target="_blank"
-            rel="noreferrer"
-          >
-            Café
-          </a>
-        </div>
-        <span className="version">v1.0.0</span>
-        <div className="social">
-          <a
-            href="https://reddit.com/r/pdfux"
-            target="_blank"
-            rel="noreferrer"
-            aria-label="Reddit"
-          >
-            <svg className="icon" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M24 12a12 12 0 1 0-24 0 12 12 0 0 0 24 0ZM19 11c1.8 0 2.4 2.4.8 3.2.4 3-3.2 5.2-7.8 5.2s-8.2-2.2-7.8-5.2C2.6 13.4 3.2 11 5 11c.6 0 1.1.2 1.4.6 1.3-.7 3-1.2 4.9-1.2l1.1-5.1 3.6.8a1.6 1.6 0 1 1-.2 1l-2.6-.6-.9 3.9c2 0 3.9.5 5.3 1.2.3-.4.8-.6 1.4-.6ZM8 13a1.3 1.3 0 1 0 0 2.6A1.3 1.3 0 0 0 8 13Zm8 0a1.3 1.3 0 1 0 0 2.6A1.3 1.3 0 0 0 16 13Zm-7 4c1.8 1.2 4.2 1.2 6 0l-.5-.7c-1.5 1-3.5 1-5 0Z" />
-            </svg>
-          </a>
-          <a
-            href="https://youtube.com/@pdfux"
-            aria-label="YouTube"
-            target="_blank"
-            rel="noreferrer"
-          >
-            <svg className="icon" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M23 7s-.2-2-1-2.8C21 3.3 20 3.3 19.5 3.2 16 3 12 3 12 3s-4 0-7.5.2C4 3.3 3 3.3 2 4.2 1.2 5 1 7 1 7s-.3 2.3-.3 4.5v1C.7 14.7 1 17 1 17s.2 2 1 2.8c1 .9 2.2.9 2.8 1C7 21 12 21 12 21s4 0 7.5-.2c.5-.1 1.5-.1 2.5-1 .8-.8 1-2.8 1-2.8s.3-2.3.3-4.5v-1C23.3 9.3 23 7 23 7Zm-13.5 9V8l7 4Z" />
-            </svg>
-          </a>
-          <a href="mailto:contact@pdfux.com" aria-label="Contact pdfux">
-            <Icon icon={faEnvelope} />
-          </a>
+          </button>
+          <button onClick={() => help.current.showModal()}>
+            Guide & raccourcis
+          </button>
+          <a href="mailto:contact@inklura.fr">Contact</a>
         </div>
       </footer>
+      <DesktopStatus dirty={dirty} busy={busy || loading} />
       <dialog
-        ref={drawer}
-        className="tool-drawer"
+        ref={help}
+        className="info-dialog"
+        aria-labelledby="help-title"
         onClick={(event) => {
-          if (event.target === drawer.current) drawer.current.close();
+          if (event.target === help.current) help.current.close();
         }}
       >
-        <div className="drawer-title">
-          <h2>TOUS LES OUTILS PDF</h2>
+        <div className="dialog-title">
+          <div>
+            <p className="eyebrow">PRISE EN MAIN</p>
+            <h2 id="help-title">Un PDF prêt à partager.</h2>
+          </div>
           <button
-            aria-label="Fermer les outils"
-            onClick={() => drawer.current.close()}
+            aria-label="Fermer l’aide"
+            onClick={() => help.current.close()}
           >
             <Icon icon={faXmark} />
           </button>
         </div>
-        <div className="tool-list">
-          {tools.map(([label, path, icon]) =>
-            path === "caviarder-pdf" ? (
-              <button
-                className="active-tool"
-                key={path}
-                onClick={() => drawer.current.close()}
-              >
-                <Icon icon={icon} />
-                {label}
-              </button>
-            ) : (
-              <a
-                key={path}
-                href={`https://pdfux.com/fr/${path}/`}
-                target="_blank"
-                rel="noreferrer"
-              >
-                <Icon icon={icon} />
-                {label}
-                <span className="external">↗</span>
-              </a>
-            ),
-          )}
+        <div className="dialog-content">
+          <ol className="help-steps">
+            <li>
+              <strong>Importez vos PDF</strong>
+              <p>
+                Glissez vos fichiers dans la fenêtre ou utilisez le bouton de
+                sélection.
+              </p>
+            </li>
+            <li>
+              <strong>Masquez les informations sensibles</strong>
+              <p>
+                Dessinez des rectangles. La liste des pages vous indique où se
+                trouvent vos zones. Vérifiez toutes les pages avant l’export.
+              </p>
+            </li>
+            <li>
+              <strong>Exportez une nouvelle copie</strong>
+              <p>
+                Les zones noires sont intégrées aux images des pages. Le texte
+                d’origine, les annotations et les pièces jointes ne sont pas
+                conservés.
+              </p>
+            </li>
+          </ol>
+          <div className="shortcut-list">
+            <span>Annuler</span>
+            <kbd>Ctrl / ⌘ + Z</kbd>
+            <span>Rétablir</span>
+            <kbd>Ctrl / ⌘ + Maj + Z</kbd>
+            <span>Aide</span>
+            <kbd>F1</kbd>
+          </div>
+          <p className="dialog-note">
+            Le caviardage s’applique à l’export. Vos fichiers originaux restent
+            inchangés.
+          </p>
         </div>
       </dialog>
-      <dialog ref={languages} className="language-dialog">
-        <div className="drawer-title">
-          <h2>Choisir une langue</h2>
+      <dialog
+        ref={privacy}
+        className="info-dialog"
+        aria-labelledby="privacy-title"
+      >
+        <div className="dialog-title">
+          <h2 id="privacy-title">Vos documents restent ici.</h2>
           <button
-            aria-label="Fermer les langues"
-            onClick={() => languages.current.close()}
+            aria-label="Fermer la confidentialité"
+            onClick={() => privacy.current.close()}
           >
             <Icon icon={faXmark} />
           </button>
         </div>
-        <p>Les autres langues sont disponibles sur pdfux.</p>
-        {[
-          ["Français", null],
-          ["English", "https://pdfux.com/redact-pdf/"],
-          ["Deutsch", "https://pdfux.com/de/"],
-          ["Español", "https://pdfux.com/es/"],
-          ["Italiano", "https://pdfux.com/it/"],
-          ["Português", "https://pdfux.com/pt/"],
-        ].map(([label, url]) =>
-          url ? (
-            <a key={label} href={url} target="_blank" rel="noreferrer">
-              {label} ↗
-            </a>
-          ) : (
-            <button key={label} onClick={() => languages.current.close()}>
-              {label} ✓
+        <div className="dialog-content">
+          <p>
+            Les PDF sont ouverts et traités sur votre appareil, sans
+            téléversement. Aucun compte n’est nécessaire et l’application ne
+            conserve pas vos documents après sa fermeture.
+          </p>
+          <p>
+            Chaque export crée un PDF composé uniquement des images caviardées
+            des pages. Le texte caché, les métadonnées d’origine, les
+            formulaires, les annotations et les pièces jointes sont écartés. Le
+            texte du PDF exporté ne peut plus être sélectionné ni recherché.
+          </p>
+          <p>
+            La version ordinateur contacte GitHub pour rechercher et télécharger
+            les mises à jour de l’application. Vos documents ne sont jamais
+            inclus dans ces échanges.
+          </p>
+          <p>
+            Vérifiez visuellement votre copie exportée avant de la partager.
+          </p>
+        </div>
+      </dialog>
+      <dialog
+        ref={discard}
+        className="info-dialog discard-dialog"
+        aria-labelledby="discard-title"
+      >
+        <div className="dialog-title">
+          <h2 id="discard-title">Fermer sans exporter ?</h2>
+        </div>
+        <div className="dialog-content">
+          <p>
+            Les zones sélectionnées dans <strong>{pendingClose?.name}</strong>{" "}
+            n’ont pas été exportées. Elles seront perdues si vous fermez ce
+            document.
+          </p>
+          <div className="dialog-actions">
+            <button
+              className="secondary"
+              autoFocus
+              onClick={() => {
+                discard.current.close();
+                setPendingClose(null);
+              }}
+            >
+              Continuer à travailler
             </button>
-          ),
-        )}
+            <button
+              className="danger"
+              onClick={() => {
+                discard.current.close();
+                if (pendingClose) removeDocument(pendingClose);
+              }}
+            >
+              Fermer sans exporter
+            </button>
+          </div>
+        </div>
       </dialog>
     </>
-  );
-}
-function Privacy() {
-  return (
-    <div className="privacy">
-      <Icon icon={faShieldHalved} /> Les fichiers sont traités sur votre
-      appareil. Aucun fichier n’est envoyé sur un serveur.
-    </div>
   );
 }
 

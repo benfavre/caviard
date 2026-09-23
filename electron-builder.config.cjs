@@ -6,14 +6,14 @@ for (const name of ["CSC_LINK", "WIN_CSC_LINK"]) {
 
 module.exports = {
   appId: "com.benfavre.caviard",
-  productName: "Caviard",
+  productName: "Inklura PDF",
   executableName: "caviard",
   directories: { output: "release", buildResources: "build" },
   files: ["dist/**/*", "electron/**/*", "package.json", "!**/*.map"],
   asar: true,
   npmRebuild: false,
   extraMetadata: { macAutoUpdates: !!process.env.CSC_LINK },
-  artifactName: "Caviard-${version}-${os}-${arch}.${ext}",
+  artifactName: "Inklura-PDF-${version}-${os}-${arch}.${ext}",
   publish: [
     {
       provider: "github",

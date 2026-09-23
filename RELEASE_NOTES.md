@@ -1,4 +1,9 @@
-Caviard is an offline PDF redaction app. Documents stay on your device; exports flatten pages to images and discard source text and hidden PDF content.
+Inklura PDF is an offline PDF redaction app. Documents stay on your device; exports flatten pages to images and discard source text and hidden PDF content.
+
+- New Inklura identity with the official icon, blue palette, and Inter typography.
+- Removed PDFux donation prompts, external tool listings, and unrelated social links.
+- Added undo/redo for all region edits, page navigation and per-page counts, fit-to-width, useful help, and unsaved-document protection.
+- Existing Caviard installations use the same update feed.
 
 - Windows: download and run the `.exe` installer (x64).
 - macOS: choose the `arm64.dmg` for Apple Silicon or `x64.dmg` for Intel.

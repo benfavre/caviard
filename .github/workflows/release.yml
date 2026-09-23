@@ -39,11 +39,11 @@ jobs:
           - os: windows-latest
             platform: windows
             flags: --win --x64
-            executable: release/win-unpacked/Caviard.exe
+            executable: release/win-unpacked/Inklura PDF.exe
           - os: macos-latest
             platform: macos
             flags: --mac --x64 --arm64
-            executable: release/mac-arm64/Caviard.app/Contents/MacOS/Caviard
+            executable: release/mac-arm64/Inklura PDF.app/Contents/MacOS/Inklura PDF
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     steps:
@@ -117,5 +117,5 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" artifacts/* --draft --verify-tag --title "Caviard $GITHUB_REF_NAME" --notes-file RELEASE_NOTES.md
+          gh release create "$GITHUB_REF_NAME" artifacts/* --draft --verify-tag --title "Inklura PDF $GITHUB_REF_NAME" --notes-file RELEASE_NOTES.md
           gh release edit "$GITHUB_REF_NAME" --draft=false --latest

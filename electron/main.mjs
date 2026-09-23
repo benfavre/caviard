@@ -77,8 +77,8 @@ async function createWindow() {
     height: 900,
     minWidth: 390,
     minHeight: 600,
-    title: "Caviard",
-    icon: path.join(dist, "caviard-icon.png"),
+    title: "Inklura PDF",
+    icon: path.join(dist, "inklura-icon.png"),
     show: false,
     backgroundColor: "#ffffff",
     webPreferences: {
@@ -109,7 +109,7 @@ async function createWindow() {
     dialog
       .showMessageBox(window, {
         type: "warning",
-        title: "Fermer Caviard ?",
+        title: "Fermer Inklura PDF ?",
         message: documentState.busy
           ? "Un PDF est en cours de traitement."
           : "Des caviardages n’ont pas encore été exportés.",
@@ -135,7 +135,7 @@ async function createWindow() {
   });
   await window.loadURL(APP_URL);
 }
-app.setName("Caviard");
+app.setName("Inklura PDF");
 app
   .whenReady()
   .then(async () => {
@@ -270,12 +270,12 @@ app
               click: () => controller.check(),
             },
             {
-              label: "À propos de Caviard",
+              label: "À propos d’Inklura PDF",
               click: () =>
                 dialog.showMessageBox(window, {
                   type: "info",
-                  title: "Caviard",
-                  message: `Caviard ${app.getVersion()}`,
+                  title: "Inklura PDF",
+                  message: `Inklura PDF ${app.getVersion()}`,
                   detail:
                     "Caviardage de PDF sur votre appareil. Vos documents ne sont jamais envoyés sur un serveur.",
                 }),

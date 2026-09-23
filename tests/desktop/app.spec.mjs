@@ -45,6 +45,11 @@ async function edit() {
 }
 test("sandboxed renderer and bundled assets work without a server", async () => {
   expect(page.url()).toBe("caviard://app/");
+  await expect(page).toHaveTitle("Inklura PDF — Caviardage");
+  expect(await app.evaluate(({ app }) => app.getName())).toBe("Inklura PDF");
+  expect(
+    await page.locator('a[href*="pdfux"], a[href*="buymeacoffee"]').count(),
+  ).toBe(0);
   expect(await page.evaluate(() => typeof window.require)).toBe("undefined");
   expect(
     await app.evaluate(({ BrowserWindow }) => {
@@ -73,7 +78,7 @@ test("native Save dialog exports black pixels and removes searchable text", asyn
   await app.evaluate(({ dialog }, filePath) => {
     dialog.showSaveDialog = async () => ({ canceled: false, filePath });
   }, destination);
-  await page.getByRole("button", { name: /Appliquer et télécharger/ }).click();
+  await page.getByRole("button", { name: /Exporter/ }).click();
   await expect(page.getByRole("status")).toContainText("enregistré");
   const result = await loadPdf(destination);
   try {
@@ -92,7 +97,7 @@ test("canceling native Save preserves selections and does not report success", a
   await app.evaluate(({ dialog }) => {
     dialog.showSaveDialog = async () => ({ canceled: true });
   });
-  await page.getByRole("button", { name: /Appliquer et télécharger/ }).click();
+  await page.getByRole("button", { name: /Exporter/ }).click();
   await expect(page.getByRole("status")).toContainText("annulé");
   await expect(page.locator(".redaction:not(.draft)")).toHaveCount(1);
 });

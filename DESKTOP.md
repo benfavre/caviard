@@ -1,4 +1,4 @@
-# Desktop application
+# Inklura PDF desktop application
 
 Repository and release feed: https://github.com/benfavre/caviard
 
@@ -40,3 +40,5 @@ CAVIARD_EXECUTABLE="$PWD/release/linux-unpacked/caviard" xvfb-run -a npm run tes
 The desktop end-to-end tests launch real Electron, verify renderer isolation, redact a generated PDF, exercise native Save and cancel, inspect exported pixels and text, and check the unsaved-close guard. The updater tests cover update states, retry, download errors, and restart protection. `npm run test:update-feed` additionally tests the actual electron-updater download and SHA-512 validation against a local HTTP feed using the built Linux AppImage; it never installs over the running app.
 
 The existing web application remains available with `npm run dev`. See `TESTING.md` for the complete PDF corpus and browser suite.
+
+The public product name is **Inklura PDF**. The existing `com.benfavre.caviard` app ID, `caviard-pdf` package name, Linux executable, custom protocol, preload bridge, and `benfavre/caviard` release feed are deliberately retained for upgrade compatibility.

@@ -29,7 +29,7 @@ export default function DesktopStatus({ dirty, busy }) {
   const labels = {
     idle: "Mises à jour automatiques activées",
     checking: "Recherche de mises à jour…",
-    current: "Caviard est à jour",
+    current: "Inklura PDF est à jour",
     downloading: `Téléchargement de la mise à jour : ${Math.round(state.percent)} %`,
     ready: `La version ${state.version} est prête à installer`,
     installing: "Redémarrage…",
@@ -39,7 +39,7 @@ export default function DesktopStatus({ dirty, busy }) {
   const blocked = dirty || busy;
   return (
     <aside className="desktop-status" aria-label="Version et mises à jour">
-      <span className="desktop-version">Caviard {info?.version}</span>
+      <span className="desktop-version">Inklura PDF {info?.version}</span>
       <span aria-live="polite">{message || labels[state.phase]}</span>
       {state.phase === "ready" ? (
         <button

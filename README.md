@@ -1,8 +1,8 @@
-# Caviarder un PDF
+# Inklura PDF
 
-A React and Vite reproduction of the French [pdfux redaction page](https://pdfux.com/fr/caviarder-pdf/), with local PDF redaction.
+A private, offline PDF redaction application by Inklura, built with React, Vite and Electron.
 
-Desktop installers for Windows, macOS, and Linux are published at [Caviard Releases](https://github.com/benfavre/caviard/releases). Run `npm run desktop` for development or `npm run desktop:dist` to package. See [DESKTOP.md](DESKTOP.md) for automatic updates, signing, and release instructions.
+Desktop installers for Windows, macOS, and Linux are published at [Inklura PDF Releases](https://github.com/benfavre/caviard/releases). Run `npm run desktop` for development or `npm run desktop:dist` to package. See [DESKTOP.md](DESKTOP.md) for automatic updates, signing, and release instructions.
 
 ## Run
 
@@ -21,14 +21,15 @@ npm run preview
 
 ## Features
 
-- Responsive French interface matching the reference page.
+- Inklura branding, local Inter fonts, and a responsive French interface.
+- Per-document undo/redo, direct page navigation, page-level region counts, fit-to-width zoom, and unsaved-document protection.
 - Select or drag in one or more PDFs, switch documents and navigate pages.
 - Draw black redaction rectangles, remove individual rectangles, undo (Ctrl/Cmd+Z), clear selections, and zoom.
 - Export creates entirely new PDFs from the redacted page images. Original text, annotations, attachments, layers, and source metadata are not copied.
 - PDFs are processed in the browser; there is no upload endpoint or backend. Fonts, scripts, and the PDF worker are served locally.
 - Output is rasterized at up to 144 DPI, with a canvas size limit for unusually large pages. Exported text cannot be selected or searched. Password-protected PDFs must be unlocked before importing.
 
-The other PDF tools, additional languages, and footer links lead to the original external websites; this project implements the redaction page only. Multiple documents produce separate downloads; browsers may request permission for multiple downloads.
+Built-in help explains the workflow, keyboard shortcuts, and local processing. Multiple documents produce separate downloads; browsers may request permission for multiple downloads.
 
 ## Examples and tests
 
@@ -50,4 +51,4 @@ Poppler and DejaVu Sans are also needed for the independent audit and preview ge
 
 The browser tests run in an isolated Chromium instance and exercise actual uploads, drawing, touch, and downloads. They do not depend on the ChatGPT extension's file-picker permission.
 
-Reference branding and logo belong to pdfux. This is a reproduction, not an affiliated service.
+The Inklura icon and visual identity come from [inklura.fr](https://www.inklura.fr/). Internal application identifiers and the GitHub release repository remain stable so existing Caviard installations can receive the rebrand through automatic updates.

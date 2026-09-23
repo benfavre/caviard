@@ -10,23 +10,38 @@ async function upload(page, names = ["invoice-01.pdf"]) {
 }
 async function draw(page, start = [0.15, 0.15], end = [0.8, 0.3]) {
   const layer = page.locator(".drawing-layer");
-  await layer.scrollIntoViewIfNeeded();
+  const workspace = page.locator(".workspace");
+  await workspace.scrollIntoViewIfNeeded();
+  await workspace.evaluate((element) => {
+    element.scrollTop = 0;
+  });
   const box = await layer.boundingBox();
+  const viewport = await workspace.boundingBox();
+  // A very long receipt can exceed the entire viewport. Draw in the visible
+  // portion, as a user would, instead of starting outside the scroll container.
+  const availableHeight = Math.max(
+    10,
+    viewport.y + viewport.height - box.y - 18,
+  );
+  const drawHeight =
+    box.height * Math.max(start[1], end[1]) > availableHeight
+      ? availableHeight
+      : box.height;
   await page.mouse.move(
     box.x + box.width * start[0],
-    box.y + box.height * start[1],
+    box.y + drawHeight * start[1],
   );
   await page.mouse.down();
   await page.mouse.move(
     box.x + box.width * end[0],
-    box.y + box.height * end[1],
+    box.y + drawHeight * end[1],
     { steps: 12 },
   );
   await page.mouse.up();
 }
 async function save(page, testInfo) {
   const pending = page.waitForEvent("download");
-  await page.getByRole("button", { name: /Appliquer et télécharger/ }).click();
+  await page.getByRole("button", { name: /Exporter/ }).click();
   const download = await pending;
   expect(await download.failure()).toBeNull();
   const file = testInfo.outputPath(download.suggestedFilename());
@@ -57,9 +72,7 @@ test("complete file picker → draw → download; exported pixels and text are c
     .click();
   await (await chooser).setFiles(fixture("invoice-01.pdf"));
   await expect(page.locator(".drawing-layer")).toBeVisible();
-  await expect(
-    page.getByRole("button", { name: /Appliquer et télécharger/ }),
-  ).toBeDisabled();
+  await expect(page.getByRole("button", { name: /Exporter/ })).toBeDisabled();
   await draw(page);
   await expect(page.locator(markSelector)).toHaveCount(1);
   const file = await save(page, info);
@@ -106,9 +119,7 @@ test("reverse drag, undo button and shortcut, remove individual region, clear al
   await draw(page);
   await page.getByRole("button", { name: "Tout effacer", exact: true }).click();
   await expect(page.locator(markSelector)).toHaveCount(0);
-  await expect(
-    page.getByRole("button", { name: /Appliquer et télécharger/ }),
-  ).toBeDisabled();
+  await expect(page.getByRole("button", { name: /Exporter/ })).toBeDisabled();
 });
 
 test("page navigation preserves separate page selections", async ({
@@ -145,12 +156,18 @@ test("switch and close documents without losing other selections; reimport same 
   await page
     .getByRole("button", { name: "Fermer ce document", exact: true })
     .click();
+  await page
+    .getByRole("button", { name: "Fermer sans exporter", exact: true })
+    .click();
   await expect(page.getByLabel("Document actif")).toContainText(
     "contract-02.pdf",
   );
   await expect(page.locator(markSelector)).toHaveCount(1);
   await page
     .getByRole("button", { name: "Fermer ce document", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Fermer sans exporter", exact: true })
     .click();
   await expect(
     page.getByRole("button", { name: "Choisir des fichiers", exact: true }),
@@ -260,7 +277,7 @@ test("multi-file export emits a separate valid PDF for each document", async ({
   await draw(page);
   const downloads = [];
   page.on("download", (d) => downloads.push(d));
-  await page.getByRole("button", { name: /Appliquer et télécharger/ }).click();
+  await page.getByRole("button", { name: /Exporter/ }).click();
   await expect.poll(() => downloads.length).toBe(2);
   expect(downloads.map((d) => d.suggestedFilename())).toEqual([
     "invoice-01-caviarde.pdf",
@@ -310,18 +327,33 @@ test("mobile layout has no horizontal overflow and supports touch rectangles", a
   });
 });
 
-test("tools and language dialogs open and close by keyboard", async ({
+test("Inklura branding, useful help, and local privacy information", async ({
   page,
-}) => {
-  await page
-    .getByRole("button", { name: "TOUS LES OUTILS PDF", exact: true })
-    .click();
+}, info) => {
+  await expect(page).toHaveTitle("Inklura PDF — Caviardage");
+  await page.screenshot({
+    path: info.outputPath("inklura-welcome.png"),
+    fullPage: true,
+  });
+  await expect(
+    page.getByRole("link", { name: "Inklura, accueil", exact: true }),
+  ).toBeVisible();
+  expect(
+    await page.locator('a[href*="pdfux"], a[href*="buymeacoffee"]').count(),
+  ).toBe(0);
+  await expect(page.locator("body")).not.toContainText(
+    /Soutenez|Café|TOUS LES OUTILS PDF/,
+  );
+  await page.getByRole("button", { name: "Aide", exact: true }).click();
   await expect(page.getByRole("dialog")).toBeVisible();
+  await expect(page.getByRole("dialog")).toContainText("Rétablir");
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog")).toBeHidden();
-  await page.getByRole("button", { name: "Français", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Confidentialité", exact: true })
+    .click();
   await expect(
-    page.getByRole("heading", { name: "Choisir une langue" }),
+    page.getByRole("heading", { name: "Vos documents restent ici." }),
   ).toBeVisible();
   await page.keyboard.press("Escape");
 });
@@ -367,7 +399,7 @@ test("export failure is visible and can be retried without losing selections", a
       throw new Error("Intentional encoding failure");
     };
   });
-  await page.getByRole("button", { name: /Appliquer et télécharger/ }).click();
+  await page.getByRole("button", { name: /Exporter/ }).click();
   await expect(page.getByRole("alert")).toContainText(
     "n’a pas pu être exporté",
   );
@@ -429,4 +461,72 @@ test("closing or switching is disabled while additional files are being read", a
 
 test.afterEach(async ({ page }) => {
   expect(pageErrors.get(page)).toEqual([]);
+});
+
+test("redo restores cleared and individually deleted regions; closing asks before discarding", async ({
+  page,
+}) => {
+  await upload(page);
+  await draw(page);
+  await page.getByRole("button", { name: "Tout effacer", exact: true }).click();
+  await page.getByRole("button", { name: "Annuler", exact: true }).click();
+  await expect(page.locator(markSelector)).toHaveCount(1);
+  await page.keyboard.press("Control+Shift+z");
+  await expect(page.locator(markSelector)).toHaveCount(0);
+  await page.keyboard.press("Control+z");
+  await expect(page.locator(markSelector)).toHaveCount(1);
+  await page.locator(markSelector).hover();
+  await page
+    .getByRole("button", { name: "Supprimer cette zone", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Annuler", exact: true }).click();
+  await expect(page.locator(markSelector)).toHaveCount(1);
+  await page
+    .getByRole("button", { name: "Fermer ce document", exact: true })
+    .click();
+  await expect(page.getByRole("dialog")).toContainText("Fermer sans exporter");
+  await page
+    .getByRole("button", { name: "Continuer à travailler", exact: true })
+    .click();
+  await expect(page.locator(markSelector)).toHaveCount(1);
+});
+
+test("page navigation, zone counts, fit width and export status stay consistent", async ({
+  page,
+}, info) => {
+  await upload(page, ["mixed-rotation-03.pdf"]);
+  await draw(page);
+  await expect(
+    page.getByRole("button", {
+      name: "Afficher la page 1, 1 zone",
+      exact: true,
+    }),
+  ).toHaveAttribute("aria-current", "page");
+  await page.getByLabel("Aller à la page").fill("3");
+  await page.getByLabel("Aller à la page").press("Enter");
+  await expect(page.getByLabel("Aller à la page")).toHaveValue("3");
+  await expect(page.locator(".drawing-layer")).toBeVisible();
+  await draw(page);
+  await page
+    .getByRole("button", { name: "Afficher la page 1, 1 zone", exact: true })
+    .click();
+  await expect(page.locator(markSelector)).toHaveCount(1);
+  await page
+    .getByRole("button", { name: "Augmenter le zoom", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Ajuster à la largeur", exact: true })
+    .click();
+  await expect(page.locator(".zoom")).toContainText("100 %");
+  await expect(page.locator(".edit-status")).toContainText(
+    "Modifications à exporter",
+  );
+  await save(page, info);
+  await expect(page.locator(".edit-status")).toContainText(
+    "Modifications exportées",
+  );
+  await page.screenshot({
+    path: info.outputPath("inklura-editor.png"),
+    fullPage: true,
+  });
 });
