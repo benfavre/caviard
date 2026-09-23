@@ -19,7 +19,11 @@ module.exports = {
   ],
   asar: true,
   npmRebuild: false,
-  extraMetadata: { macAutoUpdates: !!process.env.CSC_LINK },
+  extraMetadata: {
+    macAutoUpdates: !!process.env.CSC_LINK,
+    // Account rollout is explicit. Existing released installers remain evaluation builds.
+    ...(process.env.INKLURA_PDF_ACCOUNT_API ? { accountApi: process.env.INKLURA_PDF_ACCOUNT_API } : {}),
+  },
   artifactName: "Inklura-PDF-${version}-${os}-${arch}.${ext}",
   publish: [
     {

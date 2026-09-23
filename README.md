@@ -4,7 +4,7 @@
 
 <h1 align="center">Inklura PDF</h1>
 
-<p align="center">Private PDF redaction, with an optional local AI assistant.<br />Windows · macOS · Linux · Free · No account</p>
+<p align="center">Private PDF redaction, with an optional local AI assistant.<br />Windows · macOS · Linux · Free evaluation</p>
 
 <p align="center">
   <a href="https://outils.inklura.fr/inklura-pdf"><strong>Download Inklura PDF</strong></a> ·
@@ -21,6 +21,10 @@
 </p>
 
 Inklura PDF helps you remove sensitive information before sharing a document. Draw redaction rectangles yourself, review suggestions from a local model, or describe the information you want to mask. Your PDFs and instructions stay on your device.
+
+## Evaluation and commercial offers
+
+The current evaluation build is available without an account. Inklura account integration, document packs valid for one year, and monthly business subscriptions are being prepared. Billing and export quotas are **not active in the released version**. Prices and commercial terms will be published before activation. This evaluation is not a promise of unlimited free commercial use.
 
 ## Download and start
 
@@ -60,7 +64,7 @@ The assistant can miss information or select an entire text line. Review every p
 
 ## What happens to your PDF
 
-- **Local processing:** no document uploads, cloud inference or telemetry. Model downloads and application update checks use the network.
+- **Local processing:** no document uploads, cloud inference or telemetry. Model downloads and application update checks use the network. The future account-enabled edition also uses the network for login, credits and billing, without sending document content.
 - **A new exported file:** pages are rebuilt from redacted images; source text, annotations, forms, attachments, layers and metadata are not copied.
 - **An intact original:** undo/redo, page navigation, region counts, zoom and unsaved-document protection help you review your work.
 - **An image-based result:** exported text cannot be selected or searched. Output uses up to 144 DPI, with a canvas size limit for unusually large pages. Password-protected PDFs must be unlocked before import.
@@ -121,3 +125,7 @@ Found a problem? [Report an issue](https://github.com/benfavre/caviard/issues/ne
 | ACTIV communication | [Web, print and digital communication](https://www.activ-communication.com/) |
 
 The Inklura icon and visual identity come from [Inklura](https://www.inklura.fr/). Internal application identifiers and the GitHub release repository remain stable so existing Caviard installations can receive updates.
+
+## Account and billing integration
+
+The first implementation is available in source, with purchases disabled. It includes Inklura device login, account-scoped PDF credits, crash recovery for exports and signed Stripe webhook handling. This service is not deployed and does not change the published 1.1.0 evaluation installers. [Proposed offers and competitor comparison (French)](COMMERCIAL.md) · [Service setup and remaining rollout work](server/README.md).

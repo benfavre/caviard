@@ -15,16 +15,16 @@ function asset(suffix: string) {
 
 export default function Page(): any {
   return <main className="ipdf">
-    <link rel="stylesheet" href="/inklura-pdf/page.css?v=1.1.0-2" />
+    <link rel="stylesheet" href="/inklura-pdf/page.css?v=1.1.0-3" />
     <div className="ipdf-wrap">
       <a className="ipdf-back" href="/">← Tous les outils Inklura</a>
       <section className="ipdf-hero" aria-labelledby="ipdf-title">
         <div>
-          <div className="ipdf-eyebrow"><span /> INKLURA PDF · APPLICATION GRATUITE</div>
+          <div className="ipdf-eyebrow"><span /> INKLURA PDF · ESSAI GRATUIT</div>
           <h1 id="ipdf-title">Partagez l’essentiel.<br /><em>Gardez le reste<br />pour vous.</em></h1>
           <p className="ipdf-lead">Caviardez vos PDF sur votre ordinateur. Masquez les informations sensibles à la main, ou préparez vos caviardages avec une IA qui travaille en local.</p>
           <div className="ipdf-actions"><a className="ipdf-primary" href="#telecharger">Télécharger Inklura PDF <span aria-hidden="true">↓</span></a><a className="ipdf-textlink" href="#assistant">Découvrir l’assistant →</a></div>
-          <p className="ipdf-meta">Windows, macOS et Linux · Sans compte · Version {release.version}</p>
+          <p className="ipdf-meta">Windows, macOS et Linux · Version d’évaluation {release.version}</p>
         </div>
         <div className="ipdf-demo" aria-label="Illustration du caviardage d’un document fictif">
           <div className="ipdf-demo-bar"><span className="ipdf-demo-dot" /> contrat-client.pdf <span>Sur votre appareil</span></div>
@@ -45,7 +45,7 @@ export default function Page(): any {
 
       <section className="ipdf-start" aria-labelledby="start-title">
         <div className="ipdf-section-head"><div><p className="ipdf-eyebrow">VOTRE PREMIER PDF, EN TROIS ÉTAPES</p><h2 id="start-title">Importez. Vérifiez. Partagez.</h2></div><a className="ipdf-textlink" href="https://github.com/benfavre/caviard/blob/main/GUIDE.fr.md">Lire le guide de démarrage →</a></div>
-        <ol><li><strong>Importez vos documents</strong><span>Un PDF ou plusieurs fichiers. Aucun compte à créer, aucun document à envoyer.</span></li><li><strong>Choisissez les zones à masquer</strong><span>Dessinez vos rectangles ou utilisez l’assistant. Relisez chaque page et ajustez vos zones.</span></li><li><strong>Exportez une nouvelle copie</strong><span>Enregistrez le résultat, vérifiez-le puis partagez-le. Votre original reste intact.</span></li></ol>
+        <ol><li><strong>Importez vos documents</strong><span>Un PDF ou plusieurs fichiers. Vos documents restent sur votre ordinateur.</span></li><li><strong>Choisissez les zones à masquer</strong><span>Dessinez vos rectangles ou utilisez l’assistant. Relisez chaque page et ajustez vos zones.</span></li><li><strong>Exportez une nouvelle copie</strong><span>Enregistrez le résultat, vérifiez-le puis partagez-le. Votre original reste intact.</span></li></ol>
       </section>
 
       <section className="ipdf-section" id="assistant" aria-labelledby="assistant-title">
@@ -63,8 +63,10 @@ export default function Page(): any {
 
       <section className="ipdf-private" aria-labelledby="privacy-title"><div><p className="ipdf-eyebrow">LA CONFIDENTIALITÉ, EN PRATIQUE</p><h2 id="privacy-title">Votre PDF ne part<br />sur aucun serveur.</h2></div><div><p>Le caviardage, l’analyse et l’OCR s’exécutent sur votre ordinateur. Le mode manuel fonctionne sans télécharger de modèles.</p><p>Pour activer l’assistant, l’application télécharge une fois environ <strong>1,18 Go de modèles</strong>. L’analyse fonctionne ensuite hors ligne. Les téléchargements de modèles et les recherches de mises à jour nécessitent Internet.</p><p>À l’export, Inklura PDF crée un <strong>nouveau PDF composé d’images</strong> : le contenu des zones choisies est supprimé, sans conserver le texte PDF, les annotations ou les pièces jointes de l’original. Le texte exporté n’est plus sélectionnable. Votre fichier original reste intact.</p></div></section>
 
+      <section className="ipdf-offers" id="offres" aria-labelledby="offers-title"><div className="ipdf-section-head"><div><p className="ipdf-eyebrow">ESSAYER AUJOURD’HUI · CHOISIR SON OFFRE DEMAIN</p><h2 id="offers-title">Un essai pour découvrir.<br />Des offres pour votre activité.</h2></div><p>Les offres professionnelles Inklura sont en préparation. Aucun achat n’est proposé pour le moment.</p></div><div className="ipdf-features"><article><h3>Essai gratuit</h3><p>Découvrez le caviardage et l’assistant local avec la version d’évaluation disponible ci-dessous.</p></article><article><h3>Offre Volume · à venir</h3><p>Des packs de 100, 500 ou 1 000 PDF valables un an, rattachés à un compte Inklura, pour les besoins ponctuels.</p></article><article><h3>Offre Entreprise · à venir</h3><p>20, 100 ou 500 PDF par mois et par compte Inklura pour les usages réguliers.</p></article></div><p className="ipdf-small">La version actuelle ne comporte pas encore de contrôle de quota. La future offre prévoit 20 PDF d’essai par compte, puis un crédit par export réussi. Les tarifs seront précisés avant activation ; les PDF resteront locaux et le suivi des crédits nécessitera Internet.</p></section>
+
       <section className="ipdf-section" id="telecharger" aria-labelledby="download-title">
-        <div className="ipdf-section-head"><div><p className="ipdf-eyebrow">PRÊT À COMMENCER ?</p><h2 id="download-title">Choisissez votre ordinateur.</h2></div><p>Inklura PDF {release.version} · Gratuit, sans inscription.<br />Installateurs hébergés sur outils.inklura.fr.</p></div>
+        <div className="ipdf-section-head"><div><p className="ipdf-eyebrow">PRÊT À COMMENCER ?</p><h2 id="download-title">Choisissez votre ordinateur.</h2></div><p>Inklura PDF {release.version} · Essai gratuit.<br />Installateurs hébergés sur outils.inklura.fr.</p></div>
         <div className="ipdf-downloads">{platforms.map((platform) => {
           const file = asset(platform.suffix);
           return <article id={platform.id}><span className="ipdf-os" aria-hidden="true">{platform.mark}</span><h3>{platform.label}</h3><p>{platform.detail}</p><a className="ipdf-primary" href={file.url} download={file.name} aria-label={"Télécharger Inklura PDF pour " + platform.label}>Télécharger <span aria-hidden="true">↓</span></a><small>{platform.format} · {Math.round(file.size / 1000000)} Mo</small></article>;
@@ -80,7 +82,7 @@ export default function Page(): any {
         <details><summary>Est-ce que cela fonctionne sur les PDF scannés ?</summary><p>Oui, le caviardage manuel fonctionne sur les scans. L’assistant propose aussi un OCR local français et anglais, avec des essais de rotation pour les scans de travers. Sa précision dépend de la lisibilité du document.</p></details>
         <details><summary>Quel fichier choisir pour mon Mac ?</summary><p>Ouvrez le menu Apple, puis « À propos de ce Mac ». Une puce Apple (M1, M2, M3…) correspond au téléchargement Apple Silicon. Un processeur Intel correspond au téléchargement Mac Intel.</p></details>
         <details><summary>Comment obtenir de l’aide ou signaler un problème ?</summary><p>Consultez le <a href="https://github.com/benfavre/caviard/blob/main/GUIDE.fr.md">guide de démarrage</a> ou <a href="https://github.com/benfavre/caviard/issues/new/choose">ouvrez un signalement sur GitHub</a> avec votre système, la version de l’application et les étapes pour reproduire le problème. Utilisez un PDF fictif : les signalements sont publics.</p></details>
-        <details><summary>Faut-il créer un compte Inklura ?</summary><p>Non. Le téléchargement et l’utilisation d’Inklura PDF sont gratuits et ne nécessitent aucun compte.</p></details>
+        <details><summary>Faut-il créer un compte Inklura ?</summary><p>La version d’évaluation actuelle peut être essayée sans compte. Les offres professionnelles seront rattachées à un compte Inklura, avec des packs de documents ou un abonnement. La facturation et les quotas ne sont pas encore activés dans cette version.</p></details>
       </section>
     </div>
   </main>;

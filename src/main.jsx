@@ -25,6 +25,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import "@fontsource-variable/inter";
 import { emptyHistory, redactionHistory } from "./history.mjs";
+import AccountStatus from "./AccountStatus.jsx";
 import { exportRedacted, normalizeRect } from "./pdf.mjs";
 import "./styles.css";
 import DesktopStatus from "./DesktopStatus.jsx";
@@ -341,6 +342,10 @@ function App() {
         const filename = `${doc.name.replace(/\.pdf$/i, "")}-caviarde.pdf`;
         if (window.caviardDesktop) {
           const result = await window.caviardDesktop.savePdf(filename, bytes);
+          if (result.error) {
+            setError(result.error);
+            return;
+          }
           if (!result.saved) {
             setNotice(
               "Enregistrement annulé. Les caviardages restent disponibles.",
@@ -436,6 +441,7 @@ function App() {
           </button>
         </nav>
       </header>
+      <AccountStatus busy={busy || aiBusy || loading} />
       <main className={current ? "app-main editing" : "app-main"}>
         <section className="intro">
           <div>
@@ -549,7 +555,7 @@ function App() {
                     : "Choisir des fichiers"}
               </button>
               <span className="file-hint">
-                Fichiers PDF · Sans compte · Sans envoi de documents
+                Fichiers PDF · Traitement local · Sans envoi de documents
               </span>
             </section>
             <section
@@ -957,8 +963,8 @@ function App() {
         <div className="dialog-content">
           <p>
             Les PDF sont ouverts et traités sur votre appareil, sans
-            téléversement. Aucun compte n’est nécessaire et l’application ne
-            conserve pas vos documents après sa fermeture.
+            téléversement. Les fichiers que vous exportez restent à
+            l’emplacement que vous choisissez sur votre ordinateur.
           </p>
           <p>
             Chaque export crée un PDF composé uniquement des images caviardées
@@ -970,6 +976,12 @@ function App() {
             La version ordinateur contacte GitHub pour rechercher et télécharger
             les mises à jour de l’application. Vos documents ne sont jamais
             inclus dans ces échanges.
+          </p>
+          <p>
+            Dans les versions avec compte Inklura, la connexion, le suivi des
+            crédits et le paiement utilisent Internet. Aucun PDF, nom de fichier
+            ou contenu du document n’est transmis pour la facturation. Un journal
+            local permet de terminer le décompte des exports après une coupure.
           </p>
           <p>
             Vérifiez visuellement votre copie exportée avant de la partager.

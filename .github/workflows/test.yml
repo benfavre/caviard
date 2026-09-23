@@ -7,6 +7,18 @@ concurrency:
   group: tests-${{ github.ref }}
   cancel-in-progress: true
 jobs:
+  account-service:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+      - run: npm ci --prefix server
+      - run: npm --prefix server test
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 20

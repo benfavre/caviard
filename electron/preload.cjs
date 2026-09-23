@@ -1,5 +1,17 @@
 const { contextBridge, ipcRenderer } = require("electron");
 contextBridge.exposeInMainWorld("caviardDesktop", {
+  accountState: () => ipcRenderer.invoke("account:state"),
+  signIn: () => ipcRenderer.invoke("account:sign-in"),
+  cancelSignIn: () => ipcRenderer.invoke("account:cancel"),
+  signOut: () => ipcRenderer.invoke("account:sign-out"),
+  refreshAccount: () => ipcRenderer.invoke("account:refresh"),
+  checkout: (planId) => ipcRenderer.invoke("account:checkout", planId),
+  billingPortal: () => ipcRenderer.invoke("account:portal"),
+  onAccount: (callback) => {
+    const listener = (_event, state) => callback(state);
+    ipcRenderer.on("account:state", listener);
+    return () => ipcRenderer.removeListener("account:state", listener);
+  },
   models: () => ipcRenderer.invoke("ai:models"),
   installModels: () => ipcRenderer.invoke("ai:install"),
   cancelModels: () => ipcRenderer.invoke("ai:cancel"),

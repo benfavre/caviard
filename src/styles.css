@@ -1497,3 +1497,5 @@ kbd {
 .instruction-plan .category-options {
   margin-top: 12px;
 }
+
+.account-status{margin:18px 28px;padding:16px 20px;border:1px solid #dce5f4;border-radius:12px;background:#f5f8ff;font-size:13px;color:#254369}.account-status-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.account-status-row>span{flex:1;min-width:180px}.account-status button{padding:8px 12px;border:1px solid #dce5f4;border-radius:6px;background:#fff;color:#16428a;font:inherit;cursor:pointer}.account-status button.primary{background:#146bff;color:#fff}.account-status button:disabled{opacity:.5;cursor:default}.account-status p{margin:12px 0 0;line-height:1.6}.account-offers>div{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:16px 0}.account-offers article{display:flex;flex-direction:column;gap:10px;padding:14px;background:white;border:1px solid #dce5f4;border-radius:8px}.account-offers small{line-height:1.6}.account-status button:focus-visible{outline:3px solid #146bff;outline-offset:2px}@media(max-width:650px){.account-status{margin:12px;padding:14px}.account-offers>div{grid-template-columns:1fr 1fr}.account-status-row>strong{width:100%}}

@@ -12,6 +12,8 @@ import { readFile, writeFile, rename, unlink } from "node:fs/promises";
 import { existsSync, createReadStream } from "node:fs";
 import { Readable } from "node:stream";
 import { ModelStore } from "./ai-models.mjs";
+import { AccountController } from "./account.mjs";
+import { AccountExports } from "./account-export.mjs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
@@ -41,6 +43,8 @@ protocol.registerSchemesAsPrivileged([
 let window,
   controller,
   modelStore,
+  accountController,
+  accountExports,
   allowClose = false,
   closingPrompt = false;
 let documentState = { dirty: false, busy: false };
@@ -206,6 +210,31 @@ app
     const metadata = JSON.parse(
       await readFile(path.join(app.getAppPath(), "package.json"), "utf8"),
     );
+    accountController = new AccountController({
+      apiUrl: (!app.isPackaged && process.env.INKLURA_PDF_ACCOUNT_API) || metadata.accountApi,
+      development: !app.isPackaged,
+      openExternal: (url) => shell.openExternal(url),
+    });
+    accountExports = new AccountExports({ directory: path.join(app.getPath("userData"), "account-exports"), account: accountController });
+    accountController.on("state", (state) => {
+      if (window && !window.isDestroyed()) window.webContents.send("account:state", state);
+    });
+    ipcMain.handle("account:state", (event) => { trusted(event); return accountController.snapshot(); });
+    ipcMain.handle("account:sign-in", (event) => { trusted(event); return accountController.signIn(); });
+    ipcMain.handle("account:cancel", (event) => { trusted(event); return accountController.cancel(); });
+    ipcMain.handle("account:sign-out", (event) => {
+      trusted(event);
+      if (documentState.busy) throw new Error("Attendez la fin de l’export pour vous déconnecter.");
+      return accountController.logout();
+    });
+    ipcMain.handle("account:refresh", async (event) => {
+      trusted(event);
+      await accountController.refresh();
+      await accountExports.reconcile();
+      return accountController.refresh();
+    });
+    ipcMain.handle("account:checkout", (event, planId) => { trusted(event); return accountController.checkout(planId); });
+    ipcMain.handle("account:portal", (event) => { trusted(event); return accountController.portal(); });
     const signedMac =
       process.platform !== "darwin" || metadata.macAutoUpdates === true;
     const supported =
@@ -257,6 +286,10 @@ app
         properties: ["showOverwriteConfirmation", "createDirectory"],
       });
       if (canceled || !filePath) return { saved: false };
+      if (accountController.apiUrl) {
+        try { return await accountExports.save(filePath, bytes); }
+        catch (error) { return { saved: false, error: error.message || "Le compte Inklura est temporairement indisponible." }; }
+      }
       const temporary = path.join(
         path.dirname(filePath),
         `.caviard-${randomUUID()}.tmp`,
@@ -330,6 +363,7 @@ app
     );
     await createWindow();
     controller.start();
+    void accountController.initialize();
     app.on("activate", () => {
       if (BrowserWindow.getAllWindows().length === 0) createWindow();
     });
@@ -341,4 +375,4 @@ app
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") app.quit();
 });
-app.on("will-quit", () => controller?.dispose());
+app.on("will-quit", () => { controller?.dispose(); accountController?.dispose(); });

@@ -2,7 +2,7 @@
 
 [Télécharger l’application](https://outils.inklura.fr/inklura-pdf#telecharger) · [Essayer avec des PDF fictifs](https://outils.inklura.fr/inklura-pdf#exemples)
 
-Inklura PDF permet de caviarder des documents sur votre ordinateur, sans compte. L’assistant IA est facultatif : vous pouvez commencer immédiatement en dessinant les zones à masquer.
+Inklura PDF permet de caviarder des documents sur votre ordinateur. La version d’évaluation actuelle peut être essayée sans compte ; les futures offres professionnelles seront rattachées à un compte Inklura. Les tarifs, la facturation et les quotas ne sont pas encore activés. L’assistant IA est facultatif : vous pouvez commencer immédiatement en dessinant les zones à masquer.
 
 ## Choisir le bon téléchargement
 
@@ -57,7 +57,7 @@ L’OCR français/anglais permet d’analyser les scans et les PDF mêlant texte
 
 **Comment mettre l’application à jour ?** Windows et Linux disposent des mises à jour intégrées. Exportez vos modifications avant de redémarrer pour installer la mise à jour. Sur macOS, téléchargez la nouvelle version depuis la [page Inklura PDF](https://outils.inklura.fr/inklura-pdf).
 
-**Que reçoit un serveur ?** Aucun PDF, texte extrait ou instruction n’est envoyé. Les téléchargements de modèles et les vérifications de mises à jour utilisent Internet. Le traitement s’exécute sur votre appareil, sans télémétrie. [Détails techniques](AI.md).
+**Que reçoit un serveur ?** Aucun PDF, texte extrait ou instruction n’est envoyé. Les téléchargements de modèles et les vérifications de mises à jour utilisent Internet. Le traitement s’exécute sur votre appareil, sans télémétrie. La future version avec compte utilisera aussi Internet pour la connexion, le solde et la facturation, sans envoyer le contenu des documents. [Détails techniques](AI.md).
 
 ## Signaler un problème
 

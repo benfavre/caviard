@@ -15,6 +15,7 @@ SITE="$1"; STAGE="$2"; VERSION="$3"
 BACKUP="$HOME/bext-site-backups/outils-inklura-pdf-$(date -u +%Y%m%dT%H%M%SZ)"
 mkdir -p "$BACKUP"
 cp -a "$SITE/src/app/layout.tsx" "$BACKUP/layout.tsx"
+cp -a "$SITE/src/app/page.tsx" "$BACKUP/home-page.tsx"
 cp -a "$SITE/src/lib/tools.ts" "$BACKUP/tools.ts"
 if test -f "$SITE/.gitignore"; then cp -a "$SITE/.gitignore" "$BACKUP/.gitignore"; fi
 # Back up only our owned paths, without overwriting unrelated work.
@@ -25,6 +26,7 @@ python3 "$STAGE/mirror-release.py" "$VERSION" "$SITE"
 # Validate integration against a copy before publishing the page.
 mkdir -p "$STAGE/check/src/app" "$STAGE/check/src/lib"
 cp "$SITE/src/app/layout.tsx" "$STAGE/check/src/app/"
+cp "$SITE/src/app/page.tsx" "$STAGE/check/src/app/"
 cp "$SITE/src/lib/tools.ts" "$STAGE/check/src/lib/"
 python3 "$STAGE/integrate-site.py" "$STAGE/check"
 # Run the page in the PRISM runtime, from a staging site with matching JSX configuration.

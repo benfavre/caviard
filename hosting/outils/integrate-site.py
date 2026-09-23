@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Add the download page to the existing tools catalog and scope its metadata."""
 from pathlib import Path
+import re
 import sys
 
 site = Path(sys.argv[1])
@@ -32,8 +33,21 @@ if 'id: "inklura-pdf"' not in registry:
         raise SystemExit('Tools registry changed; review before integrating')
     registry = registry.replace(marker, marker + '''
   { id: "inklura-pdf", title: "Inklura PDF · Caviardage", description: "Application gratuite à télécharger : caviardez vos PDF avec un assistant IA et un OCR locaux, sur Windows, macOS et Linux", icon: "shield", category: "PDF", difficulty: "Facile", tags: ["caviarder", "caviardage", "masquer", "anonymiser", "confidentialité", "IA", "OCR", "télécharger", "Windows", "macOS", "Linux"], ported: true },''')
+# Upgrade metadata/catalog from the earlier unlimited-free presentation.
+source, title_count = re.subn(r'  const pdfTitle = "[^"\n]*";', '  const pdfTitle = "Inklura PDF — caviardage et IA locale | Essai gratuit";', source)
+source, desc_count = re.subn(r'  const pdfDescription = "[^"\n]*";', '  const pdfDescription = "Essayez Inklura PDF sur Windows, macOS et Linux. Caviardage, assistant IA et OCR locaux. Offres Volume et Entreprise Inklura en préparation.";', source)
+if title_count != 1 or desc_count != 1:
+    raise SystemExit('Download metadata changed; review integration')
+footer = '© Inklura · outils.inklura.fr — Hébergé en France 🇫🇷 · 100% gratuit · Sans inscription'
+if footer in source and '{isPdfDownload ? "© Inklura' not in source:
+    source = source.replace(footer, '{isPdfDownload ? "© Inklura · outils.inklura.fr — Essai gratuit · Offres professionnelles en préparation" : "' + footer + '"}')
+registry = registry.replace('Application gratuite à télécharger : caviardez vos PDF avec un assistant IA et un OCR locaux, sur Windows, macOS et Linux', 'Essai gratuit : caviardez vos PDF avec un assistant IA et un OCR locaux. Offres professionnelles Inklura en préparation')
+home = site / 'src/app/page.tsx'
+home_source = home.read_text()
+home_source = home_source.replace('<span className="pdot"></span>Gratuit</span>', '<span className="pdot"></span>{t.id === "inklura-pdf" ? "Essai gratuit" : "Gratuit"}</span>')
+home_source = home_source.replace('{available.length} outils gratuits · sans inscription', '{available.filter((t) => t.id !== "inklura-pdf").length} outils gratuits · sans inscription')
 # Prepare all replacements before writing either file; avoid partial integration on drift.
-for path, content in ((layout, source), (tools, registry)):
+for path, content in ((layout, source), (tools, registry), (home, home_source)):
     if path.read_text() != content:
         tmp = path.with_suffix(path.suffix + '.tmp')
         tmp.write_text(content)
