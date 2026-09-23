@@ -36,9 +36,9 @@ export function createApi({ ledger, payments, authenticate, clientId, publicUrl 
       let data;
       try { data = JSON.parse((await readBody(req, 4096)).toString()); } catch (error) { if (error instanceof BillingError) throw error; throw new BillingError('invalid_json'); }
       if (!data || typeof data !== 'object' || Array.isArray(data)) throw new BillingError('invalid_request');
-      const keys = path === '/v1/checkout' ? ['planId', 'operation'] : path === '/v1/portal' ? [] : ['operation'];
+      const keys = path === '/v1/checkout' ? ['planId', 'operation', 'billing'] : path === '/v1/portal' ? [] : ['operation'];
       if (Object.keys(data).some(key => !keys.includes(key))) throw new BillingError('unexpected_fields');
-      if (path === '/v1/checkout') return send(res, 200, await payments.checkout(account.id, data.planId, data.operation));
+      if (path === '/v1/checkout') return send(res, 200, await payments.checkout(account.id, data.planId, data.operation, data.billing));
       if (path === '/v1/portal') return send(res, 200, await payments.portal(account.id));
       const action = path.split('/').at(-1);
       return send(res, 200, action === 'reserve' ? ledger.reserve(account.id, data.operation) : ledger.transition(account.id, data.operation, action));

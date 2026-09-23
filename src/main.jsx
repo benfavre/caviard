@@ -73,7 +73,7 @@ function Page({
       const natural = page.getViewport({ scale: 1 });
       setSize({ width: natural.width, height: natural.height });
       const viewport = page.getViewport({
-        scale: Math.min(1.6, 4096 / Math.max(natural.width, natural.height)),
+        scale: Math.min(2.5, 4096 / Math.max(natural.width, natural.height)),
       });
       canvas.current.width = Math.ceil(viewport.width);
       canvas.current.height = Math.ceil(viewport.height);
@@ -111,7 +111,7 @@ function Page({
     <div
       className="page-wrap"
       style={{
-        width: `calc(min(100%, ${Math.min(size.width, 850)}px) * ${zoom})`,
+        width: `${zoom * 100}%`,
       }}
     >
       <div
@@ -453,15 +453,6 @@ function App() {
               Partagez l’essentiel. Gardez les informations sensibles pour vous.
             </p>
           </div>
-          {current && (
-            <span className={`edit-status ${dirty ? "unsaved" : ""}`}>
-              {dirty
-                ? "Modifications à exporter"
-                : count
-                  ? "Modifications exportées"
-                  : "Prêt à caviarder"}
-            </span>
-          )}
         </section>
         <ol className="steps" aria-label="Étapes du caviardage">
           {["Importer", "Caviarder", "Exporter"].map((label, index) => (
@@ -621,6 +612,13 @@ function App() {
                     : `${current.pdf.numPages} page${current.pdf.numPages > 1 ? "s" : ""}`}
                 </span>
               </div>
+              <span className={`edit-status ${dirty ? "unsaved" : ""}`}>
+                {dirty
+                  ? "Modifications à exporter"
+                  : count
+                    ? "Modifications exportées"
+                    : "Prêt à caviarder"}
+              </span>
               <div className="actions">
                 <button
                   disabled={busy || aiBusy || loading}

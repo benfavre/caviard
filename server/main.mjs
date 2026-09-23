@@ -20,6 +20,7 @@ const stripe = key ? new Stripe(key, { maxNetworkRetries: 2, timeout: 15000 }) :
 const priceIds = Object.fromEntries(DOCUMENT_PLANS.map(plan => [plan.id, env['INKLURA_PDF_PRICE_' + plan.id.replaceAll('-', '_').toUpperCase()]]));
 const payments = new Payments({ ledger, stripe, priceIds, webhookSecret: env.STRIPE_WEBHOOK_SECRET,
   portalConfiguration: env.INKLURA_PDF_PORTAL_CONFIGURATION,
+  franceTaxRate: env.INKLURA_PDF_FRANCE_TAX_RATE,
   enabled: env.INKLURA_PDF_PAYMENTS_ENABLED === 'true', live: stripeLiveMode(key, env.INKLURA_PDF_STRIPE_MODE),
   allowLive: env.INKLURA_PDF_ALLOW_LIVE_PAYMENTS === 'true', publicUrl: publicUrl.replace(/\/$/, '') });
 const server = createApi({ ledger, payments, clientId, publicUrl, authenticate: createAuthenticator({ clientId }) });

@@ -4,7 +4,7 @@
 
 <h1 align="center">Inklura PDF</h1>
 
-<p align="center">Private PDF redaction, with an optional local AI assistant.<br />Windows · macOS · Linux · Free evaluation</p>
+<p align="center">Private PDF redaction, with an optional local AI assistant.<br />Windows · macOS · Linux · 20 trial PDFs per Inklura account</p>
 
 <p align="center">
   <a href="https://outils.inklura.fr/inklura-pdf"><strong>Download Inklura PDF</strong></a> ·
@@ -22,9 +22,11 @@
 
 Inklura PDF helps you remove sensitive information before sharing a document. Draw redaction rectangles yourself, review suggestions from a local model, or describe the information you want to mask. Your PDFs and instructions stay on your device.
 
-## Evaluation and commercial offers
+## Account and pricing
 
-The current evaluation build is available without an account. Inklura account integration, document packs valid for one year, and monthly business subscriptions are being prepared. Billing and export quotas are **not active in the released version**. Prices and commercial terms will be published before activation. This evaluation is not a promise of unlimited free commercial use.
+Version 1.2.0 requires an Inklura account and an Internet connection for exports. Each account receives 20 trial PDFs once. An export consumes one credit only after the file is saved; import, analysis and canceled saves do not consume credits.
+
+Purchases are available in metropolitan France: packs of 100/500/1,000 PDFs valid for 12 months, or subscriptions of 20/100/500 PDFs per month and account. Prices include 20% French VAT; [see all prices](https://outils.inklura.fr/inklura-pdf#offres). Monthly credits do not roll over. Documents and local AI processing stay on the computer. Previous evaluation installers are retired from distribution.
 
 ## Download and start
 
@@ -128,4 +130,4 @@ The Inklura icon and visual identity come from [Inklura](https://www.inklura.fr/
 
 ## Account and billing integration
 
-The first implementation is available in source, with purchases disabled. It includes Inklura device login, account-scoped PDF credits, crash recovery for exports and signed Stripe webhook handling. This service is not deployed and does not change the published 1.1.0 evaluation installers. [Proposed offers and competitor comparison (French)](COMMERCIAL.md) · [Service setup and remaining rollout work](server/README.md).
+Version 1.2.0 connects to the deployed Inklura account and credit service. Purchases use ACTIV communication’s live Stripe account and are restricted to metropolitan France, with 20% VAT. In-app prices show both HT and TTC. The desktop workspace fills the window, keeps export controls visible and opens the local assistant in a separate scrolling side panel. [Offers and competitor comparison (French)](COMMERCIAL.md) · [Service setup](server/README.md).

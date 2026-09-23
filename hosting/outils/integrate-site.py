@@ -35,13 +35,14 @@ if 'id: "inklura-pdf"' not in registry:
   { id: "inklura-pdf", title: "Inklura PDF · Caviardage", description: "Application gratuite à télécharger : caviardez vos PDF avec un assistant IA et un OCR locaux, sur Windows, macOS et Linux", icon: "shield", category: "PDF", difficulty: "Facile", tags: ["caviarder", "caviardage", "masquer", "anonymiser", "confidentialité", "IA", "OCR", "télécharger", "Windows", "macOS", "Linux"], ported: true },''')
 # Upgrade metadata/catalog from the earlier unlimited-free presentation.
 source, title_count = re.subn(r'  const pdfTitle = "[^"\n]*";', '  const pdfTitle = "Inklura PDF — caviardage et IA locale | Essai gratuit";', source)
-source, desc_count = re.subn(r'  const pdfDescription = "[^"\n]*";', '  const pdfDescription = "Essayez Inklura PDF sur Windows, macOS et Linux. Caviardage, assistant IA et OCR locaux. Offres Volume et Entreprise Inklura en préparation.";', source)
+source, desc_count = re.subn(r'  const pdfDescription = "[^"\n]*";', '  const pdfDescription = "Essayez Inklura PDF sur Windows, macOS et Linux. Caviardage, assistant IA et OCR locaux. 20 PDF d’essai par compte, puis packs ou abonnement. Achats en France métropolitaine.";', source)
 if title_count != 1 or desc_count != 1:
     raise SystemExit('Download metadata changed; review integration')
 footer = '© Inklura · outils.inklura.fr — Hébergé en France 🇫🇷 · 100% gratuit · Sans inscription'
 if footer in source and '{isPdfDownload ? "© Inklura' not in source:
     source = source.replace(footer, '{isPdfDownload ? "© Inklura · outils.inklura.fr — Essai gratuit · Offres professionnelles en préparation" : "' + footer + '"}')
-registry = registry.replace('Application gratuite à télécharger : caviardez vos PDF avec un assistant IA et un OCR locaux, sur Windows, macOS et Linux', 'Essai gratuit : caviardez vos PDF avec un assistant IA et un OCR locaux. Offres professionnelles Inklura en préparation')
+registry = registry.replace('Application gratuite à télécharger : caviardez vos PDF avec un assistant IA et un OCR locaux, sur Windows, macOS et Linux', 'Essai gratuit : caviardez vos PDF avec un assistant IA et un OCR locaux. 20 PDF d’essai par compte, puis packs ou abonnement')
+registry = registry.replace('Offres professionnelles Inklura en préparation', '20 PDF d’essai par compte, puis packs ou abonnement')
 home = site / 'src/app/page.tsx'
 home_source = home.read_text()
 home_source = home_source.replace('<span className="pdot"></span>Gratuit</span>', '<span className="pdot"></span>{t.id === "inklura-pdf" ? "Essai gratuit" : "Gratuit"}</span>')

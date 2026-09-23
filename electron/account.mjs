@@ -9,6 +9,8 @@ const messages = {
   accounts_not_configured: 'La connexion Inklura est en préparation.',
   account_under_review: 'La facturation de ce compte nécessite une vérification.',
   subscription_already_exists: 'Un abonnement ou un paiement d’abonnement existe déjà pour ce compte.',
+  france_only: 'Les achats sont réservés à la France métropolitaine pour le moment.',
+  billing_address_required: 'Renseignez votre nom et votre adresse complète de facturation.',
 };
 export function accountApiUrl(value, development = false) {
   if (!value) return null;
@@ -137,11 +139,11 @@ export class AccountController extends EventEmitter {
     }
     return this.publish();
   }
-  async checkout(planId) {
+  async checkout(planId, billing) {
     const plan = this.account?.plans?.find(p => p.id === planId);
     if (!plan?.purchasable || !this.account.paymentsEnabled) throw new Error(messages.purchases_not_enabled);
     if (!this.checkoutOperations.has(planId)) this.checkoutOperations.set(planId, randomUUID());
-    const result = await this.request('/v1/checkout', { planId, operation: this.checkoutOperations.get(planId) });
+    const result = await this.request('/v1/checkout', { planId, operation: this.checkoutOperations.get(planId), billing });
     const url = new URL(result.url);
     if (url.protocol !== 'https:' || url.hostname !== 'checkout.stripe.com' || url.username || url.password) throw new Error('Lien de paiement invalide.');
     await this.openExternal(url.href); this.checkoutOperations.delete(planId);

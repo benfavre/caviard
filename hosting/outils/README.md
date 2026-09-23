@@ -11,7 +11,7 @@ No new server process, account, DNS record or reverse proxy is required.
 From the application repository, with the existing operator SSH access:
 
 ```sh
-hosting/outils/deploy.sh 1.1.0
+hosting/outils/deploy.sh 1.2.0
 node hosting/outils/verify-live.mjs
 ```
 
@@ -36,14 +36,14 @@ The deployment:
 Installers and checksums live at:
 
 ```text
-/downloads/inklura-pdf/1.1.0/Inklura-PDF-1.1.0-win-x64.exe
-/downloads/inklura-pdf/1.1.0/Inklura-PDF-1.1.0-mac-arm64.dmg
-/downloads/inklura-pdf/1.1.0/Inklura-PDF-1.1.0-mac-x64.dmg
-/downloads/inklura-pdf/1.1.0/Inklura-PDF-1.1.0-linux-x86_64.AppImage
-/downloads/inklura-pdf/1.1.0/example-pdfs.zip
-/downloads/inklura-pdf/1.1.0/inklura-ai-example-pdfs.zip
-/downloads/inklura-pdf/1.1.0/SHA256SUMS.txt
-/downloads/inklura-pdf/1.1.0/release.json
+/downloads/inklura-pdf/1.2.0/Inklura-PDF-1.2.0-win-x64.exe
+/downloads/inklura-pdf/1.2.0/Inklura-PDF-1.2.0-mac-arm64.dmg
+/downloads/inklura-pdf/1.2.0/Inklura-PDF-1.2.0-mac-x64.dmg
+/downloads/inklura-pdf/1.2.0/Inklura-PDF-1.2.0-linux-x86_64.AppImage
+/downloads/inklura-pdf/1.2.0/example-pdfs.zip
+/downloads/inklura-pdf/1.2.0/inklura-ai-example-pdfs.zip
+/downloads/inklura-pdf/1.2.0/SHA256SUMS.txt
+/downloads/inklura-pdf/1.2.0/release.json
 ```
 
 The page uses a generated release manifest for links and file sizes. For a later
@@ -58,19 +58,9 @@ Windows and Linux retain their integrated updater. macOS updates remain manual
 until Developer ID signing is configured. The optional AI models are downloaded
 by the application separately; they are not bundled with these installers.
 
-## Account preview releases
+## Stable release and retired downloads
 
-The account-enabled 1.2 beta is a GitHub prerelease. Stable 1.1 users do not
-receive it automatically. Mirror an explicitly published beta separately:
-
-```sh
-python3 mirror-release.py 1.2.0-beta.1 /path/to/outils-inklura-prism --prerelease
-```
-
-This verifies the same installer hashes but writes `inklura-pdf-preview.json`;
-it never replaces the stable release manifest. Purchases remain closed pending
-tax configuration and Checkout verification. The separate account API service
-and its backup procedure are documented in [server/README.md](../../server/README.md).
+The stable 1.2.0 release is the public download and update channel. Retired installers are archived privately outside the web root; historical GitHub releases are drafts. Previously installed copies cannot be revoked remotely.
 
 ## Verification
 

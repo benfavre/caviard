@@ -1,16 +1,17 @@
-# Inklura PDF 1.2.0-beta.1 — préversion avec compte
+# Inklura PDF 1.2.0 — compte et achats en France
 
-Cette préversion permet de tester le compte Inklura et les crédits sur Windows, macOS et Linux. Elle n’est pas diffusée automatiquement aux utilisateurs de la version stable 1.1.0.
+[Télécharger pour Windows, macOS et Linux](https://outils.inklura.fr/inklura-pdf)
 
-- Connexion dans le navigateur, sans mot de passe ni secret intégré à l’application.
-- 20 PDF d’essai par compte, une seule fois. Un crédit est consommé après un export enregistré ; import, analyse et annulation ne consomment rien.
-- Reprise des crédits après interruption, compte commun entre ordinateurs, et affichage des six tarifs HT validés.
-- Les achats restent fermés pendant la finalisation fiscale et la vérification des paiements. À quota épuisé, les documents restent ouverts mais les nouveaux exports sont bloqués dans cette préversion.
-- Les PDF, l’OCR et l’assistant restent locaux. Connexion et crédits nécessitent Internet ; une nouvelle connexion est nécessaire après fermeture de l’application.
+- Interface de bureau sur toute la fenêtre : document adaptable, assistant latéral à défilement indépendant, export toujours accessible et offres dans une fenêtre dédiée.
+- Compte Inklura et 20 PDF d’essai par compte, une seule fois. Un crédit par export enregistré ; import, analyse et annulation gratuits.
+- Packs de 100/500/1 000 PDF valables 12 mois, et abonnements de 20/100/500 PDF par mois et par compte.
+- Achats ouverts en France métropolitaine via Stripe ACTIV communication. Prix HT et TTC, TVA 20 %, adresse française obligatoire. Pas de ventes internationales pour ce lancement.
+- Reprise des crédits après interruption et factures accessibles dans le portail de facturation.
+- Les PDF, l’OCR et l’assistant restent locaux. Connexion Internet nécessaire pour les crédits ; reconnexion au compte après fermeture de l’application.
 
-Connexion réelle, essai, réservation/libération et renouvellement de session vérifiés. Paiements couverts par tests automatisés avec appels Stripe simulés ; aucun paiement réel effectué.
+Cette version stable remplace la préversion et l’ancienne évaluation. Les installations Windows et Linux reçoivent la mise à jour avec confirmation de redémarrage. Sur macOS, téléchargez le nouvel installateur. Les exécutables restent non signés.
 
-Installateurs non signés ; mises à jour macOS manuelles. La version stable d’évaluation reste disponible sur [outils.inklura.fr](https://outils.inklura.fr/inklura-pdf).
+Tests automatisés du service, des crédits, de la TVA, du refus des pays non pris en charge et des applications empaquetées. Pages de paiement Activ réelles et montants TTC vérifiés sans prélèvement ; aucun paiement réel effectué pour ces vérifications.
 
 ## Sponsored by
 

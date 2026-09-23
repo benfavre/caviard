@@ -1,6 +1,6 @@
 {
   "name": "caviard-pdf",
-  "version": "1.2.0-beta.1",
+  "version": "1.2.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -56,5 +56,6 @@
     "type": "git",
     "url": "https://github.com/benfavre/caviard.git"
   },
-  "homepage": "https://www.inklura.fr/"
+  "homepage": "https://www.inklura.fr/",
+  "accountApi": "https://outils.inklura.fr/api/inklura-pdf"
 }

@@ -2,7 +2,7 @@
 
 [Télécharger l’application](https://outils.inklura.fr/inklura-pdf#telecharger) · [Essayer avec des PDF fictifs](https://outils.inklura.fr/inklura-pdf#exemples)
 
-Inklura PDF permet de caviarder des documents sur votre ordinateur. La version d’évaluation actuelle peut être essayée sans compte ; les futures offres professionnelles seront rattachées à un compte Inklura. Les tarifs, la facturation et les quotas ne sont pas encore activés. L’assistant IA est facultatif : vous pouvez commencer immédiatement en dessinant les zones à masquer.
+Inklura PDF permet de caviarder des documents sur votre ordinateur. La version 1.2.0 nécessite un compte Inklura et offre 20 PDF d’essai par compte. Un crédit est consommé à l’export réussi ; l’import et l’analyse restent sans débit. Les packs et abonnements sont accessibles depuis « Offres et crédits », pour les adresses de facturation en France métropolitaine (TVA 20 %). L’assistant IA est facultatif : vous pouvez commencer immédiatement en dessinant les zones à masquer.
 
 ## Choisir le bon téléchargement
 

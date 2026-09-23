@@ -4,7 +4,7 @@ set -euo pipefail
 cd "$(dirname "$0")"
 HOST="${INKLURA_DEPLOY_HOST:-141.95.202.2-infra-sj278}"
 SITE=/home/infra-sj278/bext/sites/outils-inklura-prism
-VERSION="${1:-1.1.0}"
+VERSION="${1:-1.2.0}"
 [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo 'Expected stable semantic version'; exit 1; }
 STAGE=$(ssh -o BatchMode=yes "$HOST" 'mktemp -d /tmp/inklura-pdf-deploy.XXXXXX')
 [[ "$STAGE" =~ ^/tmp/inklura-pdf-deploy\.[A-Za-z0-9]+$ ]] || exit 1

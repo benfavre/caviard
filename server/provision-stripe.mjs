@@ -18,6 +18,12 @@ let previous={};try{previous=JSON.parse(await readFile(output,'utf8'));}catch(e)
 if(previous.account && previous.account!==account.id)throw Error('Output belongs to another account');
 const result={...previous,account:account.id,live,prices:{...previous.prices}};
 const save=()=>writeFile(output,JSON.stringify(result,null,2)+'\n',{mode:0o600});
+if(process.argv.includes('--france')) {
+ const rates=await stripe.taxRates.list({active:true,limit:100});
+ let rate=rates.data.find(r=>r.metadata?.inkluraProduct==='inklura-pdf' && r.country==='FR' && r.percentage===20 && !r.inclusive);
+ if(!rate)rate=await stripe.taxRates.create({display_name:'TVA',description:'Inklura PDF — France métropolitaine',country:'FR',jurisdiction:'France',percentage:20,inclusive:false,tax_type:'vat',metadata:{inkluraProduct:'inklura-pdf'}},{idempotencyKey:'inklura-pdf:fr-vat-20:v1'});
+ result.franceTaxRate=rate.id;await save();
+}
 for(const plan of DOCUMENT_PLANS){
  const lookup='inklura_pdf_'+plan.id.replaceAll('-','_')+'_v1';
  const found=await stripe.prices.list({lookup_keys:[lookup],active:true,limit:2});
@@ -33,6 +39,9 @@ for(const plan of DOCUMENT_PLANS){
 if(!result.portalConfiguration){
  const portal=await stripe.billingPortal.configurations.create({business_profile:{headline:'Inklura PDF — compte et facturation'},default_return_url:'https://outils.inklura.fr/inklura-pdf',features:{customer_update:{enabled:true,allowed_updates:['email','address','tax_id']},invoice_history:{enabled:true},payment_method_update:{enabled:true},subscription_cancel:{enabled:true,mode:'at_period_end'},subscription_update:{enabled:false}},metadata:{inkluraProduct:'inklura-pdf'}},{idempotencyKey:'inklura-pdf:portal:v1'});
  result.portalConfiguration=portal.id;await save();
+}
+if(process.argv.includes('--france')) {
+ await stripe.billingPortal.configurations.update(result.portalConfiguration,{features:{customer_update:{enabled:true,allowed_updates:['email']}}});
 }
 const url='https://outils.inklura.fr/api/inklura-pdf/v1/stripe/webhook';
 if(!result.webhookSecret){

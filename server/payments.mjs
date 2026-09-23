@@ -1,19 +1,23 @@
 import { DOCUMENT_PLANS, planById } from '../electron/commerce-catalog.mjs';
 import { BillingError, addMonths, operationId } from './ledger.mjs';
+import { billingDetails, isMetropolitanFrance } from './france-billing.mjs';
 export class Payments {
-  constructor({ ledger, stripe, webhookSecret, priceIds = {}, enabled = false, publicUrl, live = false, allowLive = false, portalConfiguration }) {
-    Object.assign(this, { ledger, stripe, webhookSecret, priceIds, publicUrl, live, portalConfiguration });
-    this.enabled = enabled && !!stripe && !!webhookSecret && (!live || allowLive);
+  constructor({ ledger, stripe, webhookSecret, priceIds = {}, enabled = false, publicUrl, live = false, allowLive = false, portalConfiguration, franceTaxRate }) {
+    Object.assign(this, { ledger, stripe, webhookSecret, priceIds, publicUrl, live, portalConfiguration, franceTaxRate });
+    this.enabled = enabled && !!stripe && !!webhookSecret && !!franceTaxRate && (!live || allowLive);
   }
   catalog() {
-    return DOCUMENT_PLANS.map(plan => ({ ...plan, purchasable: !!(this.enabled && this.priceIds[plan.id]) }));
+    return DOCUMENT_PLANS.map(plan => ({ ...plan, priceCentsTtc: Math.round(plan.priceCentsHt * 1.2), taxPercent: 20, salesRegion: 'FR-METRO', purchasable: !!(this.enabled && this.priceIds[plan.id]) }));
   }
-  async checkout(account, planId, operation) {
+  async checkout(account, planId, operation, billing) {
     if (!this.enabled) throw new BillingError('purchases_not_enabled', 503);
     operationId(operation);
     const plan = planById(planId), priceId = this.priceIds[planId];
     if (!plan || !priceId) throw new BillingError('offer_not_available', 400);
     if (this.ledger.getAccount(account).blocked) throw new BillingError('account_under_review', 403);
+    const details = billingDetails(billing);
+    const tax = await this.stripe.taxRates.retrieve(this.franceTaxRate);
+    if (!tax.active || tax.country !== 'FR' || tax.percentage !== 20 || tax.inclusive || tax.livemode !== this.live) throw new BillingError('tax_misconfigured', 503);
     const price = await this.stripe.prices.retrieve(priceId);
     if (!price.active || price.currency !== 'eur' || price.unit_amount !== plan.priceCentsHt || price.tax_behavior !== 'exclusive' ||
       (plan.kind === 'subscription' ? price.recurring?.interval !== 'month' || price.recurring?.interval_count !== 1 : !!price.recurring)) throw new BillingError('offer_misconfigured', 503);
@@ -31,13 +35,20 @@ export class Payments {
       customer = created.id;
       this.ledger.db.prepare('UPDATE accounts SET customer=? WHERE id=?').run(customer, account);
     }
+    // The legal billing address is validated here, not inferred from the card's country.
+    await this.stripe.customers.update(customer, { ...details, tax_exempt: 'none', invoice_settings: { custom_fields: [
+      { name: 'Vendeur', value: 'BEO PLUS / ACTIV communication — 4 allée des Planches, 35740 Pacé' },
+      { name: 'SIREN vendeur', value: '790016885' }, { name: 'TVA vendeur', value: 'FR03790016885' },
+    ] } });
     const metadata = { inkluraPdfAccount: account, inkluraPdfPlan: plan.id, inkluraPdfOrder: operation };
     const session = await this.stripe.checkout.sessions.create({
       mode: plan.kind === 'subscription' ? 'subscription' : 'payment', customer,
-      client_reference_id: account, line_items: [{ price: priceId, quantity: 1 }],
+      client_reference_id: account, line_items: [{ price: priceId, quantity: 1, tax_rates: [this.franceTaxRate] }],
       metadata, ...(plan.kind === 'subscription' ? { subscription_data: { metadata } } : { payment_intent_data: { metadata } }),
+      ...(plan.kind === 'volume' ? { invoice_creation: { enabled: true } } : {}),
       success_url: this.publicUrl + '/billing/success', cancel_url: this.publicUrl + '/billing/cancel',
-      billing_address_collection: 'required', tax_id_collection: { enabled: true }, automatic_tax: { enabled: true },
+      billing_address_collection: 'required', tax_id_collection: { enabled: true }, payment_method_types: ['card'], locale: 'fr',
+      custom_text: { submit: { message: 'Achats réservés à la France métropolitaine. Adresse française obligatoire. TVA 20 %. Un paiement avec une adresse non admissible sera annulé et remboursé, sans ajout de crédits.' } },
       customer_update: { address: 'auto', name: 'auto' }, allow_promotion_codes: false,
     }, { idempotencyKey: 'inklura-pdf:checkout:' + account + ':' + operation });
     this.ledger.db.prepare('UPDATE orders SET checkout=? WHERE account=? AND operation=?').run(session.id, account, operation);
@@ -76,6 +87,11 @@ export class Payments {
       const expectedMode = plan.kind === 'volume' ? 'payment' : 'subscription';
       if (session.mode !== expectedMode) throw new BillingError('checkout_mode_mismatch', 400);
       if (session.payment_status === 'paid') {
+        if (!isMetropolitanFrance(session.customer_details?.address)) {
+          await this.rejectCountry(owner.id, order.operation, session.subscription, session.payment_intent);
+          this.ledger.once(event.id, () => {});
+          return { received: true, rejected: 'france_only' };
+        }
         // Validity begins when payment succeeds, including delayed payments.
         // A second event for the same purchase preserves the original date.
         const starts = this.ledger.db.prepare('SELECT starts FROM grants WHERE id=?').get('checkout:' + session.id)?.starts ?? event.created * 1000;
@@ -98,6 +114,11 @@ export class Payments {
       if (!plan || plan.kind !== 'subscription' || order?.plan !== planId || owner.customer !== invoice.customer || owner.customer !== subscription.customer) throw new BillingError('invoice_account_mismatch', 400);
       const lines = invoice.lines?.data?.filter(line => (line.pricing?.price_details?.price || line.price?.id) === this.priceIds[planId]);
       if (invoice.lines?.has_more || lines?.length !== 1 || lines[0].quantity !== 1 || lines[0].proration || lines[0].parent?.subscription_item_details?.proration) throw new BillingError('invoice_price_mismatch', 400);
+      if (!isMetropolitanFrance(invoice.customer_address)) {
+        await this.rejectCountry(owner.id, operation, subscriptionId, null, invoice.id);
+        this.ledger.once(event.id, () => {});
+        return { received: true, rejected: 'france_only' };
+      }
       const period = lines[0].period, starts = period?.start * 1000, ends = period?.end * 1000;
       if (!Number.isSafeInteger(starts) || !Number.isSafeInteger(ends) || ends <= starts || ends - starts > 32 * 86400000) throw new BillingError('invalid_invoice_period', 400);
       apply = () => {
@@ -117,6 +138,29 @@ export class Payments {
     }
     this.ledger.once(event.id, apply);
     return { received: true };
+  }
+  async rejectCountry(account, operation, subscription, paymentIntent, invoiceId) {
+    // No credits can be consumed while a rejected payment is being reconciled.
+    this.ledger.db.prepare('UPDATE accounts SET blocked=1 WHERE id=?').run(account);
+    if (subscription) {
+      const current = await this.stripe.subscriptions.retrieve(subscription);
+      if (current.status !== 'canceled') await this.stripe.subscriptions.cancel(subscription, { prorate: false, invoice_now: false });
+      invoiceId ||= typeof current.latest_invoice === 'string' ? current.latest_invoice : current.latest_invoice?.id;
+    }
+    const intents = new Set(paymentIntent ? [paymentIntent] : []);
+    if (invoiceId) {
+      for await (const payment of this.stripe.invoicePayments.list({ invoice: invoiceId, status: 'paid', limit: 100 })) {
+        if (payment.payment?.type === 'payment_intent') intents.add(typeof payment.payment.payment_intent === 'string' ? payment.payment.payment_intent : payment.payment.payment_intent?.id);
+      }
+    }
+    if (!intents.size) throw new BillingError('country_refund_pending', 503);
+    for (const id of intents) {
+      if (!id) throw new BillingError('country_refund_pending', 503);
+      const refund = await this.stripe.refunds.create({ payment_intent: id, metadata: { inkluraPdfCountryRejection: 'true' } }, { idempotencyKey: 'inklura-pdf:country-refund:' + id });
+      if (['failed', 'canceled'].includes(refund.status)) throw new BillingError('country_refund_pending', 503);
+    }
+    this.ledger.db.prepare("UPDATE orders SET state='country_rejected' WHERE account=? AND operation=?").run(account, operation);
+    this.ledger.db.prepare('UPDATE accounts SET subscription=NULL WHERE id=?').run(account);
   }
 }
 function checkoutUrl(value) {

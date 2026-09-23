@@ -5,7 +5,7 @@ contextBridge.exposeInMainWorld("caviardDesktop", {
   cancelSignIn: () => ipcRenderer.invoke("account:cancel"),
   signOut: () => ipcRenderer.invoke("account:sign-out"),
   refreshAccount: () => ipcRenderer.invoke("account:refresh"),
-  checkout: (planId) => ipcRenderer.invoke("account:checkout", planId),
+  checkout: (planId, billing) => ipcRenderer.invoke("account:checkout", planId, billing),
   billingPortal: () => ipcRenderer.invoke("account:portal"),
   onAccount: (callback) => {
     const listener = (_event, state) => callback(state);

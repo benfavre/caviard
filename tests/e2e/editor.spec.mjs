@@ -530,3 +530,29 @@ test("page navigation, zone counts, fit width and export status stay consistent"
     fullPage: true,
   });
 });
+
+test('desktop workspace fills resized windows and keeps export visible with the assistant open', async ({ page }, info) => {
+  await upload(page);
+  await draw(page);
+  const before = await page.locator(markSelector).getAttribute('style');
+  for (const viewport of [{ width: 1920, height: 1080 }, { width: 1440, height: 900 }, { width: 1024, height: 768 }]) {
+    await page.setViewportSize(viewport);
+    for (const open of [false, true]) {
+      if (open) await page.getByRole('button', { name: /Assistant local/ }).click();
+      const geometry = await page.evaluate(() => {
+        const rect = selector => { const r = document.querySelector(selector).getBoundingClientRect(); return { x: r.x, y: r.y, width: r.width, height: r.height, bottom: r.bottom }; };
+        return { width: innerWidth, height: innerHeight, scrollWidth: document.documentElement.scrollWidth, scrollHeight: document.documentElement.scrollHeight, editor: rect('.editor'), workspace: rect('.workspace'), export: rect('.download'), page: rect('.page-wrap') };
+      });
+      expect(geometry.editor.x).toBe(0);
+      expect(geometry.editor.width).toBe(viewport.width);
+      expect(geometry.scrollWidth).toBe(viewport.width);
+      expect(geometry.scrollHeight).toBe(viewport.height);
+      expect(geometry.workspace.height).toBeGreaterThan(250);
+      expect(geometry.export.bottom).toBeLessThan(viewport.height);
+      expect(geometry.page.width).toBeGreaterThan(geometry.workspace.width - 70);
+      expect(await page.locator(markSelector).getAttribute('style')).toBe(before);
+      await page.screenshot({ path: info.outputPath(`workspace-${viewport.width}-${open ? 'assistant' : 'manual'}.png`) });
+      if (open) await page.getByRole('button', { name: /Assistant local/ }).click();
+    }
+  }
+});

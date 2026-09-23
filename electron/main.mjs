@@ -233,7 +233,7 @@ app
       await accountExports.reconcile();
       return accountController.refresh();
     });
-    ipcMain.handle("account:checkout", (event, planId) => { trusted(event); return accountController.checkout(planId); });
+    ipcMain.handle("account:checkout", (event, planId, billing) => { trusted(event); return accountController.checkout(planId, billing); });
     ipcMain.handle("account:portal", (event) => { trusted(event); return accountController.portal(); });
     const signedMac =
       process.platform !== "darwin" || metadata.macAutoUpdates === true;

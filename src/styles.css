@@ -1499,3 +1499,90 @@ kbd {
 }
 
 .account-status{margin:18px 28px;padding:16px 20px;border:1px solid #dce5f4;border-radius:12px;background:#f5f8ff;font-size:13px;color:#254369}.account-status-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.account-status-row>span{flex:1;min-width:180px}.account-status button{padding:8px 12px;border:1px solid #dce5f4;border-radius:6px;background:#fff;color:#16428a;font:inherit;cursor:pointer}.account-status button.primary{background:#146bff;color:#fff}.account-status button:disabled{opacity:.5;cursor:default}.account-status p{margin:12px 0 0;line-height:1.6}.account-offers>div{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:16px 0}.account-offers article{display:flex;flex-direction:column;gap:10px;padding:14px;background:white;border:1px solid #dce5f4;border-radius:8px}.account-offers small{line-height:1.6}.account-status button:focus-visible{outline:3px solid #146bff;outline-offset:2px}@media(max-width:650px){.account-status{margin:12px;padding:14px}.account-offers>div{grid-template-columns:1fr 1fr}.account-status-row>strong{width:100%}}
+.account-billing{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;max-width:700px;margin-top:20px;padding:18px;background:#fff;border:1px solid #dce5f4;border-radius:8px}.account-billing h3,.account-billing p{grid-column:1/-1;margin:0}.account-billing label{display:flex;flex-direction:column;gap:6px}.account-billing input{width:100%;min-width:0;box-sizing:border-box;padding:10px;border:1px solid #b7c7df;border-radius:6px;font:inherit}.account-billing input:focus-visible{outline:3px solid #146bff;outline-offset:2px}@media(max-width:650px){.account-billing{grid-template-columns:1fr}}
+
+/* The application shell fills the window; documents and panels scroll independently. */
+.header { height: 58px; padding: 0 18px; flex-shrink: 0; }
+.logo { font-size: 25px; }
+.logo img { width: 30px; height: 30px; }
+.app-main { width: 100%; max-width: none; margin: 0; padding: 24px; }
+.account-status { margin: 0; padding: 8px 18px; border-width: 0 0 1px; border-radius: 0; flex-shrink: 0; }
+.account-status button { padding: 6px 10px; }
+.account-status p { margin-top: 6px; }
+footer { width: 100%; max-width: none; margin: 0; padding: 8px 18px; flex-shrink: 0; }
+.desktop-status { padding: 6px 18px; flex-shrink: 0; }
+.account-dialog { width: 880px; max-width: calc(100vw - 24px); padding: 0; border-radius: 12px; }
+.account-dialog .dialog-title { position: sticky; top: 0; background: white; z-index: 1; }
+.account-offers { padding: 0 20px 20px; }
+.editing .intro, .editing .steps, .editing .privacy-note { display: none; }
+.editing { padding: 0; }
+.editor { border: 0; border-radius: 0; box-shadow: none; }
+.editor-top { padding: 8px 14px; }
+.editor-top .edit-status { margin-left: auto; white-space: nowrap; }
+.toolbar { padding: 8px 14px; }
+.editor-instructions { padding: 9px 14px; }
+.export-area { padding: 10px 16px; background: #fff; }
+.workspace { overscroll-behavior: contain; }
+
+@media (min-width: 901px) {
+  html, body, #root { height: 100%; }
+  body { overflow: hidden; }
+  #root { height: 100dvh; display: flex; flex-direction: column; }
+  .app-main { flex: 1; min-height: 0; overflow: auto; }
+  .app-main:not(.editing) { display: flex; flex-direction: column; }
+  .app-main:not(.editing) .intro { margin-bottom: 18px; }
+  .app-main:not(.editing) .intro h1 { font-size: 32px; }
+  .app-main:not(.editing) .steps { margin-bottom: 20px; }
+  .dropzone { flex: 1; min-height: 270px; padding: 24px; }
+  .upload-art { transform: scale(.8); margin-top: -10px; margin-bottom: -10px; }
+  .features { margin: 20px 0 0; }
+  .privacy-note { margin: 18px 0 0; }
+  .editing { display: flex; flex-direction: column; overflow: hidden; }
+  .editing > .message { flex-shrink: 0; margin: 0; border-radius: 0; }
+  .editor {
+    flex: 1; min-height: 0; display: grid;
+    grid-template-columns: minmax(0, 1fr) 52px;
+    grid-template-rows: auto auto auto minmax(0, 1fr) auto;
+  }
+  .editor:has(.assistant-content) { grid-template-columns: minmax(0, 1fr) 330px; }
+  .editor-top { grid-column: 1 / -1; grid-row: 1; }
+  .toolbar { grid-column: 1; grid-row: 2; }
+  .editor-instructions { grid-column: 1; grid-row: 3; }
+  .editor-body { grid-column: 1; grid-row: 4; min-height: 0; grid-template-columns: 148px minmax(0, 1fr); }
+  .export-area { grid-column: 1 / -1; grid-row: 5; }
+  .workspace { height: 100%; min-height: 0; padding: 24px; }
+  .page-sidebar { display: flex; flex-direction: column; min-height: 0; }
+  .page-list { flex: 1; min-height: 0; max-height: none; }
+  .assistant { grid-column: 2; grid-row: 2 / 5; min-height: 0; min-width: 0; display: flex; flex-direction: column; border: 0; border-left: 1px solid var(--border); }
+  .assistant-toggle { padding: 12px; flex-shrink: 0; min-height: 52px; }
+  .assistant-toggle > span:not(.assistant-spark) { display: none; }
+  .assistant:not(:has(.assistant-content)) .assistant-toggle { flex: 1; flex-direction: column; justify-content: flex-start; gap: 16px; }
+  .assistant:not(:has(.assistant-content)) .assistant-toggle strong { writing-mode: vertical-rl; }
+  .assistant:not(:has(.assistant-content)) .assistant-toggle b { margin: 0; }
+  .assistant-content { overflow: auto; min-height: 0; padding: 16px; overscroll-behavior: contain; }
+  .assistant .model-install { padding: 12px; }
+  .assistant .model-install > div { min-width: 0; }
+  .assistant .category-options { gap: 10px; }
+  .assistant .category-options label { width: 100%; }
+  .assistant .analysis-options { gap: 10px; }
+  .assistant .suggestion-list { max-height: none; }
+  .history-actions { width: auto; }
+}
+@media (max-width: 1100px) and (min-width: 901px) {
+  .editor:has(.assistant-content) { grid-template-columns: minmax(0, 1fr) 300px; }
+  .editor:has(.assistant-content) .editor-body { grid-template-columns: 110px minmax(0, 1fr); }
+  .history-actions span { display: none; }
+  .editor-top .edit-status { font-size: 10px; }
+  .file-heading select { max-width: 30vw; }
+}
+@media (max-width: 900px) {
+  .app-main { padding: 20px 16px; }
+  .app-main.editing { padding: 0; }
+  .editor-top { flex-wrap: wrap; gap: 8px; }
+  .editor-top .edit-status { font-size: 10px; }
+  .workspace { height: max(360px, 60dvh); padding: 16px; }
+  .assistant-content { max-height: 60dvh; overflow: auto; }
+  .account-status { padding: 8px 12px; }
+  .header { padding: 0 12px; }
+  footer, .desktop-status { padding: 10px 12px; }
+}

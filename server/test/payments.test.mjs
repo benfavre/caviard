@@ -3,18 +3,20 @@ import assert from 'node:assert/strict';
 import Stripe from 'stripe';
 import { Ledger, addMonths } from '../ledger.mjs';
 import { Payments } from '../payments.mjs';
+const billing={name:'Société de test',line1:'1 rue Exemple',city:'Rennes',postalCode:'35000',country:'FR'};
 const signing=new Stripe('sk_test_fixture'),secret='whsec_fixture_for_automated_tests';
 function fixture({enabled=true}={}) {
  const now=Date.now(),ledger=new Ledger(':memory:',{now:()=>now}),account=ledger.account('https://auth.1clic.pro','user-a');
- let calls=0;
- const checkout={id:'cs_fixture',created:Math.floor(now/1000),status:'open',url:'https://checkout.stripe.com/c/pay/test',customer:'cus_fixture',mode:'payment',payment_status:'paid',client_reference_id:account.id,payment_intent:'pi_fixture',metadata:{inkluraPdfAccount:account.id,inkluraPdfOrder:'order-1234567890'},line_items:{data:[{quantity:1,price:{id:'price_volume'}}],has_more:false}};
+ let calls=0, sent;const refunds=[],cancellations=[];
+ const checkout={customer_details:{address:{country:'FR',postal_code:'35000'}},id:'cs_fixture',created:Math.floor(now/1000),status:'open',url:'https://checkout.stripe.com/c/pay/test',customer:'cus_fixture',mode:'payment',payment_status:'paid',client_reference_id:account.id,payment_intent:'pi_fixture',metadata:{inkluraPdfAccount:account.id,inkluraPdfOrder:'order-1234567890'},line_items:{data:[{quantity:1,price:{id:'price_volume'}}],has_more:false}};
  const subscription={id:'sub_fixture',customer:'cus_fixture',metadata:{inkluraPdfAccount:account.id,inkluraPdfOrder:'order-month-1234567890',inkluraPdfPlan:'business-20'}};
  const start=Math.floor(now/1000),end=Math.floor(addMonths(now,1)/1000);
- const invoice={id:'in_fixture',status:'paid',billing_reason:'subscription_cycle',customer:'cus_fixture',parent:{subscription_details:{subscription:'sub_fixture'}},lines:{data:[{quantity:1,pricing:{price_details:{price:'price_month'}},period:{start,end}}],has_more:false}};
- const stripe={webhooks:signing.webhooks, prices:{retrieve:async id=>({id,active:true,currency:'eur',unit_amount:id==='price_month'?490:2900,tax_behavior:'exclusive',...(id==='price_month'?{recurring:{interval:'month',interval_count:1}}:{})})}, customers:{create:async()=>({id:'cus_fixture'})}, checkout:{sessions:{create:async body=>{calls++;Object.assign(checkout,{metadata:body.metadata,mode:body.mode});return checkout;},retrieve:async()=>checkout}},subscriptions:{retrieve:async()=>subscription},invoices:{retrieve:async()=>invoice},charges:{retrieve:async()=>({customer:'cus_fixture'})},billingPortal:{sessions:{create:async()=>({url:'https://billing.stripe.com/p/session/test'})}}};
- const payments=new Payments({ledger,stripe,webhookSecret:secret,priceIds:{'volume-100':'price_volume','business-20':'price_month'},enabled,portalConfiguration:'bpc_fixture',publicUrl:'https://outils.inklura.fr/api/inklura-pdf'});
+ const invoice={customer_address:{country:'FR',postal_code:'35000'},id:'in_fixture',status:'paid',billing_reason:'subscription_cycle',customer:'cus_fixture',parent:{subscription_details:{subscription:'sub_fixture'}},lines:{data:[{quantity:1,pricing:{price_details:{price:'price_month'}},period:{start,end}}],has_more:false}};
+ const stripe={webhooks:signing.webhooks,taxRates:{retrieve:async()=>({active:true,country:'FR',percentage:20,inclusive:false,livemode:false})},refunds:{create:async(body,options)=>{refunds.push({body,options});return{id:'re_fixture'};}},invoicePayments:{list:()=>({async *[Symbol.asyncIterator](){yield {payment:{type:'payment_intent',payment_intent:'pi_invoice'}};}})}, prices:{retrieve:async id=>({id,active:true,currency:'eur',unit_amount:id==='price_month'?490:2900,tax_behavior:'exclusive',...(id==='price_month'?{recurring:{interval:'month',interval_count:1}}:{})})}, customers:{create:async()=>({id:'cus_fixture'}),update:async()=>({id:'cus_fixture'})}, checkout:{sessions:{create:async body=>{calls++;sent=body;Object.assign(checkout,{metadata:body.metadata,mode:body.mode});return checkout;},retrieve:async()=>checkout}},subscriptions:{retrieve:async()=>subscription,cancel:async id=>{cancellations.push(id);subscription.status='canceled';return subscription;}},invoices:{retrieve:async()=>invoice},charges:{retrieve:async()=>({customer:'cus_fixture'})},billingPortal:{sessions:{create:async()=>({url:'https://billing.stripe.com/p/session/test'})}}};
+ const payments=new Payments({ledger,stripe,webhookSecret:secret,priceIds:{'volume-100':'price_volume','business-20':'price_month'},enabled,franceTaxRate:'txr_france',portalConfiguration:'bpc_fixture',publicUrl:'https://outils.inklura.fr/api/inklura-pdf'});
  const event=async(type,obj={id:checkout.id},id='evt_'+type)=>{const payload=JSON.stringify({id,type,created:Math.floor(now/1000),livemode:false,data:{object:obj}});const signature=signing.webhooks.generateTestHeaderString({payload,secret});return payments.webhook(Buffer.from(payload),signature);};
- return {ledger,account,stripe,payments,checkout,subscription,invoice,event,get calls(){return calls;}};
+ const checkoutFor=payments.checkout.bind(payments);payments.checkout=(account,plan,operation,details=billing)=>checkoutFor(account,plan,operation,details);
+ return {ledger,account,stripe,payments,checkout,subscription,invoice,event,refunds,cancellations,get sent(){return sent;},get calls(){return calls;}};
 }
 test('checkout ignores client amounts, uses configured price and remains idempotent',async()=>{
  const f=fixture();await f.payments.checkout(f.account.id,'volume-100','order-1234567890');await f.payments.checkout(f.account.id,'volume-100','order-1234567890');assert.equal(f.calls,1);assert.equal(f.ledger.balance(f.account.id).remaining,20);
@@ -97,4 +99,33 @@ test('billing portal always uses the dedicated Inklura PDF configuration',async(
  let sent;f.stripe.billingPortal.sessions.create=async body=>{sent=body;return {url:'https://billing.stripe.com/p/session/test'};};
  await f.payments.portal(f.account.id);assert.equal(sent.configuration,'bpc_fixture');assert.equal(sent.customer,'cus_fixture');
  f.payments.portalConfiguration=undefined;await assert.rejects(()=>f.payments.portal(f.account.id),{code:'portal_not_configured'});f.ledger.close();
+});
+test('France billing is validated before Stripe, including overseas and malformed address rejection',async()=>{
+ const f=fixture();let contacted=false;f.stripe.taxRates.retrieve=async()=>{contacted=true;throw Error('must not contact Stripe');};
+ for(const details of [null,{}, {...billing,country:'BE'}, {...billing,postalCode:'97100'}, {...billing,postalCode:'98000'}, {...billing,name:''}, {...billing,extra:'field'}]) {
+  await assert.rejects(()=>f.payments.checkout(f.account.id,'volume-100','france-order-1234567',details));
+ }
+ assert.equal(contacted,false);assert.equal(f.calls,0);f.ledger.close();
+});
+test('fixed French VAT is attached to both one-off and recurring prices with complete billing',async()=>{
+ const f=fixture();await f.payments.checkout(f.account.id,'volume-100','france-order-1234567');
+ assert.deepEqual(f.sent.line_items,[{price:'price_volume',quantity:1,tax_rates:['txr_france']}]);
+ assert.equal(f.sent.automatic_tax,undefined);assert.equal(f.sent.invoice_creation.enabled,true);assert.deepEqual(f.sent.payment_method_types,['card']);
+ assert.match(f.sent.custom_text.submit.message,/France métropolitaine/);
+ f.checkout.id='cs_month';await f.payments.checkout(f.account.id,'business-20','france-month-1234567');assert.deepEqual(f.sent.line_items[0].tax_rates,['txr_france']);
+ f.stripe.taxRates.retrieve=async()=>({active:true,country:'FR',percentage:0,inclusive:false,livemode:false});
+ await assert.rejects(()=>f.payments.checkout(f.account.id,'volume-100','france-bad-tax-1234567'),{code:'tax_misconfigured'});f.ledger.close();
+});
+test('a foreign address substituted in Stripe receives no credits and its payment is refunded idempotently',async()=>{
+ const f=fixture();await f.payments.checkout(f.account.id,'volume-100','france-order-1234567');f.checkout.customer_details.address.country='BE';
+ await f.event('checkout.session.completed');await f.event('checkout.session.completed');
+ assert.equal(f.refunds.length,1);assert.equal(f.refunds[0].body.payment_intent,'pi_fixture');
+ assert.equal(f.ledger.balance(f.account.id).remaining,20);assert.equal(f.ledger.balance(f.account.id).blocked,true);
+ assert.equal(f.ledger.db.prepare('SELECT state FROM orders').get().state,'country_rejected');f.ledger.close();
+});
+test('foreign subscription invoice cancels renewal, refunds through the current invoice payment API and cannot grant quota',async()=>{
+ const f=fixture();await f.payments.checkout(f.account.id,'business-20','order-month-1234567890');f.invoice.customer_address.postal_code='97400';
+ await f.event('invoice.paid',{id:f.invoice.id});await f.event('invoice.paid',{id:f.invoice.id});
+ assert.deepEqual(f.cancellations,['sub_fixture']);assert.equal(f.refunds.length,1);assert.equal(f.refunds[0].body.payment_intent,'pi_invoice');
+ assert.equal(f.ledger.balance(f.account.id).remaining,20);assert.equal(f.ledger.getAccount(f.account.id).subscription,null);f.ledger.close();
 });
