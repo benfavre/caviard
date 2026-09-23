@@ -31,7 +31,7 @@ module.exports = {
   ],
   electronUpdaterCompatibility: ">=2.16",
   linux: { target: ["AppImage"], category: "Office", icon: "build/icon.png" },
-  win: { target: ["nsis"], icon: "build/icon.png" },
+  win: { target: ["nsis"], icon: "build/icon.png", executableName: "Inklura PDF" },
   nsis: {
     oneClick: false,
     perMachine: false,
@@ -39,6 +39,7 @@ module.exports = {
     deleteAppDataOnUninstall: false,
   },
   mac: {
+    executableName: "Inklura PDF",
     target: ["dmg", "zip"],
     category: "public.app-category.productivity",
     icon: "build/icon.png",
