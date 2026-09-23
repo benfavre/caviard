@@ -61,8 +61,10 @@ jobs:
       - name: Build installers and update manifests
         run: npm run desktop:dist -- ${{ matrix.flags }}
         env:
-          CSC_LINK: ${{ matrix.platform == 'macos' && secrets.CSC_LINK || secrets.WIN_CSC_LINK }}
-          CSC_KEY_PASSWORD: ${{ matrix.platform == 'macos' && secrets.CSC_KEY_PASSWORD || secrets.WIN_CSC_KEY_PASSWORD }}
+          CSC_LINK: ${{ runner.os == 'macOS' && secrets.CSC_LINK || '' }}
+          CSC_KEY_PASSWORD: ${{ runner.os == 'macOS' && secrets.CSC_KEY_PASSWORD || '' }}
+          WIN_CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
+          WIN_CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}

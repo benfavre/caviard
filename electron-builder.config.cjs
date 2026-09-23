@@ -29,13 +29,13 @@ module.exports = {
     target: ["dmg", "zip"],
     category: "public.app-category.productivity",
     icon: "build/icon.png",
-    identity: process.env.CSC_LINK ? undefined : null,
+    identity: process.env.CSC_LINK ? undefined : "-",
     notarize: !!(
       process.env.APPLE_ID &&
       process.env.APPLE_APP_SPECIFIC_PASSWORD &&
       process.env.APPLE_TEAM_ID
     ),
-    hardenedRuntime: true,
+    hardenedRuntime: !!process.env.CSC_LINK,
     entitlements: "build/entitlements.mac.plist",
     entitlementsInherit: "build/entitlements.mac.plist",
   },
