@@ -1,0 +1,49 @@
+{
+  "name": "caviard-pdf",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "vite build",
+    "preview": "vite preview --host 0.0.0.0",
+    "test": "node --test --test-concurrency=1 tests/*.test.mjs",
+    "examples": "node scripts/python.mjs scripts/generate-examples.py",
+    "examples:gallery": "node scripts/python.mjs scripts/render-examples.py && node scripts/build-catalog.mjs",
+    "pretest": "node scripts/ensure-examples.mjs",
+    "test:unit": "node scripts/ensure-examples.mjs && node --test tests/redaction.test.mjs tests/edge-cases.test.mjs",
+    "test:corpus": "node scripts/ensure-examples.mjs && node --test tests/corpus.test.mjs",
+    "test:e2e": "node scripts/ensure-examples.mjs && playwright test",
+    "test:audit": "node scripts/python.mjs scripts/audit-pdfs.py",
+    "test:all": "node scripts/run-all.mjs",
+    "desktop": "npm run build && electron .",
+    "desktop:pack": "npm run build && electron-builder --config electron-builder.config.cjs --dir --publish never",
+    "desktop:dist": "npm run build && electron-builder --config electron-builder.config.cjs --publish never",
+    "test:desktop": "node scripts/ensure-examples.mjs && npm run build && playwright test --config playwright.desktop.config.mjs",
+    "test:desktop:unit": "node --test tests/desktop/*.test.mjs",
+    "test:update-feed": "node --test tests/desktop/feed.integration.mjs"
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.9"
+  },
+  "devDependencies": {
+    "@napi-rs/canvas": "^1.0.9",
+    "@playwright/test": "^1.63.0",
+    "electron": "^44.4.5",
+    "electron-builder": "^26.15.3",
+    "vite": "^7.1.0",
+    "@fontsource/roboto": "^5.3.0",
+    "@fortawesome/free-solid-svg-icons": "^6.7.2",
+    "pdf-lib": "^1.17.1",
+    "pdfjs-dist": "^6.3.289",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "description": "Offline PDF redaction for Windows, macOS and Linux",
+  "author": "benfavre",
+  "main": "electron/main.mjs",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/benfavre/caviard.git"
+  }
+}
