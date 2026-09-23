@@ -60,7 +60,7 @@ The assistant can miss information or select an entire text line. Review every p
 <details>
 <summary>See the local assistant with a synthetic document</summary>
 
-![Inklura PDF showing sensitive-data categories and reviewable suggestions from a fictitious PDF](hosting/outils/site/public/inklura-pdf/assistant-v1.1.0.png)
+![Inklura PDF showing a full-window document workspace and reviewable suggestions from a fictitious PDF](hosting/outils/site/public/inklura-pdf/assistant-v1.2.0.png)
 
 </details>
 

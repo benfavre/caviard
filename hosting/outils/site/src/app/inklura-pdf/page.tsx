@@ -15,7 +15,7 @@ function asset(suffix: string) {
 
 export default function Page(): any {
   return <main className="ipdf">
-    <link rel="stylesheet" href="/inklura-pdf/page.css?v=1.1.0-3" />
+    <link rel="stylesheet" href="/inklura-pdf/page.css?v=1.2.0-1" />
     <div className="ipdf-wrap">
       <a className="ipdf-back" href="/">← Tous les outils Inklura</a>
       <section className="ipdf-hero" aria-labelledby="ipdf-title">
@@ -56,8 +56,8 @@ export default function Page(): any {
           <article><span className="ipdf-number">03</span><h3>Donner une instruction</h3><p>Écrivez « masque les noms et les coordonnées ». L’assistant propose un plan de catégories que vous pouvez ajuster avant de lancer l’analyse.</p></article>
         </div>
         <div className="ipdf-assistant-preview">
-          <div><p className="ipdf-eyebrow">DANS L’APPLICATION</p><h3>Du repérage<br />à la vérification.</h3><p>L’OCR local reconnaît le texte des scans en français et en anglais. Les suggestions restent visibles avant leur ajout aux zones de caviardage.</p><p className="ipdf-small">L’IA et l’OCR peuvent manquer des informations ou proposer des zones trop larges. Votre relecture reste indispensable.</p><a className="ipdf-textlink" href="/inklura-pdf/assistant-v1.1.0.png">Voir la capture complète ↗</a></div>
-          <a className="ipdf-screenshot" href="/inklura-pdf/assistant-v1.1.0.png" aria-label="Agrandir la capture de l’assistant local"><img src="/inklura-pdf/assistant-v1.1.0.png" alt="Inklura PDF : choix des catégories, OCR français et anglais et liste des informations suggérées dans un document fictif." width="1185" height="1932" loading="lazy" /></a>
+          <div><p className="ipdf-eyebrow">DANS L’APPLICATION</p><h3>Du repérage<br />à la vérification.</h3><p>Le document occupe l’espace disponible. L’assistant défile dans son panneau latéral et l’export reste accessible. L’OCR local reconnaît les scans en français et en anglais.</p><p className="ipdf-small">L’IA et l’OCR peuvent manquer des informations ou proposer des zones trop larges. Votre relecture reste indispensable.</p><a className="ipdf-textlink" href="/inklura-pdf/assistant-v1.2.0.png">Voir la capture complète ↗</a></div>
+          <a className="ipdf-screenshot" href="/inklura-pdf/assistant-v1.2.0.png" aria-label="Agrandir la capture de l’assistant local"><img src="/inklura-pdf/assistant-v1.2.0.png" alt="Inklura PDF 1.2.0 : espace de travail sur toute la fenêtre, document fictif et suggestions de l’assistant local dans le panneau latéral." width="1200" height="836" loading="lazy" /></a>
         </div>
       </section>
 
