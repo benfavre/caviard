@@ -9,7 +9,9 @@ import {
   session,
 } from "electron";
 import { readFile, writeFile, rename, unlink } from "node:fs/promises";
-import { existsSync } from "node:fs";
+import { existsSync, createReadStream } from "node:fs";
+import { Readable } from "node:stream";
+import { ModelStore } from "./ai-models.mjs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
@@ -38,11 +40,12 @@ protocol.registerSchemesAsPrivileged([
 ]);
 let window,
   controller,
+  modelStore,
   allowClose = false,
   closingPrompt = false;
 let documentState = { dirty: false, busy: false };
 const csp =
-  "default-src 'self'; script-src 'self'; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data: blob:; connect-src 'self' data: blob:; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'";
+  "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data: blob:; connect-src 'self' data: blob:; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'";
 const mime = {
   ".html": "text/html",
   ".js": "text/javascript",
@@ -139,10 +142,39 @@ app.setName("Inklura PDF");
 app
   .whenReady()
   .then(async () => {
+    modelStore = new ModelStore(
+      (!app.isPackaged && process.env.INKLURA_AI_MODELS) ||
+        path.join(app.getPath("userData"), "ai-models", "v1"),
+    );
+    modelStore.on("state", (state) => {
+      if (window && !window.isDestroyed())
+        window.webContents.send("ai:models", state);
+    });
     protocol.handle("caviard", async (request) => {
       if (!["GET", "HEAD"].includes(request.method))
         return new Response("", { status: 405 });
       try {
+        const url = new URL(request.url);
+        if (isAppUrl(request.url) && url.pathname.startsWith("/ai-models/")) {
+          const file = modelStore.file(
+            decodeURIComponent(url.pathname.slice("/ai-models/".length)),
+          );
+          if (!file || !existsSync(file))
+            return new Response("Not found", { status: 404 });
+          return new Response(
+            request.method === "HEAD"
+              ? null
+              : Readable.toWeb(createReadStream(file)),
+            {
+              headers: {
+                "Content-Type": file.endsWith(".json")
+                  ? "application/json"
+                  : "application/octet-stream",
+                "Content-Security-Policy": csp,
+              },
+            },
+          );
+        }
         const file = assetPath(request.url, dist);
         const bytes = await readFile(file);
         return new Response(request.method === "HEAD" ? null : bytes, {
@@ -194,6 +226,18 @@ app
       },
     });
     controller.on("state", publishState);
+    ipcMain.handle("ai:models", (event) => {
+      trusted(event);
+      return modelStore.status();
+    });
+    ipcMain.handle("ai:install", (event) => {
+      trusted(event);
+      return modelStore.install();
+    });
+    ipcMain.handle("ai:cancel", (event) => {
+      trusted(event);
+      modelStore.cancel();
+    });
     ipcMain.handle("desktop:info", (event) => {
       trusted(event);
       return { version: app.getVersion(), platform: process.platform };

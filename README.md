@@ -52,3 +52,7 @@ Poppler and DejaVu Sans are also needed for the independent audit and preview ge
 The browser tests run in an isolated Chromium instance and exercise actual uploads, drawing, touch, and downloads. They do not depend on the ChatGPT extension's file-picker permission.
 
 The Inklura icon and visual identity come from [inklura.fr](https://www.inklura.fr/). Internal application identifiers and the GitHub release repository remain stable so existing Caviard installations can receive the rebrand through automatic updates.
+
+## Assistant local
+
+Trois modes sont disponibles dans l’application de bureau : suggestions à vérifier, politiques automatiques avec aperçu, et instructions libres donnant un plan modifiable. Les modèles optionnels (environ 1,18 Go) fonctionnent sur le CPU, sans serveur ni envoi de documents. OCR français/anglais inclus. [Fonctionnement, limites et tests](AI.md).

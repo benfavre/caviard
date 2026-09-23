@@ -42,3 +42,7 @@ The desktop end-to-end tests launch real Electron, verify renderer isolation, re
 The existing web application remains available with `npm run dev`. See `TESTING.md` for the complete PDF corpus and browser suite.
 
 The public product name is **Inklura PDF**. The existing `com.benfavre.caviard` app ID, `caviard-pdf` package name, Linux executable, custom protocol, preload bridge, and `benfavre/caviard` release feed are deliberately retained for upgrade compatibility.
+
+## Local assistant
+
+Inklura PDF includes optional on-device suggestions, automatic policy previews, and natural-language redaction plans. The same WebAssembly runtime runs on each packaged platform; no Python or separately installed model server is needed. Models download separately (about 1.18 GB), remain in the app's user-data folder across updates, and are checksum-verified. See [AI.md](AI.md) for supported categories, OCR, privacy, memory expectations and real-model testing.

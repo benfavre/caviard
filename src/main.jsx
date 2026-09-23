@@ -28,6 +28,7 @@ import { emptyHistory, redactionHistory } from "./history.mjs";
 import { exportRedacted, normalizeRect } from "./pdf.mjs";
 import "./styles.css";
 import DesktopStatus from "./DesktopStatus.jsx";
+import Assistant from "./Assistant.jsx";
 document.title = "Inklura PDF — Caviardage";
 
 pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
@@ -49,6 +50,7 @@ function Page({
   pdf,
   number,
   marks,
+  preview = [],
   addMark,
   removeMark,
   zoom,
@@ -161,6 +163,20 @@ function Page({
                   </button>
                 </div>
               ))}
+            {preview
+              .filter((r) => r.page === number)
+              .map((r, i) => (
+                <div
+                  key={i}
+                  className="ai-region"
+                  style={{
+                    left: `${r.x * 100}%`,
+                    top: `${r.y * 100}%`,
+                    width: `${r.width * 100}%`,
+                    height: `${r.height * 100}%`,
+                  }}
+                />
+              ))}
             {draft && (
               <div
                 className="redaction draft"
@@ -200,6 +216,8 @@ function App() {
   const [documents, setDocuments] = useState([]),
     [active, setActive] = useState(0),
     [page, setPage] = useState(1);
+  const [aiBusy, setAiBusy] = useState(false);
+  const [preview, setPreview] = useState([]);
   const [savedMarks, setSavedMarks] = useState({});
   const [history, dispatch] = useReducer(redactionHistory, emptyHistory);
   const marks = history.marks;
@@ -217,6 +235,7 @@ function App() {
     docsRef = useRef([]);
   const [pendingClose, setPendingClose] = useState(null);
   const current = documents[active];
+  useEffect(() => setPreview([]), [current?.id]);
   const currentMarks = current ? marks[current.id] || [] : [];
   const count = documents.reduce(
     (total, doc) => total + (marks[doc.id]?.length || 0),
@@ -232,7 +251,7 @@ function App() {
     [],
   );
   async function openFiles(files) {
-    if (loading || busy || !workerReady || !files?.length) return;
+    if (loading || busy || aiBusy || !workerReady || !files?.length) return;
     setError("");
     setNotice("");
     setLoading(true);
@@ -273,7 +292,7 @@ function App() {
     JSON.stringify(marks[doc.id]) !== JSON.stringify(savedMarks[doc.id] || []);
   const dirty = documents.some(isDirty);
   function edit(type, extra = {}) {
-    if (!current || busy || loading) return;
+    if (!current || busy || aiBusy || loading) return;
     setNotice("");
     dispatch({ type, id: current.id, ...extra });
   }
@@ -300,7 +319,7 @@ function App() {
   }
   useEffect(() => {
     const beforeUnload = (event) => {
-      if (dirty || busy || loading) {
+      if (dirty || busy || aiBusy || loading) {
         event.preventDefault();
         event.returnValue = "";
       }
@@ -308,7 +327,7 @@ function App() {
     if (!window.caviardDesktop)
       window.addEventListener("beforeunload", beforeUnload);
     return () => window.removeEventListener("beforeunload", beforeUnload);
-  }, [dirty, busy, loading]);
+  }, [dirty, busy, aiBusy, loading]);
   async function download() {
     setBusy(true);
     setError("");
@@ -368,6 +387,7 @@ function App() {
         ["z", "y"].includes(event.key.toLowerCase()) &&
         current &&
         !busy &&
+        !aiBusy &&
         !loading
       ) {
         event.preventDefault();
@@ -385,7 +405,7 @@ function App() {
     };
     window.addEventListener("keydown", shortcut);
     return () => window.removeEventListener("keydown", shortcut);
-  }, [current, busy, loading]);
+  }, [current, busy, aiBusy, loading]);
   return (
     <>
       <header className="header">
@@ -575,7 +595,7 @@ function App() {
                 <Icon icon={faFilePdf} />
                 <select
                   aria-label="Document actif"
-                  disabled={busy || loading}
+                  disabled={busy || aiBusy || loading}
                   value={active}
                   onChange={(event) => {
                     setActive(Number(event.target.value));
@@ -597,7 +617,7 @@ function App() {
               </div>
               <div className="actions">
                 <button
-                  disabled={busy || loading}
+                  disabled={busy || aiBusy || loading}
                   onClick={() => input.current.click()}
                 >
                   <Icon icon={faPlus} />
@@ -606,7 +626,7 @@ function App() {
                 <button
                   title="Fermer ce document"
                   aria-label="Fermer ce document"
-                  disabled={busy || loading}
+                  disabled={busy || aiBusy || loading}
                   onClick={closeDocument}
                 >
                   <Icon icon={faXmark} />
@@ -617,7 +637,7 @@ function App() {
               <div className="actions page-navigation">
                 <button
                   aria-label="Page précédente"
-                  disabled={page <= 1 || busy || loading}
+                  disabled={page <= 1 || busy || aiBusy || loading}
                   onClick={() => setPage(page - 1)}
                 >
                   <Icon icon={faChevronLeft} />
@@ -631,7 +651,7 @@ function App() {
                     min="1"
                     max={current.pdf.numPages}
                     defaultValue={page}
-                    disabled={busy || loading}
+                    disabled={busy || aiBusy || loading}
                     onBlur={(event) => {
                       const number = Math.min(
                         current.pdf.numPages,
@@ -648,7 +668,9 @@ function App() {
                 </label>
                 <button
                   aria-label="Page suivante"
-                  disabled={page >= current.pdf.numPages || busy || loading}
+                  disabled={
+                    page >= current.pdf.numPages || busy || aiBusy || loading
+                  }
                   onClick={() => setPage(page + 1)}
                 >
                   <Icon icon={faChevronRight} />
@@ -684,7 +706,10 @@ function App() {
               <div className="actions history-actions">
                 <button
                   disabled={
-                    !history.undo[current.id]?.length || busy || loading
+                    !history.undo[current.id]?.length ||
+                    busy ||
+                    aiBusy ||
+                    loading
                   }
                   onClick={() => edit("undo")}
                   title="Annuler (Ctrl/Cmd+Z)"
@@ -694,7 +719,10 @@ function App() {
                 </button>
                 <button
                   disabled={
-                    !history.redo[current.id]?.length || busy || loading
+                    !history.redo[current.id]?.length ||
+                    busy ||
+                    aiBusy ||
+                    loading
                   }
                   onClick={() => edit("redo")}
                   title="Rétablir (Ctrl/Cmd+Maj+Z)"
@@ -703,7 +731,7 @@ function App() {
                   <span>Rétablir</span>
                 </button>
                 <button
-                  disabled={!currentMarks.length || busy || loading}
+                  disabled={!currentMarks.length || busy || aiBusy || loading}
                   onClick={() => edit("clear")}
                   title="Effacer toutes les zones de ce document"
                 >
@@ -712,6 +740,25 @@ function App() {
                 </button>
               </div>
             </div>
+            <Assistant
+              key={current.id}
+              doc={current}
+              page={page}
+              marks={currentMarks}
+              disabled={busy || loading}
+              onBusy={setAiBusy}
+              onApply={(regions) => {
+                setNotice(
+                  "Zones ajoutées à l’aperçu. Vérifiez chaque page avant d’exporter.",
+                );
+                dispatch({ type: "batch", id: current.id, marks: regions });
+                setPreview([]);
+              }}
+              onPreview={(number, regions) => {
+                if (number) setPage(number);
+                setPreview(regions);
+              }}
+            />
             <div className="editor-instructions">
               <Icon icon={faPenRuler} />
               <span>
@@ -736,7 +783,7 @@ function App() {
                     return (
                       <button
                         key={number}
-                        disabled={busy || loading}
+                        disabled={busy || aiBusy || loading}
                         className={number === page ? "selected" : ""}
                         aria-current={number === page ? "page" : undefined}
                         aria-label={`Afficher la page ${number}${regions ? `, ${regions} zone${regions > 1 ? "s" : ""}` : ""}`}
@@ -765,10 +812,11 @@ function App() {
                   pdf={current.pdf}
                   number={page}
                   marks={currentMarks}
+                  preview={preview}
                   addMark={addMark}
                   removeMark={removeMark}
                   zoom={zoom}
-                  busy={busy || loading}
+                  busy={busy || aiBusy || loading}
                   onError={setError}
                 />
               </div>
@@ -787,7 +835,7 @@ function App() {
               </div>
               <button
                 className="primary download"
-                disabled={busy || loading || !count}
+                disabled={busy || aiBusy || loading || !count}
                 onClick={download}
               >
                 <Icon icon={faDownload} />
@@ -832,7 +880,7 @@ function App() {
           <a href="mailto:contact@inklura.fr">Contact</a>
         </div>
       </footer>
-      <DesktopStatus dirty={dirty} busy={busy || loading} />
+      <DesktopStatus dirty={dirty} busy={busy || aiBusy || loading} />
       <dialog
         ref={help}
         className="info-dialog"

@@ -21,7 +21,11 @@
     "desktop:dist": "npm run build && electron-builder --config electron-builder.config.cjs --publish never",
     "test:desktop": "node scripts/ensure-examples.mjs && npm run build && playwright test --config playwright.desktop.config.mjs",
     "test:desktop:unit": "node --test tests/desktop/*.test.mjs",
-    "test:update-feed": "node --test tests/desktop/feed.integration.mjs"
+    "test:update-feed": "node --test tests/desktop/feed.integration.mjs",
+    "examples:ai": "node scripts/ensure-examples.mjs && node scripts/generate-ai-examples.mjs",
+    "models:install": "node scripts/install-models.mjs",
+    "test:ai": "node --test tests/ai.test.mjs tests/desktop/models.test.mjs",
+    "test:ai:real": "npm run examples:ai && npm run build && playwright test --config playwright.ai.config.mjs"
   },
   "dependencies": {
     "electron-updater": "^6.8.9"
@@ -29,14 +33,17 @@
   "devDependencies": {
     "@fontsource-variable/inter": "^5.3.0",
     "@fortawesome/free-solid-svg-icons": "^6.7.2",
+    "@huggingface/transformers": "^4.3.0",
     "@napi-rs/canvas": "^1.0.9",
     "@playwright/test": "^1.63.0",
     "electron": "^44.4.5",
     "electron-builder": "^26.15.3",
+    "onnxruntime-web": "^1.31.0-dev.20260914-8d85527a0",
     "pdf-lib": "^1.17.1",
     "pdfjs-dist": "^6.3.289",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "tesseract.js": "^7.0.0",
     "vite": "^7.1.0"
   },
   "description": "Caviardage confidentiel de PDF, sur votre appareil",

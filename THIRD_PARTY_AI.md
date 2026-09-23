@@ -1,0 +1,8 @@
+# Local assistant components and model provenance
+
+- **GLiNER multilingual v2.1**, Urchade Zaratiana and collaborators: [upstream model](https://huggingface.co/urchade/gliner_multi-v2.1), Apache-2.0. ONNX conversion: [onnx-community/gliner_multi-v2.1](https://huggingface.co/onnx-community/gliner_multi-v2.1), revision `6ddaeb9413b0e71ad8457da1aab378a165b24058`. Uses the fp16 model: the int8/uint8 exports failed the French detection check and are not shipped.
+- **Qwen3-0.6B**, Qwen Team: [upstream model](https://huggingface.co/Qwen/Qwen3-0.6B), Apache-2.0. ONNX conversion: [onnx-community/Qwen3-0.6B-ONNX](https://huggingface.co/onnx-community/Qwen3-0.6B-ONNX), revision `da1453100cf3ff33ef56d17983fc7a8648706db6`, q4f16. Used without thinking for bounded category classification.
+- **Transformers.js**, Hugging Face, Apache-2.0; **ONNX Runtime**, Microsoft, MIT; **Tesseract.js**, Apache-2.0; **Tesseract tessdata_fast**, Apache-2.0 (French and English data). Package versions are locked in `package-lock.json`; model/data revisions and checksums are locked in `electron/ai-manifest.json`.
+- The GLiNER ONNX input preparation was informed by [GLiNER.js](https://github.com/Knowledgator/GLiNER.js), maintained by Knowledgator. Its published `gliner@0.0.19` archive includes an Apache-2.0 LICENSE (despite MIT in its package metadata). That license is included in `electron/licenses/Apache-2.0.txt`. Inklura implements a single bounded input window, Unicode word boundaries, validation, and its own result handling.
+
+The Apache-2.0 and ONNX Runtime license texts are included in the installed app under `electron/licenses`. Model weights are downloaded separately from their pinned upstream distributions. This file is also included in the app package.

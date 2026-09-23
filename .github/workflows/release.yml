@@ -81,6 +81,12 @@ jobs:
         run: npx playwright test --config playwright.desktop.config.mjs
         env:
           CAVIARD_EXECUTABLE: ${{ github.workspace }}/${{ matrix.executable }}
+      - name: Bundle additional synthetic AI examples
+        if: runner.os == 'Linux'
+        run: |
+          node scripts/generate-ai-examples.mjs
+          cd output/pdf/ai-examples
+          zip -r ../../../release/inklura-ai-example-pdfs.zip .
       - run: npm run test:update-feed
         if: runner.os == 'Linux'
       - uses: actions/upload-artifact@v4

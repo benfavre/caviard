@@ -31,14 +31,19 @@ export function redactionHistory(state, action) {
     };
   }
   const next =
-    type === "add"
-      ? [...current, action.mark]
-      : type === "remove"
-        ? current.filter((mark) => mark.id !== action.markId)
-        : type === "clear"
-          ? []
-          : current;
-  if (next === current || (next.length === current.length && type !== "add"))
+    type === "batch"
+      ? [...current, ...action.marks]
+      : type === "add"
+        ? [...current, action.mark]
+        : type === "remove"
+          ? current.filter((mark) => mark.id !== action.markId)
+          : type === "clear"
+            ? []
+            : current;
+  if (
+    next === current ||
+    (next.length === current.length && type !== "add" && type !== "batch")
+  )
     return state;
   return {
     marks: { ...state.marks, [id]: next },
