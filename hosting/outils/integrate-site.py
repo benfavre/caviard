@@ -41,6 +41,7 @@ if title_count != 1 or desc_count != 1:
 footer = '© Inklura · outils.inklura.fr — Hébergé en France 🇫🇷 · 100% gratuit · Sans inscription'
 if footer in source and '{isPdfDownload ? "© Inklura' not in source:
     source = source.replace(footer, '{isPdfDownload ? "© Inklura · outils.inklura.fr — Essai gratuit · Offres professionnelles en préparation" : "' + footer + '"}')
+source = source.replace('© Inklura · outils.inklura.fr — Essai gratuit · Offres professionnelles en préparation', '© Inklura · outils.inklura.fr — 20 PDF d’essai · Packs et abonnements')
 registry = registry.replace('Application gratuite à télécharger : caviardez vos PDF avec un assistant IA et un OCR locaux, sur Windows, macOS et Linux', 'Essai gratuit : caviardez vos PDF avec un assistant IA et un OCR locaux. 20 PDF d’essai par compte, puis packs ou abonnement')
 registry = registry.replace('Offres professionnelles Inklura en préparation', '20 PDF d’essai par compte, puis packs ou abonnement')
 home = site / 'src/app/page.tsx'
