@@ -3,6 +3,8 @@ export async function confirmExport(page) {
   const acknowledgement = dialog.getByLabel(
     "Je souhaite exporter les pages non relues",
   );
-  if (await acknowledgement.isVisible()) await acknowledgement.check();
+  // These export tests intentionally leave pages unreviewed. Wait for the
+  // dialog's initial selection to render instead of racing isVisible().
+  await acknowledgement.check();
   await dialog.getByRole("button", { name: "Confirmer l’export" }).click();
 }
