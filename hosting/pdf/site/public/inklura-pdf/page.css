@@ -44,3 +44,9 @@
 @media(prefers-reduced-motion:reduce){.ipdf-svg-masks rect{transition:none}.ipdf-app-toolbar .ipdf-replay{display:none}}
 @media(max-width:600px){.ipdf-demo-options strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ipdf-demo-options label>span{overflow:hidden}}
 .ipdf-app-logo>img{display:block;width:30px;height:30px}@media(max-width:600px){.ipdf-app-logo>img{width:24px;height:24px}}
+
+/* Let the desktop editor use the outer gutter without clipping its controls. */
+@media(min-width:1320px){
+  .ipdf-hero>.ipdf-lab{width:calc(100% + clamp(0px, (100vw - 1320px) / 2, 360px));max-width:none}
+  .ipdf-hero .ipdf-demo-assistant[open]{width:190px}
+}

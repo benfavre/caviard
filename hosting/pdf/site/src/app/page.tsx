@@ -17,7 +17,7 @@ function asset(suffix: string) {
 
 export default function Page(): any {
   return <main className="ipdf" id="contenu" tabIndex={-1}>
-    <link rel="stylesheet" href="/inklura-pdf/page.css?v=20260924-editor-2" />
+    <link rel="stylesheet" href="/inklura-pdf/page.css?v=20260924-editor-3" />
     <div className="ipdf-wrap">
       <section className="ipdf-hero" aria-labelledby="ipdf-title">
         <div>
