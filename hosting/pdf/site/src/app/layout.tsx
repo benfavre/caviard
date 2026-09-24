@@ -13,8 +13,8 @@ import { Icon } from "../lib/icons";
 interface LayoutProps { title?: string; children?: any; route?: { pathname?: string } }
 
 export default function RootLayout(props: LayoutProps): any {
-  const pdfTitle = "Inklura PDF — caviardage et IA locale | Essai gratuit";
-  const pdfDescription = "Essayez Inklura PDF sur Windows, macOS et Linux. Caviardage, assistant IA et OCR locaux. 20 PDF d’essai par compte, puis packs ou abonnement. Achats en France métropolitaine.";
+  const pdfTitle = "Inklura PDF — caviardage, anonymisation et IA locale";
+  const pdfDescription = "Préparez vos PDF avant de les partager avec une IA ou un partenaire. Caviardage local, aide à l’anonymisation et export sans métadonnées documentaires. 20 PDF d’essai.";
   return (
     <html lang="fr">
       <head>
@@ -44,9 +44,9 @@ export default function RootLayout(props: LayoutProps): any {
         <a className="ipdf-skip" href="#contenu">Aller au contenu</a>
         <header className="ipdf-site-header"><nav className="ipdf-product-nav" aria-label="Navigation Inklura PDF">
           <a className="ipdf-product-logo" href="/" aria-label="Inklura PDF — accueil"><span className="ipdf-product-mark"><img src="/inklura-pdf/app-icon.svg" width="32" height="32" alt="" /></span><strong>Inklura<span>.</span></strong><span className="ipdf-product-tag">PDF</span></a>
-          <div className="ipdf-product-links"><a href="#demonstration" data-section-link>Démo</a><a href="#assistant" data-section-link>Assistant</a><a href="#securite" data-section-link>Confidentialité</a><a href="#offres" data-section-link>Tarifs</a></div>
+          <div className="ipdf-product-links"><a href="#anonymisation" data-section-link>Anonymisation</a><a href="#demonstration" data-section-link>Démo</a><a href="#assistant" data-section-link>Assistant</a><a href="#securite" data-section-link>Confidentialité</a><a href="#offres" data-section-link>Tarifs</a></div>
           <div className="ipdf-nav-actions"><button className="ipdf-theme-toggle" type="button" aria-label="Changer de thème" onclick="window.__toggleOutilsTheme&&window.__toggleOutilsTheme()"><Icon name="moon" size={17} className="ipdf-theme-moon" /><Icon name="sun" size={17} className="ipdf-theme-sun" /></button><a className="ipdf-nav-download" href="#telecharger" data-section-link>Télécharger <Icon name="download" size={15} /></a>
-          <details className="ipdf-nav-menu"><summary aria-label="Menu de navigation"><Icon name="menu" size={19} /><span>Menu</span></summary><div className="ipdf-nav-panel"><div className="ipdf-mobile-links"><p>INKLURA PDF</p><a href="#demonstration" data-section-link>Voir la démo <span>01</span></a><a href="#assistant" data-section-link>Assistant local <span>02</span></a><a href="#securite" data-section-link>Confidentialité &amp; métadonnées <span>03</span></a><a href="#offres" data-section-link>Tarifs &amp; crédits <span>04</span></a><a href="#telecharger" data-section-link>Télécharger l’application <Icon name="download" size={15} /></a></div><div className="ipdf-nav-ecosystem"><p>VOTRE ESPACE INKLURA</p><a href="https://inklura.fr">Accéder à Inklura <span>↗</span></a><a href="https://onboarding.inklura.fr">Créer mon espace <span>↗</span></a><a href="https://outils.inklura.fr/">Tous les outils <span>↗</span></a></div></div></details></div>
+          <details className="ipdf-nav-menu"><summary aria-label="Menu de navigation"><Icon name="menu" size={19} /><span>Menu</span></summary><div className="ipdf-nav-panel"><div className="ipdf-mobile-links"><p>INKLURA PDF</p><a href="#anonymisation" data-section-link>Anonymisation &amp; IA <span>01</span></a><a href="#demonstration" data-section-link>Voir la démo <span>02</span></a><a href="#assistant" data-section-link>Assistant local <span>03</span></a><a href="#securite" data-section-link>Confidentialité &amp; métadonnées <span>04</span></a><a href="#offres" data-section-link>Tarifs &amp; crédits <span>05</span></a><a href="#telecharger" data-section-link>Télécharger l’application <Icon name="download" size={15} /></a></div><div className="ipdf-nav-ecosystem"><p>VOTRE ESPACE INKLURA</p><a href="https://inklura.fr">Accéder à Inklura <span>↗</span></a><a href="https://onboarding.inklura.fr">Créer mon espace <span>↗</span></a><a href="https://outils.inklura.fr/">Tous les outils <span>↗</span></a></div></div></details></div>
         </nav></header>
 
         {props.children}

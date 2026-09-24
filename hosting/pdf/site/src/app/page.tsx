@@ -17,19 +17,29 @@ function asset(suffix: string) {
 
 export default function Page(): any {
   return <main className="ipdf" id="contenu" tabIndex={-1}>
-    <link rel="stylesheet" href="/inklura-pdf/page.css?v=20260924-editor-3" />
+    <link rel="stylesheet" href="/inklura-pdf/page.css?v=20260924-anonymisation-1" />
     <div className="ipdf-wrap">
       <section className="ipdf-hero" aria-labelledby="ipdf-title">
         <div>
           <div className="ipdf-eyebrow"><span /> INKLURA PDF · ESSAI GRATUIT</div>
           <h1 id="ipdf-title">Partagez l’essentiel.<br /><em>Gardez le reste<br />pour vous.</em></h1>
-          <p className="ipdf-lead">Caviardez vos PDF sur votre ordinateur. Masquez les informations sensibles à la main, ou préparez vos caviardages avec une IA qui travaille en local.</p>
+          <p className="ipdf-lead">Préparez vos PDF avant de les partager avec une IA, un client ou un partenaire. Masquez les données personnelles et les informations confidentielles sur votre ordinateur, à la main ou avec un assistant IA local.</p>
           <div className="ipdf-actions"><a className="ipdf-primary" href="#telecharger">Télécharger Inklura PDF <span aria-hidden="true">↓</span></a><a className="ipdf-textlink" href="#demonstration">Voir la démo <span aria-hidden="true">↗</span></a></div>
           <p className="ipdf-meta">Windows, macOS et Linux · Version {release.version} · 20 PDF d’essai par compte</p>
         </div>
         <RedactionDemo />
       </section>
       <div className="ipdf-trust"><span>◎ <strong>Vos documents restent chez vous</strong></span><span>↶ Modifications annulables</span><span>▤ PDF numériques & scans</span><span>✦ IA locale optionnelle</span></div>
+
+      <section className="ipdf-section ipdf-anonymisation" id="anonymisation" aria-labelledby="anonymisation-title">
+        <div className="ipdf-section-head"><div><p className="ipdf-eyebrow">ANONYMISATION · IA GÉNÉRATIVE · PARTAGE</p><h2 id="anonymisation-title">Une IA a besoin du sujet.<br />Pas forcément des identités.</h2></div><p>Faire résumer un contrat, analyser un dossier ou préparer une synthèse : choisissez les informations utiles avant de transmettre votre PDF à un grand modèle de langage (LLM).</p></div>
+        <div className="ipdf-features">
+          <article><span className="ipdf-number">01 · PRÉPARER EN LOCAL</span><h3>Retirez ce qui n’est pas nécessaire.</h3><p>Noms, coordonnées, signatures, références client, données de santé ou montants confidentiels : sélectionnez les zones selon votre usage. L’assistant local peut aider au repérage ; vous vérifiez ses propositions.</p></article>
+          <article><span className="ipdf-number">02 · RELIRE LE RÉSULTAT</span><h3>Pensez aussi aux indices.</h3><p>Un poste rare, une date précise ou le récit d’un événement peuvent suffire à reconnaître une personne. Relisez toutes les pages et choisissez un nom de fichier qui ne révèle pas son identité.</p></article>
+          <article><span className="ipdf-number">03 · PARTAGER LA COPIE</span><h3>Décidez de ce qui sort.</h3><p>Exportez un nouveau PDF sans métadonnées documentaires, puis ouvrez-le pour le contrôler. Inklura PDF ne l’envoie pas à un LLM : vous choisissez ensuite le service et le fichier à transmettre.</p></article>
+        </div>
+        <div className="ipdf-sharing-guidance"><div><h3>Sécurité : préparer avant d’envoyer.</h3><p>Le traitement local évite de confier votre document original à un service d’IA pour le caviarder. Avant tout partage, vérifiez que vous êtes autorisé à transmettre les informations restantes, ainsi que les conditions de conservation et de réutilisation du service choisi.</p><p className="ipdf-small">La copie exportée est un PDF composé d’images. Le service destinataire doit prendre en charge leur lecture ou l’OCR pour en analyser le contenu.</p><a className="ipdf-textlink" href="https://www.cnil.fr/fr/les-questions-reponses-de-la-cnil-sur-lutilisation-dun-systeme-dia-generative">Les repères de la CNIL sur l’IA générative ↗</a></div><div><h3>RGPD : caviarder aide, anonymiser se vérifie.</h3><p>Le caviardage supprime les zones choisies. L’anonymisation vise à empêcher l’identification d’une personne, y compris par recoupement. Masquer les noms ne garantit donc pas, à lui seul, un document anonyme.</p><p>Des données pseudonymisées restent des données personnelles. Inklura PDF vous aide à réduire les informations divulguées ; il ne certifie ni l’anonymisation ni la conformité RGPD de votre partage.</p><a className="ipdf-textlink" href="https://www.cnil.fr/fr/lanonymisation-des-donnees-un-traitement-cle-pour-lopen-data">Comprendre l’anonymisation avec la CNIL ↗</a></div></div>
+      </section>
 
       <Screencast />
 
