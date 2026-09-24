@@ -24,7 +24,7 @@ Inklura PDF helps you remove sensitive information before sharing a document. Dr
 
 ## Account and pricing
 
-Version 1.2.0 requires an Inklura account and an Internet connection for exports. Each account receives 20 trial PDFs once. An export consumes one credit only after the file is saved; import, analysis and canceled saves do not consume credits.
+Version 1.2.1 requires an Inklura account and an Internet connection for exports. Each account receives 20 trial PDFs once. An export consumes one credit only after the file is saved; import, analysis and canceled saves do not consume credits.
 
 Purchases are available in metropolitan France: packs of 100/500/1,000 PDFs valid for 12 months, or subscriptions of 20/100/500 PDFs per month and account. Prices include 20% French VAT; [see all prices](https://outils.inklura.fr/inklura-pdf#offres). Monthly credits do not roll over. Documents and local AI processing stay on the computer. Previous evaluation installers are retired from distribution.
 
@@ -130,4 +130,4 @@ The Inklura icon and visual identity come from [Inklura](https://www.inklura.fr/
 
 ## Account and billing integration
 
-Version 1.2.0 connects to the deployed Inklura account and credit service. Purchases use ACTIV communication’s live Stripe account and are restricted to metropolitan France, with 20% VAT. In-app prices show both HT and TTC. The desktop workspace fills the window, keeps export controls visible and opens the local assistant in a separate scrolling side panel. [Offers and competitor comparison (French)](COMMERCIAL.md) · [Service setup](server/README.md).
+Version 1.2.1 connects to the deployed Inklura account and credit service. Purchases use ACTIV communication’s live Stripe account and are restricted to metropolitan France, with 20% VAT. In-app prices show both HT and TTC. The desktop workspace fills the window, keeps export controls visible and opens the local assistant in a separate scrolling side panel. [Offers and competitor comparison (French)](COMMERCIAL.md) · [Service setup](server/README.md).

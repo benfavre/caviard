@@ -11,7 +11,7 @@ No new server process, account, DNS record or reverse proxy is required.
 From the application repository, with the existing operator SSH access:
 
 ```sh
-hosting/outils/deploy.sh 1.2.0
+hosting/outils/deploy.sh 1.2.1
 node hosting/outils/verify-live.mjs
 ```
 
@@ -36,14 +36,14 @@ The deployment:
 Installers and checksums live at:
 
 ```text
-/downloads/inklura-pdf/1.2.0/Inklura-PDF-1.2.0-win-x64.exe
-/downloads/inklura-pdf/1.2.0/Inklura-PDF-1.2.0-mac-arm64.dmg
-/downloads/inklura-pdf/1.2.0/Inklura-PDF-1.2.0-mac-x64.dmg
-/downloads/inklura-pdf/1.2.0/Inklura-PDF-1.2.0-linux-x86_64.AppImage
-/downloads/inklura-pdf/1.2.0/example-pdfs.zip
-/downloads/inklura-pdf/1.2.0/inklura-ai-example-pdfs.zip
-/downloads/inklura-pdf/1.2.0/SHA256SUMS.txt
-/downloads/inklura-pdf/1.2.0/release.json
+/downloads/inklura-pdf/1.2.1/Inklura-PDF-1.2.1-win-x64.exe
+/downloads/inklura-pdf/1.2.1/Inklura-PDF-1.2.1-mac-arm64.dmg
+/downloads/inklura-pdf/1.2.1/Inklura-PDF-1.2.1-mac-x64.dmg
+/downloads/inklura-pdf/1.2.1/Inklura-PDF-1.2.1-linux-x86_64.AppImage
+/downloads/inklura-pdf/1.2.1/example-pdfs.zip
+/downloads/inklura-pdf/1.2.1/inklura-ai-example-pdfs.zip
+/downloads/inklura-pdf/1.2.1/SHA256SUMS.txt
+/downloads/inklura-pdf/1.2.1/release.json
 ```
 
 The page uses a generated release manifest for links and file sizes. For a later
@@ -60,7 +60,7 @@ by the application separately; they are not bundled with these installers.
 
 ## Stable release and retired downloads
 
-The stable 1.2.0 release is the public download and update channel. Retired installers are archived privately outside the web root; historical GitHub releases are drafts. Previously installed copies cannot be revoked remotely.
+The stable 1.2.1 release is the public download and update channel. Retired evaluation installers are archived privately outside the web root; their GitHub releases are drafts. Earlier stable releases remain available for rollback. Previously installed copies cannot be revoked remotely.
 
 ## Verification
 

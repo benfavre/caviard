@@ -1,42 +1,42 @@
 {
-  "version": "1.2.0",
-  "releaseUrl": "https://github.com/benfavre/caviard/releases/tag/v1.2.0",
+  "version": "1.2.1",
+  "releaseUrl": "https://github.com/benfavre/caviard/releases/tag/v1.2.1",
   "assets": [
     {
-      "name": "Inklura-PDF-1.2.0-win-x64.exe",
-      "size": 140187591,
-      "sha256": "8d009ebd77130a8a8560b9d4527e670649af3e4801811b1906fa76ad8e3bf112",
-      "url": "/downloads/inklura-pdf/1.2.0/Inklura-PDF-1.2.0-win-x64.exe"
+      "name": "Inklura-PDF-1.2.1-win-x64.exe",
+      "size": 140189239,
+      "sha256": "98a15afc05c54215b69ad62990bd055f8a6547d5ad3ea2085429df877742795c",
+      "url": "/downloads/inklura-pdf/1.2.1/Inklura-PDF-1.2.1-win-x64.exe"
     },
     {
-      "name": "Inklura-PDF-1.2.0-mac-arm64.dmg",
-      "size": 170186571,
-      "sha256": "a0f1ed4402b8408dd77c19e804d022632148250692c3c45b86a5e3f70b12f44a",
-      "url": "/downloads/inklura-pdf/1.2.0/Inklura-PDF-1.2.0-mac-arm64.dmg"
+      "name": "Inklura-PDF-1.2.1-mac-arm64.dmg",
+      "size": 170185253,
+      "sha256": "d4ea574d38429a0082dc995c1685142788ae70582863906fc7acb1cbe4bd39cf",
+      "url": "/downloads/inklura-pdf/1.2.1/Inklura-PDF-1.2.1-mac-arm64.dmg"
     },
     {
-      "name": "Inklura-PDF-1.2.0-mac-x64.dmg",
-      "size": 176901975,
-      "sha256": "97dea80dc2ac531205fa8aacdaa4137d6d9689e4a7b3a8ce5add7486e43a75de",
-      "url": "/downloads/inklura-pdf/1.2.0/Inklura-PDF-1.2.0-mac-x64.dmg"
+      "name": "Inklura-PDF-1.2.1-mac-x64.dmg",
+      "size": 176907642,
+      "sha256": "1eaefa5d906743023ed140fa6b30b5b7a943d21e5a763a418bb37b1177880c13",
+      "url": "/downloads/inklura-pdf/1.2.1/Inklura-PDF-1.2.1-mac-x64.dmg"
     },
     {
-      "name": "Inklura-PDF-1.2.0-linux-x86_64.AppImage",
-      "size": 170101352,
-      "sha256": "c07fd1898cd2bb965cc6bf81145172099259bee9bb67f642d847a5c2afe38b6f",
-      "url": "/downloads/inklura-pdf/1.2.0/Inklura-PDF-1.2.0-linux-x86_64.AppImage"
+      "name": "Inklura-PDF-1.2.1-linux-x86_64.AppImage",
+      "size": 170101424,
+      "sha256": "10c78db8757c872f70479dc7db203782101abe3f3a18ba8e8e9949411abaeba5",
+      "url": "/downloads/inklura-pdf/1.2.1/Inklura-PDF-1.2.1-linux-x86_64.AppImage"
     },
     {
       "name": "example-pdfs.zip",
-      "size": 532786,
-      "sha256": "6c3f9bc5d8785b10d59ea9f2beb9a0d05ce916e274934397885ec49b4a002169",
-      "url": "/downloads/inklura-pdf/1.2.0/example-pdfs.zip"
+      "size": 532779,
+      "sha256": "57bfaff901867a97c4a518d04b3e53592348693631671071ccf3e5b5dd00dfa8",
+      "url": "/downloads/inklura-pdf/1.2.1/example-pdfs.zip"
     },
     {
       "name": "inklura-ai-example-pdfs.zip",
-      "size": 359800,
-      "sha256": "6528bf3a6e7149d455f1bd4617d52ff4df0892c240c11ffcd937b5cf8574d668",
-      "url": "/downloads/inklura-pdf/1.2.0/inklura-ai-example-pdfs.zip"
+      "size": 359802,
+      "sha256": "41d6ae7c024f3b7d8ac029476bcdc99a205521441d4b1f23eda5da090c25d8e9",
+      "url": "/downloads/inklura-pdf/1.2.1/inklura-ai-example-pdfs.zip"
     }
   ]
 }
