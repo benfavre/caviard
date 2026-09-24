@@ -7,10 +7,10 @@
 <p align="center">Private PDF redaction, with an optional local AI assistant.<br />Windows · macOS · Linux · 20 trial PDFs per Inklura account</p>
 
 <p align="center">
-  <a href="https://outils.inklura.fr/inklura-pdf"><strong>Download Inklura PDF</strong></a> ·
+  <a href="https://pdf.inklura.fr/"><strong>Download Inklura PDF</strong></a> ·
   <a href="GUIDE.fr.md">Guide en français</a> ·
   <a href="https://github.com/benfavre/caviard/releases">Release notes</a> ·
-  <a href="https://outils.inklura.fr/inklura-pdf#exemples">Example PDFs</a>
+  <a href="https://pdf.inklura.fr/#exemples">Example PDFs</a>
 </p>
 
 <p align="center">
@@ -26,16 +26,16 @@ Inklura PDF helps you remove sensitive information before sharing a document. Dr
 
 Version 1.2.1 requires an Inklura account and an Internet connection for exports. Each account receives 20 trial PDFs once. An export consumes one credit only after the file is saved; import, analysis and canceled saves do not consume credits.
 
-Purchases are available in metropolitan France: packs of 100/500/1,000 PDFs valid for 12 months, or subscriptions of 20/100/500 PDFs per month and account. Prices include 20% French VAT; [see all prices](https://outils.inklura.fr/inklura-pdf#offres). Monthly credits do not roll over. Documents and local AI processing stay on the computer. Previous evaluation installers are retired from distribution.
+Purchases are available in metropolitan France: packs of 100/500/1,000 PDFs valid for 12 months, or subscriptions of 20/100/500 PDFs per month and account. Prices include 20% French VAT; [see all prices](https://pdf.inklura.fr/#offres). Monthly credits do not roll over. Documents and local AI processing stay on the computer. Previous evaluation installers are retired from distribution.
 
 ## Download and start
 
 | Your computer | Download | Installation |
 | --- | --- | --- |
-| Windows, Intel/AMD 64-bit | [Windows installer](https://outils.inklura.fr/inklura-pdf#windows) | Open the `.exe` and follow the installer. |
-| Mac with an Apple chip | [Apple Silicon DMG](https://outils.inklura.fr/inklura-pdf#mac-apple) | Open the `.dmg` and drag Inklura PDF into Applications. |
-| Mac with an Intel processor | [Intel DMG](https://outils.inklura.fr/inklura-pdf#mac-intel) | Open the `.dmg` and drag Inklura PDF into Applications. |
-| Linux, Intel/AMD 64-bit | [Linux AppImage](https://outils.inklura.fr/inklura-pdf#linux) | Allow execution in the file properties, then open it. FUSE support is needed. |
+| Windows, Intel/AMD 64-bit | [Windows installer](https://pdf.inklura.fr/#windows) | Open the `.exe` and follow the installer. |
+| Mac with an Apple chip | [Apple Silicon DMG](https://pdf.inklura.fr/#mac-apple) | Open the `.dmg` and drag Inklura PDF into Applications. |
+| Mac with an Intel processor | [Intel DMG](https://pdf.inklura.fr/#mac-intel) | Open the `.dmg` and drag Inklura PDF into Applications. |
+| Linux, Intel/AMD 64-bit | [Linux AppImage](https://pdf.inklura.fr/#linux) | Allow execution in the file properties, then open it. FUSE support is needed. |
 
 The download page includes file sizes, SHA-256 checksums and installation details. Current builds are unsigned; Windows or macOS may show a publisher warning or block opening. Windows and Linux support integrated updates. macOS updates are currently downloaded manually.
 
@@ -60,7 +60,7 @@ The assistant can miss information or select an entire text line. Review every p
 <details>
 <summary>See the local assistant with a synthetic document</summary>
 
-![Inklura PDF showing a full-window document workspace and reviewable suggestions from a fictitious PDF](hosting/outils/site/public/inklura-pdf/assistant-v1.2.0.png)
+![Inklura PDF showing a full-window document workspace and reviewable suggestions from a fictitious PDF](hosting/pdf/site/public/inklura-pdf/assistant-v1.2.0.png)
 
 </details>
 
@@ -75,7 +75,7 @@ The interface is in French, with built-in help and keyboard shortcuts. Multiple 
 
 ## Try 171 synthetic PDFs
 
-[Download the example packs](https://outils.inklura.fr/inklura-pdf#exemples) to explore the app without using private documents:
+[Download the example packs](https://pdf.inklura.fr/#exemples) to explore the app without using private documents:
 
 - **159 core examples:** 151 valid PDFs (399 pages), 3 password-protected files and 5 intentionally invalid files. Covers text, scans, hidden OCR, fonts, forms, annotations, attachments, metadata, crop boxes, rotations, transparency and stress cases.
 - **12 AI/OCR examples:** fictitious contact and banking data in digital, scanned and mixed pages at four rotations.
@@ -112,7 +112,7 @@ Poppler and DejaVu Sans are also required for the independent audit and previews
 | [Local AI](AI.md) | Models, OCR, privacy, detection limits and real-model checks |
 | [Desktop](DESKTOP.md) | Packaging, signing, updates and release procedure |
 | [Testing](TESTING.md) | Corpus, browser tests and independent PDF audits |
-| [Website deployment](hosting/outils/README.md) | Hosting installers and verifying public downloads |
+| [Website deployment](hosting/pdf/README.md) | Hosting installers and verifying public downloads |
 
 Found a problem? [Report an issue](https://github.com/benfavre/caviard/issues/new/choose) with your OS, app version and reproduction steps. Use a synthetic example instead of attaching a confidential document.
 

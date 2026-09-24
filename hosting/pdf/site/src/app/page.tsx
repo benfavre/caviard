@@ -1,4 +1,4 @@
-import release from "../../lib/inklura-pdf-release.json";
+import release from "../lib/inklura-pdf-release.json";
 
 export const revalidate = 600;
 const platforms = [
@@ -17,7 +17,7 @@ export default function Page(): any {
   return <main className="ipdf">
     <link rel="stylesheet" href="/inklura-pdf/page.css?v=1.2.0-1" />
     <div className="ipdf-wrap">
-      <a className="ipdf-back" href="/">← Tous les outils Inklura</a>
+      <a className="ipdf-back" href="https://outils.inklura.fr/">← Tous les outils Inklura</a>
       <section className="ipdf-hero" aria-labelledby="ipdf-title">
         <div>
           <div className="ipdf-eyebrow"><span /> INKLURA PDF · ESSAI GRATUIT</div>
@@ -73,7 +73,7 @@ export default function Page(): any {
       </section>
 
       <section className="ipdf-section" id="telecharger" aria-labelledby="download-title">
-        <div className="ipdf-section-head"><div><p className="ipdf-eyebrow">PRÊT À COMMENCER ?</p><h2 id="download-title">Choisissez votre ordinateur.</h2></div><p>Inklura PDF {release.version} · 20 PDF d’essai.<br />Installateurs hébergés sur outils.inklura.fr.</p></div>
+        <div className="ipdf-section-head"><div><p className="ipdf-eyebrow">PRÊT À COMMENCER ?</p><h2 id="download-title">Choisissez votre ordinateur.</h2></div><p>Inklura PDF {release.version} · 20 PDF d’essai.<br />Installateurs hébergés sur pdf.inklura.fr.</p></div>
         <div className="ipdf-downloads">{platforms.map((platform) => {
           const file = asset(platform.suffix);
           return <article id={platform.id}><span className="ipdf-os" aria-hidden="true">{platform.mark}</span><h3>{platform.label}</h3><p>{platform.detail}</p><a className="ipdf-primary" href={file.url} download={file.name} aria-label={"Télécharger Inklura PDF pour " + platform.label}>Télécharger <span aria-hidden="true">↓</span></a><small>{platform.format} · {Math.round(file.size / 1000000)} Mo</small></article>;

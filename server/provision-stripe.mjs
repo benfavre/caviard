@@ -37,7 +37,7 @@ for(const plan of DOCUMENT_PLANS){
  result.prices[plan.id]=price.id;await save();console.log('Verified '+plan.id+': '+plan.priceCentsHt+' EUR cents excluding tax');
 }
 if(!result.portalConfiguration){
- const portal=await stripe.billingPortal.configurations.create({business_profile:{headline:'Inklura PDF — compte et facturation'},default_return_url:'https://outils.inklura.fr/inklura-pdf',features:{customer_update:{enabled:true,allowed_updates:['email','address','tax_id']},invoice_history:{enabled:true},payment_method_update:{enabled:true},subscription_cancel:{enabled:true,mode:'at_period_end'},subscription_update:{enabled:false}},metadata:{inkluraProduct:'inklura-pdf'}},{idempotencyKey:'inklura-pdf:portal:v1'});
+ const portal=await stripe.billingPortal.configurations.create({business_profile:{headline:'Inklura PDF — compte et facturation'},default_return_url:'https://pdf.inklura.fr/',features:{customer_update:{enabled:true,allowed_updates:['email','address','tax_id']},invoice_history:{enabled:true},payment_method_update:{enabled:true},subscription_cancel:{enabled:true,mode:'at_period_end'},subscription_update:{enabled:false}},metadata:{inkluraProduct:'inklura-pdf'}},{idempotencyKey:'inklura-pdf:portal:v1'});
  result.portalConfiguration=portal.id;await save();
 }
 if(process.argv.includes('--france')) {

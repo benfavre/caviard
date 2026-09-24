@@ -59,7 +59,7 @@ export class Payments {
     const customer = this.ledger.getAccount(account).customer;
     if (!customer) throw new BillingError('no_billing_account', 404);
     if (!this.portalConfiguration) throw new BillingError('portal_not_configured', 503);
-    const session = await this.stripe.billingPortal.sessions.create({ customer, configuration: this.portalConfiguration, return_url: 'https://outils.inklura.fr/inklura-pdf' });
+    const session = await this.stripe.billingPortal.sessions.create({ customer, configuration: this.portalConfiguration, return_url: 'https://pdf.inklura.fr/' });
     const url = new URL(session.url);
     if (url.protocol !== 'https:' || url.hostname !== 'billing.stripe.com') throw new BillingError('invalid_payment_url', 502);
     return { url: url.href };

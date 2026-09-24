@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://pdf.inklura.fr/sitemap.xml

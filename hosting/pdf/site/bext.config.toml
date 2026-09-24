@@ -1,0 +1,15 @@
+# Dedicated Inklura PDF product site. Credit API stays on its existing origin.
+[server]
+app_dir = "."
+[framework]
+type = "prism"
+[build]
+watch_dirs = ["src/app", "src/lib"]
+live_reload = true
+[build.css]
+route_css = true
+[compile]
+on_demand = true
+[rendering]
+mode = "isr"
+revalidate = 600
