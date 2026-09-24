@@ -1,5 +1,5 @@
 import { test, expect, _electron as electron } from "@playwright/test";
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp, rm, realpath } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 let app, page, directory;
@@ -10,8 +10,8 @@ async function launch() {
       ? { executablePath: process.env.CAVIARD_EXECUTABLE, args }
       : { args: [path.resolve("."), ...args] },
   );
-  expect(await app.evaluate(({ app }) => app.getPath("userData"))).toBe(
-    directory,
+  expect(await realpath(await app.evaluate(({ app }) => app.getPath("userData")))).toBe(
+    await realpath(directory),
   );
   page = await app.firstWindow();
   await expect(
