@@ -2,7 +2,7 @@
 
 [Télécharger l’application](https://pdf.inklura.fr/#telecharger) · [Essayer avec des PDF fictifs](https://pdf.inklura.fr/#exemples)
 
-Inklura PDF permet de caviarder des documents sur votre ordinateur. La version 1.3.0 nécessite un compte Inklura et offre 20 PDF d’essai par compte. Un crédit est consommé à l’export réussi ; l’import et l’analyse restent sans débit. Les packs et abonnements sont accessibles depuis « Offres et crédits », pour les adresses de facturation en France métropolitaine (TVA 20 %). L’assistant IA est facultatif : vous pouvez commencer immédiatement en dessinant les zones à masquer.
+Inklura PDF permet de caviarder des documents sur votre ordinateur. La version 1.4.0 nécessite un compte Inklura et offre 20 PDF d’essai par compte. Un crédit est consommé à l’export réussi ; l’import et l’analyse restent sans débit. Les packs et abonnements sont accessibles depuis « Offres et crédits », pour les adresses de facturation en France métropolitaine (TVA 20 %). L’assistant IA est facultatif : vous pouvez commencer immédiatement en dessinant les zones à masquer.
 
 ## Choisir le bon téléchargement
 
@@ -29,9 +29,7 @@ Les versions actuelles ne sont pas encore signées avec un certificat d’édite
 
 Votre original reste intact. Le PDF exporté est composé d’images : le texte PDF d’origine, les annotations, les formulaires, les pièces jointes et les métadonnées source ne sont pas conservés. Depuis la version 1.2.2, aucun dictionnaire Info, flux XMP, identifiant PDF, auteur, créateur/producteur ou date intégrée n’est ajouté à la copie. Les dates du système de fichiers et le nom du fichier restent distincts du contenu du PDF. Le texte du résultat n’est plus sélectionnable ni recherchable. Les informations qui n’ont pas été caviardées restent visibles.
 
-## Nouveaux espaces de travail (version de développement)
-
-Les fonctions suivantes seront disponibles dans la prochaine version ; le téléchargement public reste actuellement en 1.3.0.
+## Projets, recherche et relecture
 
 **Projets et récupération.** Ouvrez ce volet, donnez un nom au projet et cliquez sur « Enregistrer le projet ». Les PDF originaux, les zones, l’historique d’annulation et les pages relues sont conservés sur cet appareil. Choisissez ensuite un projet enregistré et « Ouvrir le projet » pour reprendre. « Supprimer le projet » efface ses copies locales lorsqu’aucun autre projet ou récupération ne les utilise.
 
@@ -67,7 +65,7 @@ L’OCR français/anglais permet d’analyser les scans et les PDF mêlant texte
 
 ## Questions fréquentes
 
-**Mon PDF ne s’ouvre pas.** Un fichier protégé par mot de passe doit être déverrouillé avant son import. Vérifiez aussi qu’il s’ouvre dans un lecteur PDF et qu’il ne s’agit pas d’un fichier endommagé.
+**Mon PDF ne s’ouvre pas.** Pour un fichier protégé, saisissez son mot de passe dans la fenêtre d’ouverture, réessayez ou ignorez-le pour continuer. Vérifiez aussi qu’il s’ouvre dans un lecteur PDF et qu’il ne s’agit pas d’un fichier endommagé.
 
 **L’analyse est lente.** La durée dépend du nombre de pages, de l’OCR et de votre ordinateur. Commencez par une seule page pour vérifier le résultat ; l’analyse peut être annulée. Vous pouvez toujours caviarder à la main.
 

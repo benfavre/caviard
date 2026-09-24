@@ -24,7 +24,7 @@ Inklura PDF helps you remove sensitive information before sharing a document. Dr
 
 ## Account and pricing
 
-Version 1.3.0 requires an Inklura account and an Internet connection for exports. Each account receives 20 trial PDFs once. An export consumes one credit only after the file is saved; import, analysis and canceled saves do not consume credits.
+Version 1.4.0 requires an Inklura account and an Internet connection for exports. Each account receives 20 trial PDFs once. An export consumes one credit only after the file is saved; import, analysis and canceled saves do not consume credits.
 
 Purchases are available in metropolitan France: packs of 100/500/1,000 PDFs valid for 12 months, or subscriptions of 20/100/500 PDFs per month and account. Prices include 20% French VAT; [see all prices](https://pdf.inklura.fr/tarifs). Monthly credits do not roll over. Documents and local AI processing stay on the computer. Previous evaluation installers are retired from distribution.
 
@@ -47,9 +47,9 @@ You can also import a whole folder, including subfolders, or drop it into the wo
 
 [Read the French getting-started guide →](GUIDE.fr.md)
 
-## Next version: document workspaces
+## Document workspaces
 
-The development version adds these workflows (the public download remains 1.3.0 until the next release):
+Version 1.4.0 adds these workflows:
 
 - **Local projects and recovery:** save source PDFs, redactions, undo history and page review states under a project name. Recovery is opt-in for each session. Both can be restored after restarting and explicitly deleted; passwords and account credentials are excluded.
 - **Folder navigation:** browse the imported hierarchy, search filenames and see whether a document is untouched, modified, reviewed or exported.
@@ -84,7 +84,7 @@ The assistant can miss information or select an entire text line. Review every p
 - **Local processing:** no document uploads, cloud inference or telemetry. Model downloads and application update checks use the network. The account-enabled edition also uses the network for login, credits and billing, without sending document content.
 - **A new exported file:** pages are rebuilt from redacted images; source text, annotations, forms, attachments and layers are not copied. Exports contain no document metadata: no Info dictionary, XMP, PDF document ID, author, title, creator/producer or embedded timestamps. Filesystem timestamps and filenames are outside the PDF.
 - **An intact original:** undo/redo, page navigation, region counts, zoom and unsaved-document protection help you review your work.
-- **An image-based result:** exported text cannot be selected or searched. Output uses up to 144 DPI, with a canvas size limit for unusually large pages. The development version opens password-protected PDFs with a password prompt; passwords are never stored in projects.
+- **An image-based result:** exported text cannot be selected or searched. Output uses up to 144 DPI, with a canvas size limit for unusually large pages. Password-protected PDFs open with a password prompt; passwords are never stored in projects.
 
 The interface is in French, with built-in help and keyboard shortcuts. Multiple documents produce separate exports.
 

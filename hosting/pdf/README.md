@@ -9,7 +9,7 @@ Shared Inklura UI imports resolve against the existing Bext `sites/shared/` tree
 ## Publish a release or page update
 
 ```sh
-hosting/pdf/deploy.sh 1.3.0
+hosting/pdf/deploy.sh 1.4.0
 scp -F "$INKLURA_SSH_CONFIG" 141.95.202.2-infra-sj278:/home/infra-sj278/bext/sites/pdf-inklura-prism/src/lib/inklura-pdf-release.json hosting/pdf/site/src/lib/inklura-pdf-release.json
 node hosting/pdf/verify-live.mjs
 ```
@@ -26,7 +26,7 @@ service restart is needed. The generated release manifest must be copied back an
 committed after each release.
 
 Downloads remain versioned, now on the dedicated host:
-`https://pdf.inklura.fr/downloads/inklura-pdf/1.3.0/`.
+`https://pdf.inklura.fr/downloads/inklura-pdf/1.4.0/`.
 The directory includes four installers, two example ZIPs, `release.json` and
 `SHA256SUMS.txt`. Previous stable versions remain accessible for rollback.
 
