@@ -20,6 +20,7 @@ export default function WorkspaceTools({
     [scope, setScope] = useState("all");
   const [profiles, setProfiles] = useState([]),
     [profileId, setProfileId] = useState("");
+  const [builtin, setBuiltin] = useState("");
   const [name, setName] = useState(""),
     [categories, setCategories] = useState([]),
     [literals, setLiterals] = useState(""),
@@ -56,6 +57,7 @@ export default function WorkspaceTools({
       .map((x) => x.trim())
       .filter(Boolean);
   function choose(id) {
+    setBuiltin(id.startsWith("builtin:") ? id : "");
     setProfileId(id.startsWith("builtin:") ? "" : id);
     const p = id.startsWith("builtin:")
       ? { ...POLICIES[id.slice(8)], literals: [], exclude: [] }
@@ -220,7 +222,7 @@ export default function WorkspaceTools({
               Charger un profil
               <select
                 disabled={locked}
-                value={profileId}
+              value={builtin || profileId}
                 onChange={(e) => choose(e.target.value)}
               >
                 <option value="">Nouveau profil</option>
@@ -301,7 +303,8 @@ export default function WorkspaceTools({
                   const next = [...profiles.filter((x) => x.id !== p.id), p];
                   writeProfiles(next);
                   setProfiles(next);
-                  setProfileId(p.id);
+                setProfileId(p.id);
+                setBuiltin("");
                   setMessage("Profil enregistré.");
                 } catch (e) {
                   setMessage(e.message);
@@ -317,7 +320,8 @@ export default function WorkspaceTools({
                   const next = profiles.filter((p) => p.id !== profileId);
                   writeProfiles(next);
                   setProfiles(next);
-                  setProfileId("");
+                setProfileId("");
+                setBuiltin("");
                   setMessage("Profil supprimé.");
                 } catch (e) {
                   setMessage(e.message);
