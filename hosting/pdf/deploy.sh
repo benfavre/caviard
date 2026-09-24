@@ -29,7 +29,7 @@ if test -d "$SITE/public/downloads"; then
  cp -al "$SITE/public/downloads/." "$CHECK/public/downloads/"
 fi
 python3 "$STAGE/mirror-release.py" "$VERSION" "$CHECK"
-(cd "$CHECK" && bun -e 'const Page=(await import("./src/app/page.tsx")).default; const Layout=(await import("./src/app/layout.tsx")).default; const html=String(Layout({children:Page()})); if(!html.includes("Choisissez votre ordinateur")||!html.includes("https://pdf.inklura.fr/"))throw Error("PDF render failed"); console.log("PRISM render passed",html.length);')
+(cd "$CHECK" && bun -e 'const Layout=(await import("./src/app/layout.tsx")).default; for(const [pathname,module,marker] of [["/","./src/app/page.tsx","Choisissez votre ordinateur"],["/tarifs","./src/app/tarifs/page.tsx","Comment acheter des crédits"],["/changelog","./src/app/changelog/page.tsx","Vos dossiers, du bureau à l’export"]]) {const Page=(await import(module)).default; const html=String(Layout({children:Page(),route:{pathname}})); if(!html.includes(marker)||!html.includes(`href="https://pdf.inklura.fr${pathname}"`)||!html.includes("/changelog"))throw Error(`PDF render failed: ${pathname}`); console.log("PRISM render passed",pathname,html.length);}')
 if ! test -e "$SITE/node_modules"; then ln -s ../outils-inklura-prism/node_modules "$SITE/node_modules"; fi
 # Only source and immutable verified files are copied; never generated .bext caches.
 rsync -a --exclude=node_modules --exclude=.bext "$CHECK/" "$SITE/"

@@ -19,7 +19,7 @@ operator's project SSH configuration (default `/home/pc1/dev/infra/dashboard/ssh
 No credentials belong in this repository.
 
 Deployment backs up owned source files outside the public root, verifies GitHub
-release SHA-256 digests, renders the complete page from a temporary sibling site,
+release SHA-256 digests, renders the home, pricing and changelog pages from a temporary sibling site,
 and then copies the verified files into production. Existing versioned installers
 cannot be replaced with different bytes. The source watcher reloads pages; no
 service restart is needed. The generated release manifest must be copied back and
@@ -71,6 +71,19 @@ light/dark themes, JavaScript disabled, catalog navigation, example download and
 an unrelated existing tool. Use `--pages-only` after source-only changes to skip
 re-downloading unchanged installers. Reports and screenshots go to
 `output/hosting-verification/`.
+
+## Release history
+
+The footer links to `/changelog`. Update `site/src/lib/changelog.ts` with each
+public stable release, newest first: its version, publication date, summary and
+detailed changes grouped by user-facing topic. Use the published GitHub notes as
+the source and exclude drafts and prereleases. Entries have permanent anchors
+such as `/changelog#v1.3.0`; the current-version badge follows the verified download
+manifest. The page is fully readable without JavaScript.
+
+After updating it, deploy and run `node hosting/pdf/verify-live.mjs --pages-only`.
+The checks cover footer access, version anchors, metadata, download navigation,
+and desktop/mobile layouts in light, dark and no-JavaScript modes.
 
 ## Product demonstrations
 

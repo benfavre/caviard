@@ -14,10 +14,11 @@ interface LayoutProps { title?: string; children?: any; route?: { pathname?: str
 
 export default function RootLayout(props: LayoutProps): any {
   const isPricing = /^\/tarifs\/?$/.test(props.route?.pathname ?? "/");
-  const sectionHref = (id: string) => (isPricing ? "/" : "") + "#" + id;
-  const canonical = "https://pdf.inklura.fr/" + (isPricing ? "tarifs" : "");
-  const pdfTitle = isPricing ? "Tarifs Inklura PDF — Essai, packs et abonnements" : "Inklura PDF — caviardage, anonymisation et IA locale";
-  const pdfDescription = isPricing ? "Découvrez les tarifs d’Inklura PDF : 20 PDF d’essai, packs valables 12 mois et abonnements mensuels. Prix HT et TTC, crédits et conditions." : "Préparez vos PDF avant de les partager avec une IA ou un partenaire. Caviardage local, aide à l’anonymisation et export sans métadonnées documentaires. 20 PDF d’essai.";
+  const isChangelog = /^\/changelog\/?$/.test(props.route?.pathname ?? "/");
+  const sectionHref = (id: string) => (isPricing || isChangelog ? "/" : "") + "#" + id;
+  const canonical = "https://pdf.inklura.fr/" + (isPricing ? "tarifs" : isChangelog ? "changelog" : "");
+  const pdfTitle = isPricing ? "Tarifs Inklura PDF — Essai, packs et abonnements" : isChangelog ? "Historique des versions — Inklura PDF" : "Inklura PDF — caviardage, anonymisation et IA locale";
+  const pdfDescription = isPricing ? "Découvrez les tarifs d’Inklura PDF : 20 PDF d’essai, packs valables 12 mois et abonnements mensuels. Prix HT et TTC, crédits et conditions." : isChangelog ? "Toutes les nouveautés et corrections des versions publiques d’Inklura PDF : import de dossiers, intégration Windows, macOS et Linux, exports et compte." : "Préparez vos PDF avant de les partager avec une IA ou un partenaire. Caviardage local, aide à l’anonymisation et export sans métadonnées documentaires. 20 PDF d’essai.";
   return (
     <html lang="fr">
       <head>
@@ -59,6 +60,7 @@ export default function RootLayout(props: LayoutProps): any {
             <Logo product="PDF" />
             <span className="sp"></span>
             <a href="/tarifs">Tarifs</a>
+            <a href="/changelog" aria-current={isChangelog ? "page" : undefined}>Historique des versions</a>
             <a href="https://outils.inklura.fr/">Tous les outils</a>
             <a href="https://ecosystem.inklura.fr" target="_blank" rel="noopener">L'écosystème ↗</a>
             <a href="https://onboarding.inklura.fr" target="_blank" rel="noopener">Créer mon espace ↗</a>

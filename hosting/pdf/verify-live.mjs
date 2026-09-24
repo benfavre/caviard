@@ -40,6 +40,7 @@ assert.equal((await fetch(toolsOrigin + '/api/inklura-pdf/health', {redirect:'ma
 assert.equal((await fetch(toolsOrigin + '/api/inklura-pdf/v1/account', {redirect:'manual'})).status, 401);
 assert.match(await (await fetch(origin + '/robots.txt')).text(), /Sitemap: https:\/\/pdf\.inklura\.fr\/sitemap.xml/);
 assert.match(await (await fetch(origin + '/sitemap.xml')).text(), /<loc>https:\/\/pdf\.inklura\.fr\/<\/loc>/);
+assert.match(await (await fetch(origin + '/sitemap.xml')).text(), /<loc>https:\/\/pdf\.inklura\.fr\/changelog<\/loc>/);
 const browser = await chromium.launch({ headless: true });
 try {
   for (const [label, width, dark, js] of [['desktop', 1440, false, true], ['mobile', 390, false, true], ['dark', 1440, true, true], ['no-js', 390, false, false]]) {
@@ -56,6 +57,7 @@ try {
     assert.equal(await page.locator('#preversion').count(), 0);
     assert.ok(!(await page.locator('body').innerText()).includes('en préparation'));
     assert.ok((await page.locator('footer').innerText()).includes('Packs et abonnements'));
+    assert.equal(await page.locator('footer a[href="/changelog"]').count(), 1);
     assert.equal(await page.locator('#offres').count(), 0);
     assert.equal(await page.locator('.ipdf-product-links a[href="/tarifs"]').count(), 1);
 
@@ -104,6 +106,28 @@ try {
     if (js) { await page.keyboard.press('Escape'); assert.equal(await page.locator('.ipdf-nav-menu').getAttribute('open'), null); }
     assert.deepEqual(errors, [], 'Pricing browser errors');
     await page.screenshot({ path: new URL('pricing-' + label + '.png', output).pathname, fullPage: true });
+    await page.locator('footer a[href="/changelog"]').click();
+    await page.waitForURL(origin + '/changelog');
+    await page.waitForLoadState('networkidle');
+    assert.equal(await page.title(), 'Historique des versions — Inklura PDF');
+    assert.equal(await page.locator('h1').count(), 1);
+    assert.equal(await page.locator('link[rel=canonical]').getAttribute('href'), origin + '/changelog');
+    assert.equal(await page.locator('footer a[aria-current="page"]').getAttribute('href'), '/changelog');
+    assert.equal(await page.locator('.ipdf-nav-download').getAttribute('href'), '/#telecharger');
+    assert.ok(await page.locator('.ipdf-release').count() >= 4);
+    assert.equal(await page.locator('.ipdf-release').first().getAttribute('id'), 'v' + release.version);
+    for (const link of await page.locator('.ipdf-version-sidebar a').all()) {
+      const id = (await link.getAttribute('href')).slice(1);
+      assert.equal(await page.locator(`[id="${id}"]`).count(), 1);
+    }
+    await page.locator('.ipdf-version-sidebar a[href="#v1.2.2"]').click();
+    assert.equal(new URL(page.url()).hash, '#v1.2.2');
+    assert.ok(await page.locator('[id="v1.2.2"]').isVisible());
+    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), label + ' changelog overflow');
+    assert.deepEqual(errors, [], 'Changelog browser errors');
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+    await page.screenshot({ path: new URL('changelog-' + label + '.png', output).pathname, fullPage: true });
+    results.pages.push({ label: 'changelog-' + label, overflow: false, errors });
     await context.close();
   }
   const page = await browser.newPage();
@@ -127,6 +151,6 @@ try {
   assert.equal(await download.failure(), null);
   const previous = await page.goto(toolsOrigin + '/fusionner-pdf');
   assert.equal(previous.status(), 200);
-  console.log('Page, mobile, dark mode, no-JS, catalog search and existing tool verified');
+  console.log('Home, pricing, changelog, mobile, dark mode, no-JS, catalog search and existing tool verified');
 } finally { await browser.close(); }
 await writeFile(new URL(pagesOnly ? 'pages-report.json' : 'report.json', output), JSON.stringify(results, null, 2) + '\n');

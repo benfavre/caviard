@@ -1,0 +1,27 @@
+.ipdf-changelog .ipdf-wrap{max-width:1200px;padding-top:32px}
+.ipdf-changelog-intro{padding:48px 0 46px;max-width:740px}
+.ipdf-changelog-intro h1{font-size:clamp(38px,4.5vw,60px);line-height:1.1}
+.ipdf-changelog-intro>p:not(.ipdf-eyebrow){max-width:600px;color:var(--mut);font-size:16px;line-height:1.8;margin:24px 0}
+.ipdf-changelog-layout{display:grid;grid-template-columns:215px minmax(0,1fr);gap:65px;align-items:start}
+.ipdf-version-sidebar{position:sticky;top:110px}
+.ipdf-version-sidebar nav>p{font-size:10px;letter-spacing:.1em;color:var(--mut);font-weight:700;margin:0 0 18px}
+.ipdf-version-sidebar ol{list-style:none;padding:0;margin:0;border-left:1px solid var(--line)}
+.ipdf-version-sidebar a{display:flex;flex-direction:column;gap:4px;padding:13px 18px;text-decoration:none;border-left:2px solid transparent;margin-left:-1px}
+.ipdf-version-sidebar a:hover,.ipdf-version-sidebar a:focus-visible{border-color:var(--ip-blue);background:var(--soft)}
+.ipdf-version-sidebar strong{font-size:15px}.ipdf-version-sidebar span{font-size:11px;color:var(--mut)}
+.ipdf-version-sidebar>p{font-size:11px;color:var(--mut);line-height:1.8;margin-top:24px}
+.ipdf-release{scroll-margin-top:110px;padding:0 0 42px;margin:0 0 42px;border-bottom:1px solid var(--line)}
+.ipdf-release:last-child{margin-bottom:0}.ipdf-release:target h2{color:var(--ip-blue)}
+.ipdf-release-meta{display:flex;align-items:center;flex-wrap:wrap;gap:10px 16px;margin-bottom:20px;font-size:11px;color:var(--mut)}
+.ipdf-release-meta>a{font-size:14px;font-weight:750;color:var(--ip-blue);text-decoration:none}
+.ipdf-release-meta>span{padding:4px 9px;border:1px solid #146bff35;border-radius:5px;color:var(--ip-blue);background:#146bff08;font-weight:650;font-size:10px}
+.ipdf-release h2{font-size:clamp(26px,3vw,34px);line-height:1.2}
+.ipdf-release-summary{color:var(--mut);font-size:15px;line-height:1.8;margin:16px 0 28px}
+.ipdf-release h3{font-size:16px;margin:28px 0 12px}.ipdf-release ul{padding-left:20px;margin:0;color:var(--ink-2);font-size:14px;line-height:1.85}
+.ipdf-release li+li{margin-top:10px}.ipdf-release li::marker{color:var(--mut)}
+.ipdf-release-source{display:inline-block;margin-top:28px}
+.ipdf-update-guide{display:grid;grid-template-columns:1fr 1.4fr;gap:50px;padding:32px;margin-top:50px;background:var(--soft);border:1px solid var(--line);border-radius:16px}
+.ipdf-update-guide h2{font-size:28px}.ipdf-update-guide p:not(.ipdf-eyebrow){font-size:13px;color:var(--mut);line-height:1.8;margin:0 0 16px}
+html[data-theme=dark] .ipdf-changelog{--ip-blue:#91baff}
+@media(max-width:800px){.ipdf-changelog-layout{grid-template-columns:1fr;gap:32px}.ipdf-version-sidebar{position:static}.ipdf-version-sidebar ol{display:flex;flex-wrap:wrap;border-left:0;border-bottom:1px solid var(--line);gap:8px}.ipdf-version-sidebar a{border-left:0;border-bottom:2px solid transparent;margin-left:0;padding:10px 12px}.ipdf-version-sidebar li{flex:1 1 120px}.ipdf-version-sidebar>p{margin:16px 0 0;max-width:560px}.ipdf-changelog-intro{padding:32px 0}.ipdf-update-guide{grid-template-columns:1fr;gap:22px;padding:24px}.ipdf-update-guide .ipdf-eyebrow{margin-bottom:12px}}
+@media(max-width:480px){.ipdf-changelog .ipdf-wrap{padding-inline:20px}.ipdf-release-meta{gap:8px 12px}.ipdf-release h2{font-size:27px}.ipdf-release ul{font-size:13px}.ipdf-release-summary{font-size:14px}.ipdf-release{padding-bottom:30px;margin-bottom:30px}.ipdf-update-guide h2{font-size:25px}}
