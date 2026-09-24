@@ -1,6 +1,8 @@
+import { ExportIllustration } from "./editorial-visuals";
 export function TechnicalDetails(): any {
   return <section className="ipdf-section ipdf-technical" id="securite" aria-labelledby="technical-title">
     <div className="ipdf-section-head"><div><p className="ipdf-eyebrow">CE QUI SE PASSE À L’EXPORT</p><h2 id="technical-title">Un nouveau PDF,<br />reconstruit à partir des pixels.</h2></div><p>La confidentialité repose sur la façon dont le fichier est fabriqué. Voici ce que l’application conserve, ce qu’elle retire et comment vérifier le résultat.</p></div>
+    <ExportIllustration />
     <ol className="ipdf-export-steps">
       <li><span>01 · RENDU LOCAL</span><h3>Chaque page devient une image</h3><p>PDF.js dessine la page sur un canevas en mémoire, sur votre ordinateur. Toutes les pages sont reconstruites, même celles sans zone sélectionnée.</p></li>
       <li><span>02 · CAVIARDAGE DES PIXELS</span><h3>Les zones choisies sont peintes en noir</h3><p>Les rectangles sont appliqués à cette image avant son incorporation au PDF. Les limites sont arrondies vers l’extérieur au pixel près pour couvrir la sélection.</p></li>
