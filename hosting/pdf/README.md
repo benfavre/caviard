@@ -9,7 +9,7 @@ Shared Inklura UI imports resolve against the existing Bext `sites/shared/` tree
 ## Publish a release or page update
 
 ```sh
-hosting/pdf/deploy.sh 1.2.1
+hosting/pdf/deploy.sh 1.2.2
 scp -F "$INKLURA_SSH_CONFIG" 141.95.202.2-infra-sj278:/home/infra-sj278/bext/sites/pdf-inklura-prism/src/lib/inklura-pdf-release.json hosting/pdf/site/src/lib/inklura-pdf-release.json
 node hosting/pdf/verify-live.mjs
 ```
@@ -26,7 +26,7 @@ service restart is needed. The generated release manifest must be copied back an
 committed after each release.
 
 Downloads remain versioned, now on the dedicated host:
-`https://pdf.inklura.fr/downloads/inklura-pdf/1.2.1/`.
+`https://pdf.inklura.fr/downloads/inklura-pdf/1.2.2/`.
 The directory includes four installers, two example ZIPs, `release.json` and
 `SHA256SUMS.txt`. Previous stable versions remain accessible for rollback.
 
@@ -71,3 +71,21 @@ light/dark themes, JavaScript disabled, catalog navigation, example download and
 an unrelated existing tool. Use `--pages-only` after source-only changes to skip
 re-downloading unchanged installers. Reports and screenshots go to
 `output/hosting-verification/`.
+
+## Product demonstrations
+
+The landing page includes an interactive SVG illustration, an on-demand MP4
+recording of the real manual web editor, French captions and chapter navigation.
+The video uses synthetic data and distinguishes the web capture from the desktop
+account/credit flow. Both the input and actually exported PDF can be downloaded.
+
+To refresh the recording, start `npm run dev -- --port 4175`, then run
+`node hosting/pdf/record-demo.mjs` (requires Playwright Chromium and ffmpeg).
+It writes media into `site/public/inklura-pdf/demos/` and records measured chapter
+times in `chapters.json`. Review the recording and synchronize the chapter links
+in `src/lib/demos.tsx` and `manual-fr.vtt` when timing changes.
+
+Run `node hosting/pdf/verify-demos.mjs` after publishing. It checks native
+checkboxes, first-load chapter seeking, video captions, reduced motion, mobile,
+dark mode and the no-JavaScript fallback. Set `INKLURA_DOWNLOAD_ORIGIN` to test a
+preview; its server must support byte ranges for video seeking.

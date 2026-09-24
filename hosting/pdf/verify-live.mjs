@@ -71,7 +71,8 @@ try {
       const href = await link.getAttribute("href");
       assert.ok(release.assets.some(a => a.url === href));
     }
-    assert.ok(await page.locator('.ipdf-screenshot img').evaluate(img => img.complete && img.naturalWidth > 0));
+    await page.locator('.ipdf-screenshot img').scrollIntoViewIfNeeded();
+    await page.waitForFunction(() => { const img = document.querySelector('.ipdf-screenshot img'); return img.complete && img.naturalWidth > 0; }, null, { timeout: 15000 });
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), label + ' horizontal overflow');
     assert.equal(await page.locator('.ipdf-hero').evaluate(el => getComputedStyle(el).display), 'grid');
     const summary = page.getByText('Puis-je utiliser l’application sans IA ?', { exact: true });
