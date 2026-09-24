@@ -57,8 +57,8 @@ try {
     assert.ok(!(await page.locator('body').innerText()).includes('en préparation'));
     assert.ok((await page.locator('footer').innerText()).includes('Packs et abonnements'));
     const offers = await page.locator('#offres').innerText();
-    assert.ok(offers.includes('Achats ouverts en France métropolitaine'));
-    assert.ok(offers.includes('TVA 20 %'));
+    assert.ok(offers.includes('Les offres sont disponibles à l’achat en France métropolitaine'));
+    assert.ok(offers.includes('TVA : 20 %'));
     for (const total of ['34,80', '118,80', '178,80', '5,88', '17,88', '47,88']) assert.ok(offers.includes(total + ' € TTC'));
 
     assert.equal(await page.locator('.ipdf-start li').count(), 3);
