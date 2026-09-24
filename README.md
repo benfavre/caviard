@@ -66,7 +66,7 @@ The assistant can miss information or select an entire text line. Review every p
 
 ## What happens to your PDF
 
-- **Local processing:** no document uploads, cloud inference or telemetry. Model downloads and application update checks use the network. The future account-enabled edition also uses the network for login, credits and billing, without sending document content.
+- **Local processing:** no document uploads, cloud inference or telemetry. Model downloads and application update checks use the network. The account-enabled edition also uses the network for login, credits and billing, without sending document content.
 - **A new exported file:** pages are rebuilt from redacted images; source text, annotations, forms, attachments, layers and metadata are not copied.
 - **An intact original:** undo/redo, page navigation, region counts, zoom and unsaved-document protection help you review your work.
 - **An image-based result:** exported text cannot be selected or searched. Output uses up to 144 DPI, with a canvas size limit for unusually large pages. Password-protected PDFs must be unlocked before import.

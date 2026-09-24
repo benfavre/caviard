@@ -38,7 +38,7 @@ export class AccountExports {
         }
         // A crash may happen before the reserve request reached the server.
         try { await this.account.request('/v1/exports/' + (saved ? 'commit' : 'release'), { operation: item.operation }); }
-        catch (error) { if (error.code === 'operation_not_found') {} else throw error; }
+        catch (error) { if (error.code !== 'operation_not_found' || saved) throw error; }
         await this.io.unlink(item.temporary).catch(() => {});
       } catch { retained.push(item); }
     }
@@ -65,7 +65,8 @@ export class AccountExports {
       } catch (error) {
         item.saving = false;
         await this.journal(pending).catch(() => {});
-        await this.reconcileUnlocked();
+        await this.reconcileUnlocked().catch(() => {});
+        await this.account.refresh().catch(() => {});
         throw error;
       }
       // A successful save is never presented as a failed export merely because

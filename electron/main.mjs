@@ -214,6 +214,7 @@ app
       apiUrl: (!app.isPackaged && process.env.INKLURA_PDF_ACCOUNT_API) || metadata.accountApi,
       development: !app.isPackaged,
       openExternal: (url) => shell.openExternal(url),
+      onSignedIn: () => accountExports.reconcile(),
     });
     accountExports = new AccountExports({ directory: path.join(app.getPath("userData"), "account-exports"), account: accountController });
     accountController.on("state", (state) => {

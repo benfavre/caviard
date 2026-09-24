@@ -54,3 +54,12 @@ test('rename failure does not charge when an identical target already exists',as
  const f=await fixture();await writeFile(f.file,bytes);const io={readFile,writeFile,unlink,mkdir,rename:async(from,to)=>{if(from.includes('.inklura-'))throw Error('target locked');return rename(from,to);}};
  try{const exports=new AccountExports({...f.options,io});await assert.rejects(()=>exports.save(f.file,bytes),/target locked/);assert.deepEqual([...f.states.values()],['released']);assert.deepEqual(await readFile(f.file),bytes);}finally{await f.cleanup();}
 });
+test('failed save refreshes the displayed balance after releasing its reservation',async()=>{
+ const f=await fixture();let refreshes=0;f.controller.refresh=async()=>{refreshes++;};
+ const io={readFile,rename,unlink,mkdir,writeFile:async(file,...args)=>{if(path.basename(file).startsWith('.inklura-'))throw Error('disk full');return writeFile(file,...args);}};
+ try{await assert.rejects(()=>new AccountExports({...f.options,io}).save(f.file,bytes),/disk full/);assert.equal(refreshes,2);assert.deepEqual([...f.states.values()],['released']);}finally{await f.cleanup();}
+});
+test('a missing reservation for an already saved PDF retains the recovery journal',async()=>{
+ const f=await fixture(({action})=>{if(action==='commit')throw Object.assign(Error('missing'),{code:'operation_not_found'});});
+ try{assert.equal((await f.exports.save(f.file,bytes)).accountingPending,true);assert.equal((await f.exports.entries()).length,1);}finally{await f.cleanup();}
+});
