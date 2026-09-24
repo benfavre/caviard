@@ -4,13 +4,13 @@ Service **déployé sur outils.inklura.fr ; achats en France métropolitaine ave
 
 ## Architecture
 
-Electron ouvre le navigateur système pour la connexion par code d’appareil RFC 8628 auprès du fournisseur Inklura existant (`https://auth.1clic.pro`). Le client OAuth public dédié `inklura-pdf-desktop` est enregistré : scopes `openid profile email offline_access`, grants `urn:ietf:params:oauth:grant-type:device_code` et `refresh_token`. Aucun secret client dans l’application. Ne pas réutiliser un client confidentiel du site SEO.
+Electron ouvre `https://manage.inklura.fr/manage/device?user_code=…` dans le navigateur système pour la connexion par code d’appareil RFC 8628. La page hébergée sur Manage utilise la session existante et exige une confirmation explicite du code. Le fournisseur OAuth (`https://auth.1clic.pro`) reste l’émetteur des jetons et fournit les endpoints device/token ; son URL de vérification n’est jamais ouverte par Electron. Le client OAuth public dédié `inklura-pdf-desktop` est enregistré : scopes `openid profile email offline_access`, grants `urn:ietf:params:oauth:grant-type:device_code` et `refresh_token`. Aucun secret client dans l’application. Ne pas réutiliser un client confidentiel du site SEO.
 
 Le processus principal conserve les jetons uniquement en mémoire. Le rendu React reçoit le solde et le code de connexion, jamais les jetons. Une nouvelle connexion est nécessaire après fermeture de l’application. Le service vérifie signature JWT, émetteur, audience dédiée, expiration, sujet et scope `openid`. L’identité du compte est le couple issuer/sub ; elle ne dépend pas d’un e-mail fourni par le client.
 
 SQLite conserve comptes, crédits, réservations, exports, commandes et reçus de webhooks. Un compte reçoit 20 crédits d’essai une seule fois. Les crédits PDF ne sont pas un portefeuille monétaire Inklura partagé : aucune conversion automatique d’un solde en euros n’est implémentée.
 
-Le traitement des documents reste local. L’API reçoit des identifiants aléatoires d’opération, jamais les fichiers, leurs noms ou leurs empreintes. Le journal de reprise local contient chemins et empreintes, avec permissions privées. Un export réserve un crédit, enregistre le fichier, puis confirme le débit. Annulation avant enregistrement : aucun débit. Erreur d’écriture : libération. Coupure après sauvegarde : maintien de la réservation puis confirmation idempotente à la prochaine synchronisation.
+Le traitement des documents reste local. L’API reçoit des identifiants aléatoires d’opération, jamais les fichiers, leurs noms ou leurs empreintes. Le journal de reprise local contient chemins et empreintes, avec permissions privées. Un export réserve un crédit, enregistre le fichier, puis confirme le débit. Annulation avant enregistrement : aucun débit. Erreur d’écriture : libération. Coupure après sauvegarde : maintien de la réservation puis confirmation idempotente à la prochaine synchronisation, automatiquement après connexion ou via Actualiser.
 
 Les réservations ne sont pas libérées automatiquement avec le temps : une application interrompue peut déjà avoir enregistré son PDF. Une désinstallation ou la perte du journal peut donc demander une intervention sur le compte. Ce choix évite de rendre gratuitement un export déjà enregistré. L’application ne garantit pas la comptabilité contre la modification de son code, la suppression des données locales ou une panne matérielle qui perd des écritures disque.
 
@@ -89,3 +89,9 @@ xvfb-run -a npm run test:desktop
 ```
 
 Tests du service : identité signée, isolation des comptes, 20 exports, refus au 21e, concurrence entre connexions SQLite, expiration, idempotence, authenticité des webhooks, prix et compte Stripe, abonnement et remboursement. Tests Electron unitaires : reprise après panne, écriture échouée, confidentialité des jetons et absence de données PDF dans les requêtes. Tests navigateur : affichage, connexion, achats fermés/ouverts, formulaire français/TTC, travail conservé à quota épuisé et redimensionnement de l’espace de travail.
+
+## Page de jumelage Manage
+
+La route `/manage/device` est livrée dans le dépôt Bext, sous `sites/inklura-manage-prism/src/app/manage/device/page.tsx`, avec le module dédié `src/lib/caviard-device.ts`. Elle utilise la session Manage validée par le backend et ne traite que le client `inklura-pdf-desktop`. La décision est atomique, limitée aux codes encore valides et en attente ; le sujet et son organisation canonique viennent du compte vérifié, jamais du formulaire. Les réponses sont privées (`no-store`) et les POST exigent l’origine Manage. Le navigateur ne reçoit aucun jeton OAuth.
+
+Vérification : tests `sites/inklura-manage-prism/tests/caviard-device.test.mjs` dans Bext ; tests Electron `tests/desktop/account.test.mjs` dans ce dépôt. Un changement de l’URL du navigateur ne doit jamais changer l’issuer des comptes existants (sinon leurs soldes seraient dissociés).

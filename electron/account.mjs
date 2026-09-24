@@ -1,6 +1,7 @@
 import { EventEmitter } from 'node:events';
 import { randomUUID } from 'node:crypto';
 const ISSUER = 'https://auth.1clic.pro';
+const PAIRING_PAGE = 'https://manage.inklura.fr/manage/device';
 const messages = {
   quota_exhausted: 'Vous avez utilisé tous vos crédits PDF. Votre travail reste ouvert.',
   sign_in_required: 'Connectez-vous à votre compte Inklura pour exporter.',
@@ -22,8 +23,8 @@ export function accountApiUrl(value, development = false) {
   return u.href.replace(/\/$/, '');
 }
 export class AccountController extends EventEmitter {
-  constructor({ apiUrl, development = false, fetcher = fetch, openExternal, now = () => Date.now(), setTimer = setTimeout, clearTimer = clearTimeout }) {
-    super(); Object.assign(this, { fetcher, openExternal, now, setTimer, clearTimer });
+  constructor({ apiUrl, development = false, fetcher = fetch, openExternal, now = () => Date.now(), setTimer = setTimeout, clearTimer = clearTimeout, onSignedIn = async () => {} }) {
+    super(); Object.assign(this, { fetcher, openExternal, now, setTimer, clearTimer, onSignedIn });
     this.apiUrl = accountApiUrl(apiUrl, development); this.phase = this.apiUrl ? 'loading' : 'disabled';
     this.config = null; this.account = null; this.tokens = null; this.flow = null; this.timer = null; this.message = ''; this.generation = 0;
     this.checkoutOperations = new Map();
@@ -68,11 +69,15 @@ export class AccountController extends EventEmitter {
       const response = await this.form(this.config.deviceEndpoint, { client_id: this.config.clientId, scope: 'openid profile email offline_access' });
       if (generation !== this.generation) return this.snapshot();
       const url = new URL(response.verification_uri_complete || response.verification_uri);
-      if (url.origin !== ISSUER || url.username || url.password || typeof response.device_code !== 'string' || !/^[A-Za-z0-9-]{4,30}$/.test(response.user_code) || !Number.isFinite(response.expires_in) || response.expires_in <= 0) throw new Error('Réponse de connexion invalide.');
+      if (![ISSUER, new URL(PAIRING_PAGE).origin].includes(url.origin) || url.username || url.password || typeof response.device_code !== 'string' || !response.device_code || !/^[A-Za-z0-9]{4}-[A-Za-z0-9]{4}$/.test(response.user_code) || !Number.isFinite(response.expires_in) || response.expires_in <= 0) throw new Error('Réponse de connexion invalide.');
       this.flow = { deviceCode: response.device_code, userCode: response.user_code, expires: this.now() + Math.min(response.expires_in, 900) * 1000, interval: Math.max(5, Math.min(response.interval || 5, 60)) };
       this.phase = 'waiting'; this.publish();
-      await this.openExternal(url.href);
-      this.schedule(generation);
+      // Rebuild the hosted URL from the validated public code only. Never forward
+      // provider query parameters, private device codes or redirect destinations.
+      const pairing = new URL(PAIRING_PAGE);
+      pairing.searchParams.set('user_code', response.user_code);
+      await this.openExternal(pairing.href);
+      if (generation === this.generation && this.flow) this.schedule(generation);
     } catch (error) { if (generation === this.generation) { this.phase = 'signed-out'; this.flow = null; this.message = error.message; this.publish(); } }
     return this.snapshot();
   }
@@ -86,6 +91,9 @@ export class AccountController extends EventEmitter {
       this.acceptTokens(tokens);
       this.flow = null;
       await this.refresh();
+      if (generation !== this.generation) return;
+      await this.onSignedIn();
+      if (generation === this.generation) await this.refresh();
     } catch (error) {
       if (generation !== this.generation) return;
       // Current Inklura provider carries device pending/slow_down in the
@@ -105,12 +113,17 @@ export class AccountController extends EventEmitter {
   async accessToken() {
     if (!this.tokens) throw new Error(messages.sign_in_required);
     if (this.tokens.expires < this.now() + 30000) {
-      if (!this.tokens.refresh) throw new Error(messages.session_expired);
+      if (!this.tokens.refresh) throw Object.assign(new Error(messages.session_expired), { code: 'session_expired' });
       if (!this.refreshing) {
         const generation = this.generation;
         const refreshing = this.form(this.config.tokenEndpoint, { client_id: this.config.clientId, grant_type: 'refresh_token', refresh_token: this.tokens.refresh }).then(tokens => {
           if (generation !== this.generation) throw new Error(messages.sign_in_required);
           this.acceptTokens(tokens);
+        }).catch(error => {
+          if (error.code === 'invalid_grant') {
+            error.code = 'session_expired'; error.message = messages.session_expired;
+          }
+          throw error;
         }).finally(() => { if (this.refreshing === refreshing) this.refreshing = null; });
         this.refreshing = refreshing;
       }
