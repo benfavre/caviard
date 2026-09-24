@@ -47,7 +47,7 @@ export function RedactionDemo(): any {
 
 export function Screencast(): any {
   return <section className="ipdf-section ipdf-cinema" id="demonstration" aria-labelledby="demo-title">
-    <div className="ipdf-section-head"><div><p className="ipdf-eyebrow">VOIR AVANT D’INSTALLER</p><h2 id="demo-title">Un PDF. Quelques gestes.<br />Une copie prête à partager.</h2></div><p>Une capture réelle de l’interface de caviardage manuel, avec un document fictif. Lancez la vidéo et suivez chaque étape.</p></div>
+    <div className="ipdf-section-head"><div><p className="ipdf-eyebrow">VOIR AVANT D’INSTALLER</p><h2 id="demo-title">Découvrez comment caviarder<br />un PDF, étape par étape.</h2></div><p>Cette vidéo montre le caviardage manuel d’un document fictif dans l’application. Suivez les étapes, de l’import à l’export.</p></div>
     <div className="ipdf-film-layout"><div className="ipdf-film">
       <div className="ipdf-film-bar"><span><i /><i /><i /></span><span>Inklura PDF · caviardage manuel</span><span>CAPTURE RÉELLE</span></div>
       <video id="ipdf-screencast" controls playsInline preload="none" poster="/inklura-pdf/demos/manual-poster.jpg" width="1280" height="900" aria-label="Démonstration du caviardage manuel, sans audio" aria-describedby="screencast-description">

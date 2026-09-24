@@ -15,7 +15,7 @@ export function SharingIllustration(): any {
     <rect x="24" y="116" width="148" height="22" rx="2" fill="#17263b"/><rect x="24" y="156" width="191" height="22" rx="2" fill="#17263b"/>
     <text x="24" y="217" fill="#19324e" font-size="12" font-weight="700">Objet de la mission</text><path d="M24 235H218M24 248H205M24 261H216M24 274H174" stroke="#92acd0" stroke-width="4"/></g>
     <g transform="translate(233 396)"><rect width="221" height="40" rx="20" fill="#146bff"/><path d="m18 20 5 5 10-11" fill="none" stroke="white" stroke-width="2"/><text x="44" y="25" fill="white" font-size="12" font-weight="600">Relire avant de transmettre</text></g>
-  </svg><figcaption>Les identités sont masquées. Le contexte restant doit aussi être vérifié.</figcaption></figure>;
+  </svg><figcaption>Les noms et les coordonnées sont masqués. Vérifiez aussi les autres informations avant de partager la copie.</figcaption></figure>;
 }
 
 export function ExportIllustration(): any {
