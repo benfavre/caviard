@@ -18,6 +18,40 @@ try {
     await page.waitForTimeout(500);
     assert.equal(await page.locator('.mask-name').evaluate(el=>getComputedStyle(el).opacity),'0');
     await page.getByLabel('Nom',{exact:true}).check();
+    const menu = page.locator('.ipdf-nav-menu');
+    await menu.locator('summary').click();
+    assert.equal(await menu.getAttribute('open'), '');
+    assert.ok(await menu.getByRole('link', {name:'Tous les outils'}).isVisible());
+    if (js) {
+      await page.keyboard.press('Escape');
+      assert.equal(await menu.getAttribute('open'), null);
+      assert.ok(await menu.locator('summary').evaluate(el => el === document.activeElement));
+      await menu.locator('summary').click();
+      await page.mouse.click(5, 120); // Outside the dropdown, including narrow screens.
+      assert.equal(await menu.getAttribute('open'), null);
+      if (width < 1050) {
+        await menu.locator('summary').click();
+        await menu.locator('a[href="#securite"]').click();
+        assert.equal(await menu.getAttribute('open'), null);
+      } else await page.locator('.ipdf-product-links a[href="#securite"]').click();
+      await page.waitForFunction(() => document.querySelector('.ipdf-product-links a[href="#securite"]').getAttribute('aria-current') === 'location');
+      await page.locator('[data-demo-undo]').click();
+      assert.equal(await page.getByLabel('Nom', {exact:true}).isChecked(), false);
+      await page.locator('[data-demo-redo]').click();
+      assert.equal(await page.getByLabel('Nom', {exact:true}).isChecked(), true);
+      await page.locator('[data-demo-clear]').click();
+      assert.equal(await page.locator('.ipdf-demo-options input:checked').count(), 0);
+      assert.ok((await page.locator('[data-demo-count]').innerText()).startsWith('0 zones'));
+      await page.locator('[data-demo-undo]').click();
+      assert.equal(await page.locator('.ipdf-demo-options input:checked').count(), 3);
+      await page.locator('.hit-email').click();
+      assert.equal(await page.getByLabel('E-mail', {exact:true}).isChecked(), false);
+      await page.locator('[data-demo-undo]').click();
+      assert.equal(await page.getByLabel('E-mail', {exact:true}).isChecked(), true);
+      await page.locator('.ipdf-demo-assistant summary').click();
+      assert.equal(await page.locator('.ipdf-demo-assistant').getAttribute('open'), null);
+      await page.locator('.ipdf-demo-assistant summary').click();
+    } else await menu.locator('summary').click();
     if(js){
       // Exercise chapter seeking as the first media request (preload=none).
       await page.locator('[data-video-time="19"]').click();
@@ -36,7 +70,7 @@ try {
     await page.evaluate(()=>window.scrollTo({top:0,behavior:'instant'}));
     await page.screenshot({path:'output/hosting-verification/'+label+'.png',fullPage:true});
     assert.deepEqual(errors,[]);
-    console.log(label+': checkboxes, layout, '+(js?'video, chapters, captions, motion':'no-JS fallback')+' passed');
+    console.log(label+': navigation, '+(js?'selection history, ':'native checkboxes, ')+'layout, '+(js?'video, chapters, captions, motion':'no-JS fallback')+' passed');
     await context.close();
   }
 } finally { await browser.close(); }

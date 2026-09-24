@@ -16,10 +16,9 @@ function asset(suffix: string) {
 }
 
 export default function Page(): any {
-  return <main className="ipdf">
-    <link rel="stylesheet" href="/inklura-pdf/page.css?v=20260924-technical-1" />
+  return <main className="ipdf" id="contenu" tabIndex={-1}>
+    <link rel="stylesheet" href="/inklura-pdf/page.css?v=20260924-editor-2" />
     <div className="ipdf-wrap">
-      <a className="ipdf-back" href="https://outils.inklura.fr/">← Tous les outils Inklura</a>
       <section className="ipdf-hero" aria-labelledby="ipdf-title">
         <div>
           <div className="ipdf-eyebrow"><span /> INKLURA PDF · ESSAI GRATUIT</div>
@@ -85,6 +84,6 @@ export default function Page(): any {
         <details><summary>Faut-il un compte Inklura ?</summary><p>Oui, un compte Inklura et une connexion Internet sont nécessaires pour exporter. Le compte inclut 20 PDF d’essai, une seule fois. Vous pouvez ensuite acheter un pack ou un abonnement depuis l’application. Aucun document PDF n’est envoyé au service de facturation.</p></details>
       </section>
     </div>
-    <script src="/inklura-pdf/demos.js?v=20260924-1" defer />
+    <script src="/inklura-pdf/demos.js?v=20260924-editor-1" defer />
   </main>;
 }

@@ -1,4 +1,3 @@
-import { WorkspaceMenu } from "../../../shared/inklura-ui/src/WorkspaceMenu";
 import { ECOSYSTEM_MARKETING_CSS as SHARED_MARKETING_CSS } from "../../../shared/inklura-ui/src/ecosystem-marketing";
 import { workspaceBrandCss, workspaceSurfaceCss, workspaceColor } from "../../../shared/inklura-ui/src/workspace-brand";
 const ECOSYSTEM_MARKETING_CSS = workspaceBrandCss(SHARED_MARKETING_CSS, "outils") + workspaceSurfaceCss("outils", "body[data-inklura-public]");
@@ -36,26 +35,19 @@ export default function RootLayout(props: LayoutProps): any {
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
         <style>{BRAND_CSS}</style>
         <style>{ECOSYSTEM_MARKETING_CSS}</style>
+        <link rel="stylesheet" href="/inklura-pdf/navigation.css?v=20260924-2" />
         <noscript><style>{`.reveal{opacity:1!important;transform:none!important}.anim{animation:none!important}`}</style></noscript>
       </head>
       <body data-inklura-public="20260906">
         <div className="grain" aria-hidden="true"></div>
 
-        <nav className="nav">
-          <Logo product="PDF" />
-          <span className="spacer"></span>
-          <span className="links">
-            <a href="https://outils.inklura.fr/" className="hide-sm">Tous les outils</a>
-            <a href="https://ecosystem.inklura.fr/tools" target="_blank" rel="noopener" className="hide-sm">Écosystème</a>
-          </span>
-          <button className="iconbtn" type="button" aria-label="Changer de thème" onclick="window.__toggleOutilsTheme&&window.__toggleOutilsTheme()">
-            <Icon name="moon" size={17} className="dark:hidden" />
-            <Icon name="sun" size={17} className="hidden dark:block" />
-          </button>
-          <a className="btn sm ghost hide-xs" href="https://inklura.fr" target="_blank" rel="noopener">Accéder à Inklura</a>
-          <a className="btn pri sm" href="https://onboarding.inklura.fr" target="_blank" rel="noopener">Créer mon espace</a>
-          <WorkspaceMenu />
-        </nav>
+        <a className="ipdf-skip" href="#contenu">Aller au contenu</a>
+        <header className="ipdf-site-header"><nav className="ipdf-product-nav" aria-label="Navigation Inklura PDF">
+          <a className="ipdf-product-logo" href="/" aria-label="Inklura PDF — accueil"><span className="ipdf-product-mark"><img src="/inklura-pdf/app-icon.svg" width="32" height="32" alt="" /></span><strong>Inklura<span>.</span></strong><span className="ipdf-product-tag">PDF</span></a>
+          <div className="ipdf-product-links"><a href="#demonstration" data-section-link>Démo</a><a href="#assistant" data-section-link>Assistant</a><a href="#securite" data-section-link>Confidentialité</a><a href="#offres" data-section-link>Tarifs</a></div>
+          <div className="ipdf-nav-actions"><button className="ipdf-theme-toggle" type="button" aria-label="Changer de thème" onclick="window.__toggleOutilsTheme&&window.__toggleOutilsTheme()"><Icon name="moon" size={17} className="ipdf-theme-moon" /><Icon name="sun" size={17} className="ipdf-theme-sun" /></button><a className="ipdf-nav-download" href="#telecharger" data-section-link>Télécharger <Icon name="download" size={15} /></a>
+          <details className="ipdf-nav-menu"><summary aria-label="Menu de navigation"><Icon name="menu" size={19} /><span>Menu</span></summary><div className="ipdf-nav-panel"><div className="ipdf-mobile-links"><p>INKLURA PDF</p><a href="#demonstration" data-section-link>Voir la démo <span>01</span></a><a href="#assistant" data-section-link>Assistant local <span>02</span></a><a href="#securite" data-section-link>Confidentialité &amp; métadonnées <span>03</span></a><a href="#offres" data-section-link>Tarifs &amp; crédits <span>04</span></a><a href="#telecharger" data-section-link>Télécharger l’application <Icon name="download" size={15} /></a></div><div className="ipdf-nav-ecosystem"><p>VOTRE ESPACE INKLURA</p><a href="https://inklura.fr">Accéder à Inklura <span>↗</span></a><a href="https://onboarding.inklura.fr">Créer mon espace <span>↗</span></a><a href="https://outils.inklura.fr/">Tous les outils <span>↗</span></a></div></div></details></div>
+        </nav></header>
 
         {props.children}
 

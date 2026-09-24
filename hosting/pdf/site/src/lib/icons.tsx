@@ -82,9 +82,9 @@ export function Icon(props: { name: string; className?: string; size?: number; s
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth={props.strokeWidth ?? 1.75}
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      stroke-width={props.strokeWidth ?? 1.75}
+      stroke-linecap="round"
+      stroke-linejoin="round"
       aria-hidden="true"
       dangerouslySetInnerHTML={{ __html: inner }}
     />

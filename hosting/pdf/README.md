@@ -74,7 +74,8 @@ re-downloading unchanged installers. Reports and screenshots go to
 
 ## Product demonstrations
 
-The landing page includes an interactive SVG illustration, an on-demand MP4
+The landing page includes an editor-style interactive SVG simulation with a page
+thumbnail, selection panel and undo/redo history, an on-demand MP4
 recording of the real manual web editor, French captions and chapter navigation.
 The video uses synthetic data and distinguishes the web capture from the desktop
 account/credit flow. Both the input and actually exported PDF can be downloaded.
@@ -86,6 +87,7 @@ times in `chapters.json`. Review the recording and synchronize the chapter links
 in `src/lib/demos.tsx` and `manual-fr.vtt` when timing changes.
 
 Run `node hosting/pdf/verify-demos.mjs` after publishing. It checks native
-checkboxes, first-load chapter seeking, video captions, reduced motion, mobile,
+checkboxes, direct document selection, undo/redo, responsive navigation, keyboard
+menu dismissal, first-load chapter seeking, video captions, reduced motion, mobile,
 dark mode and the no-JavaScript fallback. Set `INKLURA_DOWNLOAD_ORIGIN` to test a
 preview; its server must support byte ranges for video seeking.
