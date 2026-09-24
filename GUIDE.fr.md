@@ -1,6 +1,6 @@
 # Bien démarrer avec Inklura PDF
 
-[Télécharger l’application](https://outils.inklura.fr/inklura-pdf#telecharger) · [Essayer avec des PDF fictifs](https://outils.inklura.fr/inklura-pdf#exemples)
+[Télécharger l’application](https://pdf.inklura.fr/#telecharger) · [Essayer avec des PDF fictifs](https://pdf.inklura.fr/#exemples)
 
 Inklura PDF permet de caviarder des documents sur votre ordinateur. La version 1.2.0 nécessite un compte Inklura et offre 20 PDF d’essai par compte. Un crédit est consommé à l’export réussi ; l’import et l’analyse restent sans débit. Les packs et abonnements sont accessibles depuis « Offres et crédits », pour les adresses de facturation en France métropolitaine (TVA 20 %). L’assistant IA est facultatif : vous pouvez commencer immédiatement en dessinant les zones à masquer.
 
@@ -55,7 +55,7 @@ L’OCR français/anglais permet d’analyser les scans et les PDF mêlant texte
 
 **Le texte du PDF exporté ne se sélectionne plus.** C’est le fonctionnement prévu de l’export en images. Il évite de conserver le texte PDF caché sous les zones noires.
 
-**Comment mettre l’application à jour ?** Windows et Linux disposent des mises à jour intégrées. Exportez vos modifications avant de redémarrer pour installer la mise à jour. Sur macOS, téléchargez la nouvelle version depuis la [page Inklura PDF](https://outils.inklura.fr/inklura-pdf).
+**Comment mettre l’application à jour ?** Windows et Linux disposent des mises à jour intégrées. Exportez vos modifications avant de redémarrer pour installer la mise à jour. Sur macOS, téléchargez la nouvelle version depuis la [page Inklura PDF](https://pdf.inklura.fr/).
 
 **Que reçoit un serveur ?** Aucun PDF, texte extrait ou instruction n’est envoyé. Les téléchargements de modèles et les vérifications de mises à jour utilisent Internet. Le traitement s’exécute sur votre appareil, sans télémétrie. La future version avec compte utilisera aussi Internet pour la connexion, le solde et la facturation, sans envoyer le contenu des documents. [Détails techniques](AI.md).
 

@@ -1,6 +1,6 @@
 # Inklura PDF 1.2.1 — connexion et crédits fiabilisés
 
-[Télécharger pour Windows, macOS et Linux](https://outils.inklura.fr/inklura-pdf)
+[Télécharger pour Windows, macOS et Linux](https://pdf.inklura.fr/)
 
 - Connexion dans votre navigateur sur `manage.inklura.fr/manage/device`, avec vérification du compte, du code et des accès demandés. La page commune Inklura affiche le temps restant et bloque les codes expirés.
 - Mise à jour automatique du solde après ouverture du paiement et au retour dans l’application. Les crédits sont ajoutés après confirmation de Stripe.

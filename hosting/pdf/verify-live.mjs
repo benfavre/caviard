@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { readFile, mkdir, writeFile } from 'node:fs/promises';
 import { chromium } from '@playwright/test';
-const origin = process.env.INKLURA_DOWNLOAD_ORIGIN || 'https://outils.inklura.fr';
+const origin = process.env.INKLURA_DOWNLOAD_ORIGIN || 'https://pdf.inklura.fr';
+const toolsOrigin = 'https://outils.inklura.fr';
 const release = JSON.parse(await readFile(new URL('./site/src/lib/inklura-pdf-release.json', import.meta.url)));
 const output = new URL('../../output/hosting-verification/', import.meta.url);
 await mkdir(output, { recursive: true });
@@ -29,6 +30,16 @@ for (const asset of pagesOnly ? [] : release.assets) {
   results.downloads.push({ name: asset.name, bytes, sha256: asset.sha256, range: 206 });
   console.log('Download verified:', asset.name);
 }
+for (const path of ['/inklura-pdf', '/inklura-pdf/', '/inklura-pdf?source=migration', '/inklura-pdf/page.css?v=1.2.0-1', release.assets[0].url]) {
+  const response = await fetch(toolsOrigin + path, { redirect: 'manual' });
+  assert.equal(response.status, 301, path);
+  const expected = path.startsWith('/inklura-pdf?') ? '/?source=migration' : ['/inklura-pdf', '/inklura-pdf/'].includes(path) ? '/' : path;
+  assert.equal(response.headers.get('location'), origin + expected);
+}
+assert.equal((await fetch(toolsOrigin + '/api/inklura-pdf/health', {redirect:'manual'})).status, 200);
+assert.equal((await fetch(toolsOrigin + '/api/inklura-pdf/v1/account', {redirect:'manual'})).status, 401);
+assert.match(await (await fetch(origin + '/robots.txt')).text(), /Sitemap: https:\/\/pdf\.inklura\.fr\/sitemap.xml/);
+assert.match(await (await fetch(origin + '/sitemap.xml')).text(), /<loc>https:\/\/pdf\.inklura\.fr\/<\/loc>/);
 const browser = await chromium.launch({ headless: true });
 try {
   for (const [label, width, dark, js] of [['desktop', 1440, false, true], ['mobile', 390, false, true], ['dark', 1440, true, true], ['no-js', 390, false, false]]) {
@@ -36,11 +47,11 @@ try {
     const page = await context.newPage();
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
-    const response = await page.goto(origin + '/inklura-pdf', { waitUntil: 'networkidle' });
+    const response = await page.goto(origin + '/', { waitUntil: 'networkidle' });
     assert.equal(response.status(), 200);
     assert.match(await page.title(), /^Inklura PDF/);
     assert.equal(await page.locator('h1').count(), 1);
-    assert.equal(await page.locator('link[rel=canonical]').getAttribute('href'), origin + '/inklura-pdf');
+    assert.equal(await page.locator('link[rel=canonical]').getAttribute('href'), origin + '/');
     assert.equal(await page.locator('#telecharger a[download]').count(), 4);
     assert.equal(await page.locator('#preversion').count(), 0);
     assert.ok(!(await page.locator('body').innerText()).includes('en préparation'));
@@ -73,16 +84,16 @@ try {
     await context.close();
   }
   const page = await browser.newPage();
-  await page.goto(origin, { waitUntil: 'networkidle' });
+  await page.goto(toolsOrigin, { waitUntil: 'networkidle' });
   const cards = page.locator('a[data-tool-card]');
   assert.ok(await cards.count() >= 51, 'Preserve existing tools');
   await page.locator('[data-filter-search]').fill('caviardage');
-  const tile = page.locator('a[data-tool-card][href="/inklura-pdf"]');
+  const tile = page.locator('a[data-tool-card][href="https://pdf.inklura.fr/"]');
   await tile.waitFor({ state: 'visible' });
   await tile.click();
-  await page.waitForURL('**/inklura-pdf');
+  await page.waitForURL(origin + '/');
   assert.match(await page.title(), /^Inklura PDF/);
-  await page.goto(origin + '/inklura-pdf#mac-apple');
+  await page.goto(origin + '/#mac-apple');
   const target = page.locator('#mac-apple');
   await target.waitFor({ state: 'visible' });
   assert.equal(await target.evaluate(el => getComputedStyle(el).borderTopColor), 'rgb(20, 107, 255)');
@@ -91,7 +102,7 @@ try {
   const download = await downloadEvent;
   assert.equal(download.suggestedFilename(), 'example-pdfs.zip');
   assert.equal(await download.failure(), null);
-  const previous = await page.goto(origin + '/fusionner-pdf');
+  const previous = await page.goto(toolsOrigin + '/fusionner-pdf');
   assert.equal(previous.status(), 200);
   console.log('Page, mobile, dark mode, no-JS, catalog search and existing tool verified');
 } finally { await browser.close(); }
