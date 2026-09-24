@@ -1,17 +1,19 @@
-# Inklura PDF 1.2.0 — compte et achats en France
+# Inklura PDF 1.2.1 — connexion et crédits fiabilisés
 
 [Télécharger pour Windows, macOS et Linux](https://outils.inklura.fr/inklura-pdf)
 
-- Interface de bureau sur toute la fenêtre : document adaptable, assistant latéral à défilement indépendant, export toujours accessible et offres dans une fenêtre dédiée.
-- Compte Inklura et 20 PDF d’essai par compte, une seule fois. Un crédit par export enregistré ; import, analyse et annulation gratuits.
-- Packs de 100/500/1 000 PDF valables 12 mois, et abonnements de 20/100/500 PDF par mois et par compte.
-- Achats ouverts en France métropolitaine via Stripe ACTIV communication. Prix HT et TTC, TVA 20 %, adresse française obligatoire. Pas de ventes internationales pour ce lancement.
-- Reprise des crédits après interruption et factures accessibles dans le portail de facturation.
-- Les PDF, l’OCR et l’assistant restent locaux. Connexion Internet nécessaire pour les crédits ; reconnexion au compte après fermeture de l’application.
+- Connexion dans votre navigateur sur `manage.inklura.fr/manage/device`, avec vérification du compte, du code et des accès demandés. La page commune Inklura affiche le temps restant et bloque les codes expirés.
+- Mise à jour automatique du solde après ouverture du paiement et au retour dans l’application. Les crédits sont ajoutés après confirmation de Stripe.
+- Reprise du même paiement inachevé, nouvelle tentative possible si la page de paiement a expiré, et messages plus précis en cas d’erreur.
+- Reprise fiable des exports après reconnexion ou interruption : un seul crédit par fichier enregistré, aucun crédit consommé si l’enregistrement échoue ou est annulé.
+- Codes promotionnels pris en charge dans Stripe, y compris les commandes entièrement remisées, sans double attribution des crédits.
+- Votre document reste ouvert lorsque les crédits sont épuisés ; les offres restent accessibles pour en ajouter.
 
-Cette version stable remplace la préversion et l’ancienne évaluation. Les installations Windows et Linux reçoivent la mise à jour avec confirmation de redémarrage. Sur macOS, téléchargez le nouvel installateur. Les exécutables restent non signés.
+Les PDF, l’OCR et l’assistant restent locaux. Internet est nécessaire pour la connexion, les crédits et les achats. Les achats restent réservés à la France métropolitaine, avec TVA de 20 %.
 
-Tests automatisés du service, des crédits, de la TVA, du refus des pays non pris en charge et des applications empaquetées. Pages de paiement Activ réelles et montants TTC vérifiés sans prélèvement ; aucun paiement réel effectué pour ces vérifications.
+Windows et Linux disposent des mises à jour intégrées avec confirmation du redémarrage. Sur macOS, téléchargez le nouvel installateur. Les exécutables restent non signés.
+
+Vérifications : tests automatisés de connexion, de crédits, de paiement, de redaction PDF et des applications empaquetées. Achat de contrôle en production à 0 € avec un coupon à usage unique : ajout de 100 crédits, débit d’un crédit et absence de double débit vérifiés sur un compte isolé. Aucun prélèvement bancaire effectué ; coupon désactivé après vérification.
 
 ## Sponsored by
 
