@@ -87,7 +87,9 @@ test("macOS open-file and second-instance events add documents without replacing
   const third = path.join(root, "third.pdf");
   await copyFile("output/pdf/examples/invoice-01.pdf", third);
   const args = process.env.CAVIARD_EXECUTABLE ? [third] : [path.resolve("."), third];
-  const second = spawn(app.process().spawnfile, args, { stdio: "ignore" });
+  // Playwright's process is a cmd.exe wrapper on Windows; launch Electron itself.
+  const executable = await app.evaluate(() => process.execPath);
+  const second = spawn(executable, args, { stdio: "ignore" });
   const [code] = await once(second, "exit");
   expect(code).toBe(0);
   await expect(page.getByLabel("Document actif").locator("option")).toHaveCount(3);
