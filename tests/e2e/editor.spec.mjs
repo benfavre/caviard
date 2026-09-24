@@ -5,7 +5,7 @@ import { loadPdf, render, manifest } from "../helpers.mjs";
 const fixture = (name) => path.resolve("output/pdf/examples", name);
 const markSelector = ".redaction:not(.draft)";
 async function upload(page, names = ["invoice-01.pdf"]) {
-  await page.locator("input[type=file]").setInputFiles(names.map(fixture));
+  await page.locator("input[type=file]:not([webkitdirectory])").setInputFiles(names.map(fixture));
   await expect(page.locator(".drawing-layer")).toBeVisible();
 }
 async function draw(page, start = [0.15, 0.15], end = [0.8, 0.3]) {
@@ -206,7 +206,7 @@ for (const name of [
   "encrypted-03.pdf",
 ])
   test(`rejects ${name} and recovers for a valid PDF`, async ({ page }) => {
-    await page.locator("input[type=file]").setInputFiles(fixture(name));
+    await page.locator("input[type=file]:not([webkitdirectory])").setInputFiles(fixture(name));
     await expect(page.getByRole("alert")).toContainText(
       name.startsWith("encrypted") ? "mot de passe" : "endommagé",
     );
@@ -230,7 +230,7 @@ test("mixed invalid and valid file batch loads the valid documents", async ({
 });
 
 test("rejects non-PDF file type", async ({ page }) => {
-  await page.locator("input[type=file]").setInputFiles({
+  await page.locator("input[type=file]:not([webkitdirectory])").setInputFiles({
     name: "notes.txt",
     mimeType: "text/plain",
     buffer: Buffer.from("example"),
@@ -393,10 +393,10 @@ test("export failure is visible and can be retried without losing selections", a
   await upload(page);
   await draw(page);
   await page.evaluate(() => {
-    const original = HTMLCanvasElement.prototype.toDataURL;
-    HTMLCanvasElement.prototype.toDataURL = function (...args) {
-      HTMLCanvasElement.prototype.toDataURL = original;
-      throw new Error("Intentional encoding failure");
+    const original = HTMLCanvasElement.prototype.toBlob;
+    HTMLCanvasElement.prototype.toBlob = function (callback) {
+      HTMLCanvasElement.prototype.toBlob = original;
+      callback(null);
     };
   });
   await page.getByRole("button", { name: /Exporter/ }).click();
@@ -411,7 +411,7 @@ test("export failure is visible and can be retried without losing selections", a
 test("Unicode filenames survive import and download", async ({
   page,
 }, info) => {
-  await page.locator("input[type=file]").setInputFiles({
+  await page.locator("input[type=file]:not([webkitdirectory])").setInputFiles({
     name: "Facture été_日本語.pdf",
     mimeType: "application/pdf",
     buffer: await readFile(fixture("invoice-01.pdf")),
@@ -447,7 +447,7 @@ test("closing or switching is disabled while additional files are being read", a
     };
   });
   await page
-    .locator("input[type=file]")
+    .locator("input[type=file]:not([webkitdirectory])")
     .setInputFiles(fixture("contract-01.pdf"));
   await expect(
     page.getByRole("button", { name: "Fermer ce document", exact: true }),

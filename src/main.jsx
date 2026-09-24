@@ -22,8 +22,10 @@ import {
   faCheck,
   faLock,
   faExpand,
+  faFolderOpen,
 } from "@fortawesome/free-solid-svg-icons";
 import "@fontsource-variable/inter";
+import { droppedFiles, relativeName, fileKey, MAX_DOCUMENTS, MAX_IMPORT_BYTES } from "./imports.mjs";
 import { emptyHistory, redactionHistory } from "./history.mjs";
 import AccountStatus from "./AccountStatus.jsx";
 import { exportRedacted, normalizeRect } from "./pdf.mjs";
@@ -229,6 +231,11 @@ function App() {
   const [error, setError] = useState(""),
     [notice, setNotice] = useState(""),
     [dragging, setDragging] = useState(false);
+  const folderInput = useRef(null),
+    importLock = useRef(false),
+    pendingImport = useRef(true);
+  const [importSignal, setImportSignal] = useState(0);
+  const bridge = window.caviardDesktop;
   const input = useRef(null),
     help = useRef(null),
     privacy = useRef(null),
@@ -251,42 +258,119 @@ function App() {
     },
     [],
   );
-  async function openFiles(files) {
-    if (loading || busy || aiBusy || !workerReady || !files?.length) return;
-    setError("");
-    setNotice("");
+  useEffect(() => bridge?.onDocuments?.(() => {
+    pendingImport.current = true;
+    setImportSignal((value) => value + 1);
+  }), []);
+  useEffect(() => {
+    if (!bridge?.takeDocuments || !workerReady || loading || busy || aiBusy ||
+      importLock.current || !pendingImport.current) return;
+    pendingImport.current = false;
+    void importSelection(async () => {
+      const selection = await bridge.takeDocuments();
+      return { ...selection, files: selection.files.map((file) => ({
+        ...file, nativeId: file.id, type: "application/pdf",
+        arrayBuffer: () => bridge.readDocument(file.id),
+      })) };
+    });
+  }, [workerReady, loading, busy, aiBusy, importSignal]);
+  async function importSelection(selection) {
+    if (importLock.current || loading || busy || aiBusy || !workerReady) return;
+    importLock.current = true;
     setLoading(true);
-    const added = [],
-      errors = [];
-    for (const file of files) {
-      if (!/\.pdf$/i.test(file.name) && file.type !== "application/pdf") {
-        errors.push(`${file.name} : choisissez un fichier PDF.`);
-        continue;
+    let files = [];
+    const added = [], errors = [];
+    try {
+      const result = await selection();
+      files = result.files;
+      if (!files.length && !result.messages?.length) return;
+      setError("");
+      setNotice("");
+      const messages = [...(result.messages || [])];
+      const existing = new Set(docsRef.current.map((doc) => doc.sourceKey));
+      let bytes = docsRef.current.reduce((total, doc) => total + (doc.size || 0), 0);
+      let duplicates = 0, ignored = 0;
+      const ordered = files.some((file) => relativeName(file).includes("/"))
+        ? [...files].sort((a, b) => relativeName(a).localeCompare(relativeName(b), "en", { numeric: true }))
+        : files;
+      for (const file of ordered) {
+        if (!/\.pdf$/i.test(file.name) && file.type !== "application/pdf") {
+          if (file.relativePath || file.webkitRelativePath) ignored++;
+          else errors.push(`${file.name} : choisissez un fichier PDF.`);
+          continue;
+        }
+        const sourceKey = fileKey(file);
+        if (existing.has(sourceKey)) { duplicates++; continue; }
+        if (docsRef.current.length + added.length >= MAX_DOCUMENTS || bytes + file.size > MAX_IMPORT_BYTES) {
+          messages.push("Espace de travail limité à 250 PDF et 512 Mo. Fermez des documents avant de continuer.");
+          break;
+        }
+        let task;
+        try {
+          setProgress(`Importation ${added.length + 1} / ${files.length} — ${relativeName(file)}`);
+          task = pdfjs.getDocument({
+            worker: sharedWorker,
+            data: new Uint8Array(await file.arrayBuffer()),
+            isEvalSupported: false,
+          });
+          const pdf = await task.promise;
+          added.push({ id: crypto.randomUUID(), name: file.name,
+            relativePath: relativeName(file), sourceKey, size: file.size, pdf, task });
+          existing.add(sourceKey);
+          bytes += file.size;
+        } catch (e) {
+          await task?.destroy();
+          errors.push(`${relativeName(file)} : ${e.name === "PasswordException"
+            ? "ce PDF est protégé par un mot de passe. Déverrouillez-le avant de l’ouvrir."
+            : "ce fichier est endommagé ou ne peut pas être ouvert."}`);
+        }
       }
-      let task;
-      try {
-        task = pdfjs.getDocument({
-          worker: sharedWorker,
-          data: new Uint8Array(await file.arrayBuffer()),
-          isEvalSupported: false,
-        });
-        const pdf = await task.promise;
-        added.push({ id: crypto.randomUUID(), name: file.name, pdf, task });
-      } catch (e) {
-        await task?.destroy();
-        errors.push(
-          `${file.name} : ${e.name === "PasswordException" ? "ce PDF est protégé par un mot de passe. Déverrouillez-le avant de l’ouvrir." : "ce fichier est endommagé ou ne peut pas être ouvert."}`,
-        );
+      if (added.length) {
+        const previous = docsRef.current;
+        docsRef.current = [...previous, ...added];
+        setDocuments(docsRef.current);
+        setActive(previous.length);
+        setPage(1);
       }
+      if (duplicates) messages.push(`${duplicates} PDF déjà ouvert(s), ignoré(s).`);
+      if (ignored) messages.push(`${ignored} fichier(s) non PDF ignoré(s).`);
+      if (!added.length && !errors.length && !messages.length) messages.push("Aucun PDF trouvé dans cette sélection.");
+      setError(errors.join(" "));
+      setNotice(messages.join(" "));
+    } catch (e) {
+      setError(e.message || "Impossible d’importer cette sélection.");
+    } finally {
+      const ids = files.filter((file) => file.nativeId).map((file) => file.nativeId);
+      if (ids.length) await bridge.discardDocuments(ids).catch(() => {});
+      importLock.current = false;
+      setLoading(false);
+      setProgress("");
+      if (input.current) input.current.value = "";
+      if (folderInput.current) folderInput.current.value = "";
     }
-    if (added.length) {
-      setDocuments((previous) => [...previous, ...added]);
-      setActive(documents.length);
-      setPage(1);
+  }
+  function openFiles(files) {
+    if (files?.length) void importSelection(async () => ({ files }));
+  }
+  function chooseDocuments(folder = false) {
+    if (bridge?.chooseDocuments) {
+      void bridge.chooseDocuments(folder).catch(() => setError("Impossible d’ouvrir le sélecteur de fichiers."));
+    } else (folder ? folderInput : input).current.click();
+  }
+  function dropDocuments(event) {
+    event.preventDefault();
+    setDragging(false);
+    if (busy || aiBusy || loading || !workerReady) return;
+    if (bridge?.importDroppedFiles) {
+      void bridge.importDroppedFiles(Array.from(event.dataTransfer.files))
+        .catch(() => setError("Impossible d’importer cette sélection."));
+    } else {
+      const files = droppedFiles(event.dataTransfer);
+      void importSelection(async () => {
+        const selected = await files;
+        return { files: selected, messages: selected.length ? [] : ["Aucun PDF trouvé dans cette sélection."] };
+      });
     }
-    setError(errors.join(" "));
-    setLoading(false);
-    if (input.current) input.current.value = "";
   }
   const isDirty = (doc) =>
     (marks[doc.id]?.length || 0) > 0 &&
@@ -304,7 +388,9 @@ function App() {
     edit("remove", { markId });
   }
   function removeDocument(removed) {
-    setDocuments((previous) => previous.filter((doc) => doc.id !== removed.id));
+    docsRef.current = docsRef.current.filter((doc) => doc.id !== removed.id);
+    setDocuments(docsRef.current);
+    setSavedMarks((previous) => { const next = { ...previous }; delete next[removed.id]; return next; });
     dispatch({ type: "close", id: removed.id });
     setActive(0);
     setPage(1);
@@ -333,17 +419,26 @@ function App() {
     setBusy(true);
     setError("");
     setNotice("");
+    let batch, saved = 0;
     try {
+      if (documents.length > 1 && bridge?.beginBatchExport) {
+        batch = await bridge.beginBatchExport(documents.map(({ id, name, relativePath }) => ({ id, name, relativePath })));
+        if (!batch) {
+          setNotice("Enregistrement annulé. Les caviardages restent disponibles.");
+          return;
+        }
+      }
       for (const doc of documents) {
         const bytes = await exportRedacted(doc.pdf, marks[doc.id] || [], {
           onProgress: (done, total) =>
-            setProgress(`${doc.name} — ${done} / ${total}`),
+            setProgress(`${saved + 1} / ${documents.length} PDF — ${doc.relativePath || doc.name} — page ${done} / ${total}`),
         });
         const filename = `${doc.name.replace(/\.pdf$/i, "")}-caviarde.pdf`;
         if (window.caviardDesktop) {
-          const result = await window.caviardDesktop.savePdf(filename, bytes);
+          const result = await window.caviardDesktop.savePdf(filename, bytes,
+            batch ? { id: batch.id, documentId: doc.id } : undefined);
           if (result.error) {
-            setError(result.error);
+            setError(`${result.error}${saved ? ` ${saved} PDF déjà enregistré(s).` : ""}`);
             return;
           }
           if (!result.saved) {
@@ -362,18 +457,22 @@ function App() {
           link.click();
           setTimeout(() => URL.revokeObjectURL(url), 60000);
         }
+        saved++;
+        setSavedMarks((previous) => ({ ...previous, [doc.id]: marks[doc.id] || [] }));
       }
-      setSavedMarks(marks);
       setNotice(
-        window.caviardDesktop
+        batch
+          ? `${saved} PDF enregistrés dans « ${batch.name} ». Les sous-dossiers sont conservés.`
+          : window.caviardDesktop
           ? "Votre PDF caviardé a été enregistré. Le contenu des zones sélectionnées a été supprimé."
           : "Votre PDF caviardé a été téléchargé. Le contenu des zones sélectionnées a été supprimé.",
       );
     } catch {
       setError(
-        "Le PDF n’a pas pu être exporté. Essayez avec un document plus petit.",
+        `Le PDF n’a pas pu être exporté. Essayez avec un document plus petit.${saved ? ` ${saved} PDF déjà enregistré(s).` : ""}`,
       );
     } finally {
+      if (batch) await bridge.endBatchExport(batch.id).catch(() => {});
       setBusy(false);
       setProgress("");
     }
@@ -481,6 +580,14 @@ function App() {
           hidden
           onChange={(event) => openFiles(Array.from(event.target.files))}
         />
+        <input ref={folderInput} type="file" webkitdirectory="" multiple hidden
+          aria-label="Dossier de PDF"
+          onChange={(event) => {
+            const files = Array.from(event.target.files);
+            if (files.length) openFiles(files);
+            else setNotice("Aucun PDF trouvé dans ce dossier.");
+          }} />
+        {loading && progress && <p className="import-progress" role="status">{progress}</p>}
         {error && (
           <div className="message error" role="alert">
             <span>{error}</span>
@@ -508,11 +615,7 @@ function App() {
                 if (!event.currentTarget.contains(event.relatedTarget))
                   setDragging(false);
               }}
-              onDrop={(event) => {
-                event.preventDefault();
-                setDragging(false);
-                openFiles(Array.from(event.dataTransfer.files));
-              }}
+              onDrop={dropDocuments}
             >
               <div className="upload-art" aria-hidden="true">
                 <div className="paper-back" />
@@ -532,11 +635,11 @@ function App() {
                   ? "Ouverture de vos documents…"
                   : "Déposez vos PDF ici"}
               </h2>
-              <p>Un document ou plusieurs. Tout reste sur votre appareil.</p>
+              <p>Des PDF ou un dossier avec ses sous-dossiers. Tout reste sur votre appareil.</p>
               <button
                 className="primary choose"
                 disabled={loading || !workerReady}
-                onClick={() => input.current.click()}
+                onClick={() => chooseDocuments()}
               >
                 <Icon icon={faPlus} />
                 {!workerReady
@@ -545,8 +648,12 @@ function App() {
                     ? "Chargement…"
                     : "Choisir des fichiers"}
               </button>
+              <button className="folder-choose" disabled={loading || !workerReady}
+                onClick={() => chooseDocuments(true)}>
+                <Icon icon={faFolderOpen} /> Importer un dossier
+              </button>
               <span className="file-hint">
-                Fichiers PDF · Traitement local · Sans envoi de documents
+                PDF et dossiers · Jusqu’à 250 PDF / 512 Mo · Traitement local
               </span>
             </section>
             <section
@@ -586,7 +693,10 @@ function App() {
             </section>
           </>
         ) : (
-          <section className="editor" aria-label="Éditeur de caviardage">
+          <section className={`editor ${dragging ? "dragging" : ""}`} aria-label="Éditeur de caviardage"
+            onDragOver={(event) => { event.preventDefault(); setDragging(true); }}
+            onDragLeave={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setDragging(false); }}
+            onDrop={dropDocuments}>
             <div className="editor-top">
               <div className="file-heading">
                 <Icon icon={faFilePdf} />
@@ -602,7 +712,7 @@ function App() {
                 >
                   {documents.map((doc, i) => (
                     <option key={doc.id} value={i}>
-                      {doc.name}
+                      {doc.relativePath || doc.name}
                     </option>
                   ))}
                 </select>
@@ -622,10 +732,14 @@ function App() {
               <div className="actions">
                 <button
                   disabled={busy || aiBusy || loading}
-                  onClick={() => input.current.click()}
+                  onClick={() => chooseDocuments()}
                 >
                   <Icon icon={faPlus} />
                   <span>Ajouter des fichiers</span>
+                </button>
+                <button disabled={busy || aiBusy || loading} onClick={() => chooseDocuments(true)}
+                  title="Importer un dossier et ses sous-dossiers">
+                  <Icon icon={faFolderOpen} /><span>Importer un dossier</span>
                 </button>
                 <button
                   title="Fermer ce document"
@@ -835,6 +949,8 @@ function App() {
                 <p>
                   Le PDF exporté sera composé d’images, sans métadonnées
                   documentaires. Son texte ne sera plus sélectionnable.
+                  {documents.length > 1 && bridge?.beginBatchExport &&
+                    " Choisissez une destination : un nouveau dossier contiendra toutes les copies, avec leurs sous-dossiers."}
                 </p>
               </div>
               <button

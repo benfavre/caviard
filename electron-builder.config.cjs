@@ -34,15 +34,21 @@ module.exports = {
     },
   ],
   electronUpdaterCompatibility: ">=2.16",
-  linux: { target: ["AppImage"], category: "Office", icon: "build/icon.png" },
+  linux: {
+    target: ["AppImage"], category: "Office", icon: "build/icon.png",
+    mimeTypes: ["application/pdf", "inode/directory"],
+    executableArgs: ["--", "%F"],
+  },
   win: { target: ["nsis"], icon: "build/icon.png", executableName: "Inklura PDF" },
   nsis: {
+    include: "build/installer.nsh",
     oneClick: false,
     perMachine: false,
     allowToChangeInstallationDirectory: true,
     deleteAppDataOnUninstall: false,
   },
   mac: {
+    fileAssociations: [{ ext: "pdf", name: "PDF", role: "Editor", rank: "Alternate" }],
     executableName: "Inklura PDF",
     target: ["dmg", "zip"],
     category: "public.app-category.productivity",

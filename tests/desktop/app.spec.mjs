@@ -5,6 +5,7 @@ const version = JSON.parse(
   readFileSync(new URL("../../package.json", import.meta.url), "utf8"),
 ).version;
 import { loadPdf, render } from "../helpers.mjs";
+import { fixtureAccount } from "./helpers.mjs";
 let app, page, errors;
 test.beforeEach(async () => {
   app = await electron.launch({
@@ -29,7 +30,7 @@ test.afterEach(async () => {
 });
 async function edit() {
   await page
-    .locator("input[type=file]")
+    .locator("input[type=file]:not([webkitdirectory])")
     .setInputFiles(path.resolve("output/pdf/examples/invoice-01.pdf"));
   const layer = page.locator(".drawing-layer");
   await expect(layer).toBeVisible();
@@ -42,22 +43,6 @@ async function edit() {
   });
   await page.mouse.up();
   await expect(page.locator(".redaction:not(.draft)")).toHaveCount(1);
-}
-// Substitute only the account boundary inside the Playwright-controlled main
-// process. The shipped application has no test flag or authentication bypass.
-async function fixtureAccount() {
-  await app.evaluate(async ({ app }) => {
-    const require = process.getBuiltinModule('module').createRequire(app.getAppPath() + '/package.json');
-    const { AccountController } = require(app.getAppPath() + '/electron/account.mjs');
-    AccountController.prototype.refresh = async function () {
-      this.account = { accountId: 'packaged-test', remaining: 20, reserved: 0 };
-      this.phase = 'signed-in'; return this.publish();
-    };
-    AccountController.prototype.request = async function (route) {
-      if (!['/v1/exports/reserve', '/v1/exports/commit', '/v1/exports/release'].includes(route)) throw Error('Unexpected fixture request');
-      return { remaining: 20 };
-    };
-  });
 }
 test("sandboxed renderer and bundled assets work without a server", async () => {
   expect(page.url()).toBe("caviard://app/");
@@ -89,7 +74,7 @@ test("sandboxed renderer and bundled assets work without a server", async () => 
   else if (info.platform !== "darwin") await expect(button).toBeDisabled();
 });
 test("native Save dialog exports black pixels and removes searchable text", async ({}, info) => {
-  await fixtureAccount();
+  await fixtureAccount(app);
   await edit();
   const destination = info.outputPath("redacted.pdf");
   await app.evaluate(({ dialog }, filePath) => {

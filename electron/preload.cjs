@@ -1,5 +1,18 @@
-const { contextBridge, ipcRenderer } = require("electron");
+const { contextBridge, ipcRenderer, webUtils } = require("electron");
 contextBridge.exposeInMainWorld("caviardDesktop", {
+  chooseDocuments: (folder = false) => ipcRenderer.invoke("documents:choose", folder),
+  importDroppedFiles: (files) => ipcRenderer.invoke("documents:drop",
+    Array.from(files).map((file) => webUtils.getPathForFile(file)).filter(Boolean)),
+  takeDocuments: () => ipcRenderer.invoke("documents:take"),
+  readDocument: (id) => ipcRenderer.invoke("documents:read", id),
+  discardDocuments: (ids) => ipcRenderer.invoke("documents:discard", ids),
+  onDocuments: (callback) => {
+    const listener = () => callback();
+    ipcRenderer.on("documents:available", listener);
+    return () => ipcRenderer.removeListener("documents:available", listener);
+  },
+  beginBatchExport: (documents) => ipcRenderer.invoke("documents:begin-export", documents),
+  endBatchExport: (id) => ipcRenderer.invoke("documents:end-export", id),
   accountState: () => ipcRenderer.invoke("account:state"),
   signIn: () => ipcRenderer.invoke("account:sign-in"),
   cancelSignIn: () => ipcRenderer.invoke("account:cancel"),
@@ -21,8 +34,8 @@ contextBridge.exposeInMainWorld("caviardDesktop", {
     return () => ipcRenderer.removeListener("ai:models", listener);
   },
   info: () => ipcRenderer.invoke("desktop:info"),
-  savePdf: (filename, data) =>
-    ipcRenderer.invoke("desktop:save-pdf", { filename, data }),
+  savePdf: (filename, data, batch) =>
+    ipcRenderer.invoke("desktop:save-pdf", { filename, data, batch }),
   setDocumentState: (state) =>
     ipcRenderer.send("desktop:document-state", {
       dirty: !!state.dirty,

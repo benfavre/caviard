@@ -6,7 +6,7 @@ HOST="${INKLURA_DEPLOY_HOST:-141.95.202.2-infra-sj278}"
 SSH_CONFIG="${INKLURA_SSH_CONFIG:-/home/pc1/dev/infra/dashboard/ssh-config}"
 SSH=(ssh -F "$SSH_CONFIG" -o BatchMode=yes)
 SITE=/home/infra-sj278/bext/sites/pdf-inklura-prism
-VERSION="${1:-1.2.2}"
+VERSION="${1:-1.3.0}"
 [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || exit 2
 STAGE=$("${SSH[@]}" "$HOST" 'mktemp -d /tmp/inklura-pdf-deploy.XXXXXX')
 [[ "$STAGE" =~ ^/tmp/inklura-pdf-deploy\.[A-Za-z0-9]+$ ]] || exit 2

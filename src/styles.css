@@ -484,12 +484,31 @@ footer button:hover {
   box-shadow: 0 6px 25px #12274b04;
 }
 .editor-top {
+  flex-wrap: wrap;
   padding: 14px 18px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 15px;
   border-bottom: 1px solid var(--border);
+}
+.folder-choose {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 10px 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.editor.dragging {
+  outline: 3px solid var(--blue);
+  outline-offset: 2px;
+}
+.import-progress {
+  font-size: 12px;
+  overflow-wrap: anywhere;
+  color: var(--muted);
 }
 .file-heading {
   display: flex;

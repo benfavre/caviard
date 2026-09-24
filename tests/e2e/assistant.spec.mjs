@@ -69,7 +69,7 @@ async function setup(page, phase = "ready") {
     page.getByRole("button", { name: "Choisir des fichiers", exact: true }),
   ).toBeEnabled();
   await page
-    .locator("input[type=file]")
+    .locator("input[type=file]:not([webkitdirectory])")
     .setInputFiles({
       name: "synthetic-ai.pdf",
       mimeType: "application/pdf",

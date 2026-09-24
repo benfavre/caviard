@@ -35,7 +35,7 @@ test('device code is displayed and login can be canceled', async ({ page }) => {
 });
 test('exhausted quota blocks export without discarding the PDF or redaction selections', async ({ page }) => {
   await setup(page);
-  await page.locator('input[type=file]').setInputFiles(path.resolve('output/pdf/examples/invoice-01.pdf'));
+  await page.locator('input[type=file]:not([webkitdirectory])').setInputFiles(path.resolve('output/pdf/examples/invoice-01.pdf'));
   const layer = page.locator('.drawing-layer'); await expect(layer).toBeVisible(); await layer.scrollIntoViewIfNeeded();
   const b = await layer.boundingBox();
   await page.mouse.move(b.x + b.width * .15, b.y + b.height * .15); await page.mouse.down();

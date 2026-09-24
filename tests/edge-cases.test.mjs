@@ -154,6 +154,36 @@ test("failed render releases the canvas and page resources", async () => {
   assert.equal(cleaned, true);
 });
 
+for (const stage of ["null blob", "encoding exception", "blob read failure"]) {
+  test(`failed PNG export releases resources: ${stage}`, async () => {
+    const canvas = canvasFactory();
+    let cleaned = false;
+    canvas.toBlob = (callback) => {
+      if (stage === "encoding exception") throw new Error("encoding failed");
+      callback(stage === "null blob" ? null : {
+        arrayBuffer: async () => { throw new Error("blob read failed"); },
+      });
+    };
+    const pdf = {
+      numPages: 1,
+      getPage: async () => ({
+        getViewport: ({ scale }) => ({ width: 100 * scale, height: 100 * scale }),
+        render: () => ({ promise: Promise.resolve() }),
+        cleanup: () => { cleaned = true; },
+      }),
+    };
+    const progress = [];
+    await assert.rejects(exportRedacted(pdf, [], {
+      createCanvas: () => canvas,
+      onProgress: (...args) => progress.push(args),
+    }));
+    assert.equal(canvas.width, 1);
+    assert.equal(canvas.height, 1);
+    assert.equal(cleaned, true);
+    assert.deepEqual(progress, []);
+  });
+}
+
 test("successful export does not mutate the original document or selection list", async () => {
   const input = await loadPdf(path.join(corpusDir, "invoice-01.pdf"));
   let output;

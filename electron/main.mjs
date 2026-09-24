@@ -14,6 +14,9 @@ import { Readable } from "node:stream";
 import { ModelStore } from "./ai-models.mjs";
 import { AccountController } from "./account.mjs";
 import { AccountExports } from "./account-export.mjs";
+import { DocumentImports, launchPaths } from "./document-imports.mjs";
+import { BatchExports } from "./batch-exports.mjs";
+import { installDesktopEntry, removeDesktopEntry } from "./linux-integration.mjs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
@@ -29,6 +32,7 @@ import {
 import { UpdateController } from "./updater.mjs";
 const here = path.dirname(fileURLToPath(import.meta.url));
 const dist = path.join(here, "../dist");
+app.setName("Inklura PDF");
 protocol.registerSchemesAsPrivileged([
   {
     scheme: "caviard",
@@ -48,6 +52,33 @@ let window,
   allowClose = false,
   closingPrompt = false;
 let documentState = { dirty: false, busy: false };
+let initialized = false;
+const imports = new DocumentImports(() => {
+  if (window && !window.isDestroyed()) window.webContents.send("documents:available");
+});
+const batchExports = new BatchExports();
+function receivePaths(paths) {
+  if (paths.length) void imports.enqueue(paths).catch(() => {});
+  if (window && !window.isDestroyed()) {
+    if (window.isMinimized()) window.restore();
+    window.focus();
+  } else if (initialized) void createWindow();
+}
+app.on("open-file", (event, filePath) => {
+  event.preventDefault();
+  receivePaths([filePath]);
+});
+const initialPaths = launchPaths(process.argv, process.cwd(), app.isPackaged);
+// Chromium can reorder second-instance argv. Forward our already-parsed paths
+// explicitly so runtime flags cannot turn the application directory into input.
+const primary = app.requestSingleInstanceLock({ paths: initialPaths });
+if (!primary) app.quit();
+else {
+  if (initialPaths.length) receivePaths(initialPaths);
+  app.on("second-instance", (_event, _argv, _cwd, data) => {
+    receivePaths(Array.isArray(data?.paths) ? data.paths : []);
+  });
+}
 const csp =
   "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data: blob:; connect-src 'self' data: blob:; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'";
 const mime = {
@@ -142,8 +173,7 @@ async function createWindow() {
   });
   await window.loadURL(APP_URL);
 }
-app.setName("Inklura PDF");
-app
+if (primary) app
   .whenReady()
   .then(async () => {
     modelStore = new ModelStore(
@@ -276,17 +306,43 @@ app
       trusted(event);
       documentState = { dirty: !!state?.dirty, busy: !!state?.busy };
     });
-    ipcMain.handle("desktop:save-pdf", async (event, { filename, data }) => {
-      trusted(event);
-      const bytes = pdfBuffer(data);
-      const name = safePdfName(filename);
-      const { canceled, filePath } = await dialog.showSaveDialog(window, {
-        title: "Enregistrer le PDF caviardé",
-        defaultPath: path.join(app.getPath("downloads"), name),
-        filters: [{ name: "Document PDF", extensions: ["pdf"] }],
-        properties: ["showOverwriteConfirmation", "createDirectory"],
+    async function pickDocuments(folder = false) {
+      const { canceled, filePaths } = await dialog.showOpenDialog(window, {
+        title: folder ? "Importer un dossier de PDF" : "Ouvrir des PDF",
+        properties: folder ? ["openDirectory"] : ["openFile", "multiSelections"],
+        ...(folder ? {} : { filters: [{ name: "Documents PDF", extensions: ["pdf"] }] }),
       });
-      if (canceled || !filePath) return { saved: false };
+      if (!canceled) await imports.enqueue(filePaths);
+    }
+    ipcMain.handle("documents:choose", async (event, folder) => {
+      trusted(event);
+      await pickDocuments(folder === true);
+    });
+    ipcMain.handle("documents:drop", async (event, paths) => {
+      trusted(event);
+      if (!Array.isArray(paths) || paths.length > 250) throw new Error("Invalid selection");
+      await imports.enqueue(paths);
+    });
+    ipcMain.handle("documents:take", (event) => { trusted(event); return imports.take(); });
+    ipcMain.handle("documents:read", (event, id) => { trusted(event); return imports.read(id); });
+    ipcMain.handle("documents:discard", (event, ids) => {
+      trusted(event);
+      if (Array.isArray(ids)) imports.discard(ids);
+    });
+    ipcMain.handle("documents:begin-export", async (event, documents) => {
+      trusted(event);
+      const { canceled, filePaths } = await dialog.showOpenDialog(window, {
+        title: "Choisir le dossier de destination",
+        properties: ["openDirectory", "createDirectory"],
+      });
+      if (canceled || !filePaths[0]) return null;
+      return batchExports.begin(filePaths[0], documents);
+    });
+    ipcMain.handle("documents:end-export", (event, id) => {
+      trusted(event);
+      batchExports.finish(id);
+    });
+    async function saveBytes(filePath, bytes) {
       if (accountController.apiUrl) {
         try { return await accountExports.save(filePath, bytes); }
         catch (error) { return { saved: false, error: error.message || "Le compte Inklura est temporairement indisponible." }; }
@@ -302,6 +358,23 @@ app
         await unlink(temporary).catch(() => {});
       }
       return { saved: true };
+    }
+    ipcMain.handle("desktop:save-pdf", async (event, { filename, data, batch }) => {
+      trusted(event);
+      const bytes = pdfBuffer(data);
+      if (batch) {
+        const filePath = await batchExports.destination(batch.id, batch.documentId);
+        return saveBytes(filePath, bytes);
+      }
+      const name = safePdfName(filename);
+      const { canceled, filePath } = await dialog.showSaveDialog(window, {
+        title: "Enregistrer le PDF caviardé",
+        defaultPath: path.join(app.getPath("downloads"), name),
+        filters: [{ name: "Document PDF", extensions: ["pdf"] }],
+        properties: ["showOverwriteConfirmation", "createDirectory"],
+      });
+      if (canceled || !filePath) return { saved: false };
+      return saveBytes(filePath, bytes);
     });
     ipcMain.handle("updates:state", (event) => {
       trusted(event);
@@ -318,7 +391,37 @@ app
     Menu.setApplicationMenu(
       Menu.buildFromTemplate([
         ...(process.platform === "darwin" ? [{ role: "appMenu" }] : []),
-        { label: "Fichier", submenu: [{ role: "close", label: "Fermer" }] },
+        { label: "Fichier", submenu: [
+          { label: "Ouvrir des PDF…", accelerator: "CmdOrCtrl+O", click: () => void pickDocuments() },
+          { label: "Importer un dossier…", accelerator: "CmdOrCtrl+Shift+O", click: () => void pickDocuments(true) },
+          ...(process.platform === "linux" ? [
+            { type: "separator" },
+            { label: "Ajouter au menu Ouvrir avec…", enabled: app.isPackaged,
+              click: async () => {
+                try {
+                  await installDesktopEntry({
+                    dataHome: process.env.XDG_DATA_HOME || path.join(app.getPath("home"), ".local/share"),
+                    executable: process.env.APPIMAGE || process.execPath,
+                    icon: path.join(dist, "inklura-icon.png"),
+                  });
+                  await dialog.showMessageBox(window, { type: "info", message: "Inklura PDF a été ajouté au menu Ouvrir avec des PDF et dossiers." });
+                } catch {
+                  await dialog.showMessageBox(window, { type: "error", message: "Impossible d’ajouter l’intégration au bureau." });
+                }
+              } },
+            { label: "Retirer du menu Ouvrir avec", enabled: app.isPackaged,
+              click: async () => {
+                try {
+                  await removeDesktopEntry(process.env.XDG_DATA_HOME || path.join(app.getPath("home"), ".local/share"));
+                  await dialog.showMessageBox(window, { type: "info", message: "L’intégration au bureau a été retirée." });
+                } catch {
+                  await dialog.showMessageBox(window, { type: "error", message: "Impossible de retirer l’intégration au bureau." });
+                }
+              } },
+          ] : []),
+          { type: "separator" },
+          { role: "close", label: "Fermer" },
+        ] },
         {
           label: "Édition",
           submenu: [
@@ -362,6 +465,7 @@ app
         },
       ]),
     );
+    initialized = true;
     await createWindow();
     controller.start();
     void accountController.initialize();

@@ -1,21 +1,17 @@
-# Inklura PDF 1.2.2 — exports sans métadonnées documentaires
+# Inklura PDF 1.3.0 — dossiers et intégration au bureau
 
 [Télécharger pour Windows, macOS et Linux](https://pdf.inklura.fr/)
 
-- Les PDF exportés ne contiennent plus les métadonnées ajoutées par la bibliothèque PDF : créateur, producteur, date de création et date de modification.
-- La nouvelle copie ne contient aucun dictionnaire Info, flux XMP ou identifiant de document PDF. Les métadonnées du document source restent exclues.
-- Les pages sont toujours reconstruites à partir d’images déjà caviardées : le texte d’origine, les annotations, les formulaires, les pièces jointes et les calques ne sont pas recopiés.
-- Tests renforcés sur les exports avec et sans sélection, sur toutes les pages du corpus et dans l’audit indépendant pypdf/Poppler.
-- Le site propose une démonstration interactive, une capture vidéo sous-titrée et une explication détaillée du caviardage et du traitement des métadonnées.
+- **Importer un dossier et ses sous-dossiers**, depuis le sélecteur ou par glisser-déposer. Les chemins relatifs distinguent les documents de même nom ; les PDF déjà ouverts sont ignorés sans perdre les modifications.
+- **Exporter plusieurs PDF vers une seule destination** : un nouveau dossier conserve les sous-dossiers et sépare les noms identiques. Les originaux et les exports précédents restent intacts. Si un fichier échoue, les copies déjà enregistrées restent disponibles.
+- **Windows** : actions de clic droit pour caviarder un PDF ou importer un dossier, et ajout à « Ouvrir avec », sans remplacer le lecteur PDF par défaut.
+- **macOS** : prise en charge des PDF dans « Ouvrir avec » du Finder. Les dossiers s’importent depuis l’application ou par glisser-déposer.
+- **Linux** : ajout et retrait de l’intégration au menu « Ouvrir avec » depuis le menu Fichier de l’application installée. Placez l’AppImage à son emplacement définitif avant de l’enregistrer.
+- **Une seule fenêtre de travail** : les nouvelles sélections du système rejoignent les documents ouverts ; elles attendent la fin d’une analyse ou d’un export en cours.
+- **Exports et assistant plus économes en ressources** : encodage PNG asynchrone sans copie en base64, recherche des zones par page, libération des ressources OCR et annulation des requêtes en attente.
 
-Cette amélioration s’applique aux nouveaux exports. Pour un PDF produit avec une ancienne version, repartez du document original dans Inklura PDF 1.2.2, vérifiez les zones à caviarder et exportez une nouvelle copie. Les anciens fichiers et l’original ne sont pas modifiés.
+L’espace de travail accepte jusqu’à **250 PDF et 512 Mo** de fichiers source. L’import des dossiers ignore les fichiers non PDF, les entrées masquées et les liens du système de fichiers. Vérifiez chaque page avant d’exporter : les suggestions de l’assistant peuvent être incomplètes.
 
-Le nom du fichier et les dates du système de fichiers restent distincts des métadonnées intégrées au PDF. Vérifiez le nom proposé et toutes les pages avant de partager. La copie reste composée d’images : son texte n’est plus sélectionnable ni recherchable sans OCR.
+Les PDF, l’OCR et l’assistant restent locaux. Les exports sont reconstruits à partir d’images, sans texte sélectionnable, annotations, pièces jointes ni métadonnées documentaires. Internet reste nécessaire pour le compte et les crédits. Chaque PDF enregistré suit le décompte habituel ; annuler le choix de destination ne consomme aucun crédit.
 
-Les PDF, l’OCR et l’assistant restent locaux. Internet est nécessaire pour la connexion, les crédits et les achats. Les conditions commerciales ne changent pas.
-
-Windows et Linux disposent des mises à jour intégrées avec confirmation du redémarrage. Sur macOS, téléchargez le nouvel installateur. Les exécutables restent non signés.
-
-## Sponsored by
-
-[Webdesign29](https://www.webdesign29.net/) · [Inklura](https://www.inklura.fr/) · [ACTIV communication](https://www.activ-communication.com/)
+Les installateurs restent non signés par un certificat d’éditeur. Windows 11 peut afficher les actions classiques sous « Afficher plus d’options ». Sous Linux, la disponibilité des menus pour les dossiers dépend du gestionnaire de fichiers. Les mises à jour macOS restent manuelles.

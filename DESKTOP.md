@@ -16,6 +16,20 @@ The GitHub Actions Desktop releases workflow builds Windows x64 NSIS installers,
 
 On Linux, make the AppImage executable and keep it in a writable folder for updates. A system with FUSE support is needed for normal AppImage execution. The unpacked app is useful for testing but does not self-update.
 
+## Open files and folders from your desktop
+
+- **Windows:** the NSIS installer adds **Caviarder avec Inklura PDF** to PDF right-click menus and **Importer les PDF avec Inklura** to folder menus (including the background of an open folder). On Windows 11 these classic actions may appear under **Show more options**. Inklura is also added to PDF **Open with** choices; the current default PDF reader is preserved. Uninstall removes only Inklura's registrations.
+- **macOS:** the application declares PDF support for Finder's **Open With → Inklura PDF**. Move the app to Applications first. Folder import is available from the application's File menu or by dragging a folder into its window.
+- **Linux:** the AppImage advertises PDF and directory support. In the packaged app, choose **Fichier → Ajouter au menu Ouvrir avec…** to register its current location in your user desktop menu. PDF and folder **Open With** availability depends on your file manager. Move the AppImage to a permanent location before registering; repeat the action if you move it. **Retirer du menu Ouvrir avec** removes this registration. No default file associations are changed.
+
+The desktop app accepts PDF and folder paths on its command line. A second launch forwards its selection to the existing window, preserving current documents and edits. Imports received during loading, analysis or export wait until the workspace is available.
+
+**Importer un dossier** recursively reads PDFs, retains relative subfolder names and skips non-PDF files, hidden entries and filesystem links. Documents are loaded sequentially; the workspace is bounded to 250 PDFs and 512 MiB of source files. Repeated native imports skip already-open paths. Empty, inaccessible, invalid or oversized selections produce an explanatory message. The website also supports a folder picker and folder drops in browsers that provide directory entries.
+
+When several PDFs are exported in the desktop app, choose the destination once. Inklura creates a fresh `Inklura-caviardages-*` folder, preserves the imported directory structure and disambiguates colliding output names. Originals and previous exports are not overwritten. Each saved PDF follows the normal account credit reservation/commit flow. Canceling the destination picker saves nothing and consumes no credits; if a later file fails, earlier saved PDFs remain available and their saved status is retained.
+
+The Linux integration and Electron launch/import/export flows can be exercised on Linux. Windows Explorer registrations and macOS Finder registration must also be checked with native installers on their respective operating systems before release.
+
 ## Automatic updates
 
 `electron-updater` reads the release feed packaged by electron-builder for `benfavre/caviard`. Installed apps check after 15 seconds and every four hours, or when the user clicks the update button. Updates download automatically. Installation requires **Redémarrer et installer** and is blocked while documents are being processed or redactions have not been exported. Closing the app never silently installs an update.

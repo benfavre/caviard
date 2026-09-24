@@ -1,6 +1,7 @@
 import { test, expect, _electron as electron } from "@playwright/test";
 import path from "node:path";
 import { loadPdf, render } from "../helpers.mjs";
+import { fixtureAccount } from "../desktop/helpers.mjs";
 let app,
   page,
   requests = [];
@@ -9,6 +10,7 @@ test.beforeAll(async () => {
     throw new Error("Set INKLURA_AI_MODELS to a verified model cache.");
   app = await electron.launch({ args: [path.resolve(".")], env: process.env });
   page = await app.firstWindow();
+  await fixtureAccount(app);
   // Block external network at the Electron session, including worker requests.
   await app.evaluate(({ session }) => {
     session.defaultSession.webRequest.onBeforeRequest(
@@ -55,7 +57,7 @@ async function open(filename) {
         .click();
   }
   await page
-    .locator("input[type=file]")
+    .locator("input[type=file]:not([webkitdirectory])")
     .setInputFiles(path.resolve("output/pdf/ai-examples", filename));
   await expect(page.locator(".drawing-layer")).toBeVisible();
   await page.getByRole("button", { name: /Assistant local/ }).click();

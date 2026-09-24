@@ -50,6 +50,11 @@ export async function exportRedacted(
   } = {},
 ) {
   validateMarks(marks, pdf.numPages);
+  const marksByPage = new Map();
+  for (const mark of marks) {
+    if (!marksByPage.has(mark.page)) marksByPage.set(mark.page, []);
+    marksByPage.get(mark.page).push(mark);
+  }
   // Suppress pdf-lib's default Creator/Producer and creation/modification dates.
   // A fresh document with metadata updates disabled has no Info dictionary,
   // XMP stream or trailer ID. Source objects are never copied into this document.
@@ -82,7 +87,7 @@ export async function exportRedacted(
         background: "rgb(255,255,255)",
       }).promise;
       context.fillStyle = "#000000";
-      for (const mark of marks.filter((mark) => mark.page === pageNumber)) {
+      for (const mark of marksByPage.get(pageNumber) || []) {
         const left = Math.floor(mark.x * canvas.width),
           top = Math.floor(mark.y * canvas.height);
         context.fillRect(
@@ -92,7 +97,14 @@ export async function exportRedacted(
           Math.ceil((mark.y + mark.height) * canvas.height) - top,
         );
       }
-      const image = await output.embedPng(canvas.toDataURL("image/png"));
+      // Encode asynchronously without allocating a base64 string for each page.
+      const png = await new Promise((resolve, reject) => {
+        canvas.toBlob((blob) => {
+          if (blob) resolve(blob);
+          else reject(new Error("Unable to encode the PDF page."));
+        }, "image/png");
+      });
+      const image = await output.embedPng(await png.arrayBuffer());
       output
         .addPage([size.width, size.height])
         .drawImage(image, {

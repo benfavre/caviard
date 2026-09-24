@@ -51,6 +51,10 @@ The browser suite builds the production app and exercises real file selection, d
 
 One thousand seeded randomized drag cases check clamping, reverse-drag symmetry, and coordinate bounds. Invalid rectangle inputs must fail before rendering, and simulated render failures must release canvas and page resources.
 
+Export failure tests cover PNG encoding and blob-read errors, including retrying an export in the browser without losing selections. Local analysis tests check worker reuse across pages, canvas and page cleanup after render/OCR failures, and prompt cancellation of pending OCR or model requests without retaining abort listeners.
+
+Folder tests cover nested and chunked directory enumeration, duplicate imports, import limits, inaccessible or changed files, and skipping links without following cycles. Desktop tests exercise startup arguments, a second process forwarding files, the macOS open-file event handler, queued imports while exporting, destination cancellation, and batch export preserving subfolders and originals. Linux registration is tested in temporary directories. Native Explorer/Finder menu behavior requires Windows/macOS release verification.
+
 ## Scope and limits
 
 The suite uses synthetic PDFs generated with ReportLab and pypdf. It does not yet include a licensed, independently sourced corpus from every PDF producer; a complete malformed-PDF fuzzer; every CJK font or image codec; digital-signature preservation; or browser-engine coverage beyond Chromium. The app deliberately rasterizes output, removes document interactivity, and rejects password-protected imports. The offline test covers a loaded app, not reopening the website offline.
