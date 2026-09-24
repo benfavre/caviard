@@ -18,10 +18,16 @@ export default function AccountStatus({ busy }) {
     if (offers && state?.phase === 'signed-in') dialog?.showModal();
     else dialog?.close();
   }, [offers, state?.phase]);
+  useEffect(() => {
+    if (!desktop?.refreshAccount || state?.phase !== 'signed-in') return;
+    const refresh = () => { desktop.refreshAccount().catch(() => {}); };
+    window.addEventListener('focus', refresh);
+    return () => window.removeEventListener('focus', refresh);
+  }, [state?.phase]);
   if (!state || state.phase === 'disabled') return null;
   const run = async fn => {
     setWorking(true); setError('');
-    try { await fn(); } catch { setError('L’opération n’a pas abouti. Vérifiez votre connexion puis réessayez.'); }
+    try { await fn(); } catch (failure) { setError(failure.message || 'L’opération n’a pas abouti. Vérifiez votre connexion puis réessayez.'); }
     finally { setWorking(false); }
   };
   return <aside className="account-status" aria-label="Compte Inklura et crédits PDF">
@@ -36,6 +42,8 @@ export default function AccountStatus({ busy }) {
       </> : state.phase === 'waiting' ? <button disabled={working} onClick={() => run(() => desktop.cancelSignIn())}>Annuler la connexion</button> : <button className="primary" disabled={working || state.phase === 'connecting' || state.phase === 'loading'} onClick={() => run(() => desktop.signIn())}>{working ? 'Connexion…' : 'Se connecter à Inklura'}</button>}
     </div>
     {(error || state.message) && <p role="alert">{error || state.message}</p>}
+    {state.purchasePending && <p role="status">Terminez le paiement dans votre navigateur. Vos crédits se mettent à jour automatiquement après confirmation de Stripe. Un paiement annulé n’ajoute aucun crédit.</p>}
+    {state.account?.remaining === 0 && <p>Vous n’avez plus de crédits disponibles. Choisissez « Offres et crédits » pour en ajouter ; votre travail reste ouvert.</p>}
     {state.account?.blocked && <p role="alert">La facturation de votre compte nécessite une vérification. Vos documents restent ouverts.</p>}
     {!!state.account?.reserved && <p>{state.account.reserved} export(s) en attente de synchronisation. Cliquez sur Actualiser après reconnexion.</p>}
     {state.phase === 'signed-in' && <dialog ref={offersDialog} className="account-dialog" aria-labelledby="account-offers-title" onCancel={() => setOffers(false)} onClose={() => setOffers(false)}>

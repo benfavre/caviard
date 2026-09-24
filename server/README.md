@@ -95,3 +95,11 @@ Tests du service : identité signée, isolation des comptes, 20 exports, refus a
 La route `/manage/device` est livrée dans le dépôt Bext, sous `sites/inklura-manage-prism/src/app/manage/device/page.tsx`, avec le module partagé `src/lib/device-pairing.ts`. Elle utilise la session Manage validée par le backend et identifie l’application depuis le registre OAuth (dont `inklura-pdf-desktop`), vérifie son activation, le grant device et les scopes autorisés. La décision est atomique, limitée aux codes encore valides et en attente ; le sujet et son organisation canonique viennent du compte vérifié, jamais du formulaire. Les réponses sont privées (`no-store`) et les POST exigent l’origine Manage. Le navigateur ne reçoit aucun jeton OAuth.
 
 Vérification : tests `sites/inklura-manage-prism/tests/device-pairing.test.mjs` dans Bext ; tests Electron `tests/desktop/account.test.mjs` dans ce dépôt. Un changement de l’URL du navigateur ne doit jamais changer l’issuer des comptes existants (sinon leurs soldes seraient dissociés).
+
+## Vérification des achats et des compteurs — 24 septembre 2026
+
+Le solde diminue à la réservation d’un export, reste diminué après validation et remonte si l’enregistrement échoue. Les opérations rejouées ne débitent pas deux fois. Après ouverture de Checkout, Electron consulte le solde pendant 15 minutes et le rafraîchit au retour dans la fenêtre ; les crédits proviennent toujours du serveur. Réouvrir une offre reprend la même session tant qu’elle est ouverte. Une session fermée propose de recommencer.
+
+Les codes promotionnels Stripe sont acceptés. Une commande sans paiement n’est créditée que si Stripe confirme une session terminée avec un total nul ; les contrôles du compte, de l’offre et de l’adresse restent obligatoires. Les abonnements sont crédités uniquement par leurs factures payées.
+
+Vérification réelle en production : coupon 100 % limité au produit Volume 100, à un seul client QA isolé, une seule utilisation et une heure. Checkout a terminé à 0 €, sans carte ni débit. Le webhook signé a fait passer ce compte de 20 à 120 crédits ; une réservation puis validation d’export à 119, inchangé lors du rejeu. Le coupon a été supprimé, son code désactivé et le compte QA bloqué après vérification. Aucun solde client réel n’a été modifié. Ce contrôle valide une commande à coût nul, pas un débit bancaire réel.

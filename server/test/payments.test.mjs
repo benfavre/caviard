@@ -129,3 +129,21 @@ test('foreign subscription invoice cancels renewal, refunds through the current 
  assert.deepEqual(f.cancellations,['sub_fixture']);assert.equal(f.refunds.length,1);assert.equal(f.refunds[0].body.payment_intent,'pi_invoice');
  assert.equal(f.ledger.balance(f.account.id).remaining,20);assert.equal(f.ledger.getAccount(f.account.id).subscription,null);f.ledger.close();
 });
+test('completed zero-total coupon order grants once, incomplete or nonzero orders do not', async () => {
+ const f=fixture(); await f.payments.checkout(f.account.id,'volume-100','order-coupon-123456');
+ assert.equal(f.sent.allow_promotion_codes,true);
+ f.checkout.payment_status='no_payment_required'; f.checkout.payment_intent=null;
+ for (const [status,amount_total] of [['open',0],['complete',100],['complete',null]]) {
+  Object.assign(f.checkout,{status,amount_total}); await f.event('checkout.session.completed',{},`evt_${status}_${amount_total}`);
+  assert.equal(f.ledger.balance(f.account.id).remaining,20);
+ }
+ Object.assign(f.checkout,{status:'complete',amount_total:0});
+ await f.event('checkout.session.completed',{},'evt_free');await f.event('checkout.session.completed',{},'evt_free_replay');
+ assert.equal(f.ledger.balance(f.account.id).remaining,120);f.ledger.close();
+});
+test('zero-total foreign checkout is rejected without attempting a nonexistent refund',async()=>{
+ const f=fixture();await f.payments.checkout(f.account.id,'volume-100','order-free-foreign123');
+ Object.assign(f.checkout,{status:'complete',payment_status:'paid',amount_total:0,payment_intent:null});f.checkout.customer_details.address.country='BE';
+ await f.event('checkout.session.completed');assert.equal(f.refunds.length,0);assert.equal(f.ledger.balance(f.account.id).remaining,20);
+ assert.equal(f.ledger.db.prepare('SELECT state FROM orders').get().state,'country_rejected');f.ledger.close();
+});

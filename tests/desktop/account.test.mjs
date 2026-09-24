@@ -69,3 +69,38 @@ test('provider fallback URI still opens Manage with the public code prefilled',a
  const f=create(url=>url.endsWith('/device')?response({...device,verification_uri_complete:undefined,verification_uri:'https://auth.1clic.pro/device'}):null);
  await f.controller.initialize();await f.controller.signIn();assert.equal(f.opened[0],'https://manage.inklura.fr/manage/device?user_code=ABCD-EFGH');f.controller.dispose();
 });
+test('checkout reopens the same operation and automatically refreshes credits after payment',async()=>{
+ let remaining=20;const operations=[],callbacks=[];
+ const f=create((url,options)=>{
+  if(url.endsWith('/account'))return response({...account,remaining,paymentsEnabled:true,plans:[{id:'volume-100',purchasable:true}]});
+  if(url.endsWith('/checkout')){operations.push(JSON.parse(options.body).operation);return response({url:'https://checkout.stripe.com/c/pay/fixture'});}
+ });
+ f.controller.setTimer=fn=>{callbacks.push(fn);return callbacks.length;};
+ await f.controller.initialize();f.controller.acceptTokens(tokens);await f.controller.refresh();
+ await f.controller.checkout('volume-100',{});await f.controller.checkout('volume-100',{});
+ assert.equal(operations[0],operations[1]);assert.equal(f.controller.snapshot().purchasePending,true);
+ remaining=120;await callbacks.at(-1)();assert.equal(f.controller.snapshot().account.remaining,120);assert.equal(f.controller.snapshot().purchasePending,false);f.controller.dispose();
+});
+test('logout prevents delayed checkout polling from restoring balance',async()=>{
+ const f=create();const callbacks=[];f.controller.setTimer=fn=>{callbacks.push(fn);return 1;};
+ await f.controller.initialize();f.controller.acceptTokens(tokens);await f.controller.refresh();f.controller.watchPurchase();f.controller.logout();
+ await callbacks[0]();assert.equal(f.controller.snapshot().purchasePending,false);assert.equal(f.controller.account,null);f.controller.dispose();
+});
+test('releasing an export during checkout does not count as purchased credits',async()=>{
+ let remaining=19,total=20;const callbacks=[];
+ const f=create(url=>url.endsWith('/account')?response({...account,remaining,grants:[{total}]}):null);
+ f.controller.setTimer=fn=>{callbacks.push(fn);return callbacks.length;};
+ await f.controller.initialize();f.controller.acceptTokens(tokens);await f.controller.refresh();f.controller.watchPurchase();
+ remaining=20;await callbacks.at(-1)();assert.equal(f.controller.purchasePending,true);
+ total=120;remaining=119;await callbacks.at(-1)();assert.equal(f.controller.purchasePending,false);assert.equal(f.controller.account.remaining,119);f.controller.dispose();
+});
+test('closed checkout is recoverable with a fresh operation on retry',async()=>{
+ const operations=[];
+ const f=create((url,options)=>{
+  if(url.endsWith('/account'))return response({...account,paymentsEnabled:true,plans:[{id:'volume-100',purchasable:true}]});
+  if(url.endsWith('/checkout')){operations.push(JSON.parse(options.body).operation);return operations.length===1?response({error:'checkout_closed'},409):response({url:'https://checkout.stripe.com/c/pay/new'});}
+ });
+ await f.controller.initialize();f.controller.acceptTokens(tokens);await f.controller.refresh();
+ await assert.rejects(()=>f.controller.checkout('volume-100',{}),{code:'checkout_closed'});await f.controller.checkout('volume-100',{});
+ assert.notEqual(operations[0],operations[1]);assert.equal(f.opened.length,1);f.controller.dispose();
+});

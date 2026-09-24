@@ -21,7 +21,7 @@ export function createApi({ ledger, payments, authenticate, clientId, publicUrl 
       });
       if (req.method === 'GET' && ['/billing/success', '/billing/cancel'].includes(path)) {
         const success = path.endsWith('success');
-        return send(res, 200, '<!doctype html><html lang="fr"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Inklura PDF</title><h1>' + (success ? 'Retour dans Inklura PDF' : 'Paiement annulé') + '</h1><p>' + (success ? 'Le solde sera mis à jour après confirmation du paiement. Revenez dans l’application et cliquez sur Actualiser.' : 'Aucun crédit n’a été ajouté. Vous pouvez revenir dans l’application.') + '</p><a href="https://outils.inklura.fr/inklura-pdf">Inklura PDF</a></html>', 'text/html; charset=utf-8');
+        return send(res, 200, '<!doctype html><html lang="fr"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Inklura PDF</title><h1>' + (success ? 'Retour dans Inklura PDF' : 'Paiement annulé') + '</h1><p>' + (success ? 'Revenez dans l’application : vos crédits se mettent à jour après confirmation de Stripe. Si le solde ne change pas après quelques secondes, cliquez sur Actualiser.' : 'Aucun crédit n’a été ajouté. Vous pouvez revenir dans l’application.') + '</p><a href="https://outils.inklura.fr/inklura-pdf">Inklura PDF</a></html>', 'text/html; charset=utf-8');
       }
       if (req.method === 'POST' && path === '/v1/stripe/webhook') {
         const raw = await readBody(req, 1024 * 1024);

@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 const ISSUER = 'https://auth.1clic.pro';
 const PAIRING_PAGE = 'https://manage.inklura.fr/manage/device';
 const messages = {
+  checkout_closed: 'Cette page de paiement est fermée. Choisissez à nouveau votre offre.',
   quota_exhausted: 'Vous avez utilisé tous vos crédits PDF. Votre travail reste ouvert.',
   sign_in_required: 'Connectez-vous à votre compte Inklura pour exporter.',
   session_expired: 'Votre session a expiré. Reconnectez-vous à Inklura.',
@@ -27,11 +28,11 @@ export class AccountController extends EventEmitter {
     super(); Object.assign(this, { fetcher, openExternal, now, setTimer, clearTimer, onSignedIn });
     this.apiUrl = accountApiUrl(apiUrl, development); this.phase = this.apiUrl ? 'loading' : 'disabled';
     this.config = null; this.account = null; this.tokens = null; this.flow = null; this.timer = null; this.message = ''; this.generation = 0;
-    this.checkoutOperations = new Map();
+    this.checkoutOperations = new Map(); this.purchaseTimer = null; this.purchasePending = false;
   }
   snapshot() {
     return { phase: this.phase, enabled: !!this.apiUrl && !!this.config?.enabled, message: this.message,
-      account: this.account, userCode: this.flow?.userCode || null,
+      account: this.account, purchasePending: this.purchasePending, userCode: this.flow?.userCode || null,
       plans: this.account?.plans || this.config?.plans || [], paymentsEnabled: !!this.account?.paymentsEnabled };
   }
   publish() { this.emit('state', this.snapshot()); return this.snapshot(); }
@@ -156,18 +157,43 @@ export class AccountController extends EventEmitter {
     const plan = this.account?.plans?.find(p => p.id === planId);
     if (!plan?.purchasable || !this.account.paymentsEnabled) throw new Error(messages.purchases_not_enabled);
     if (!this.checkoutOperations.has(planId)) this.checkoutOperations.set(planId, randomUUID());
-    const result = await this.request('/v1/checkout', { planId, operation: this.checkoutOperations.get(planId), billing });
+    const generation = this.generation;
+    let result;
+    try { result = await this.request('/v1/checkout', { planId, operation: this.checkoutOperations.get(planId), billing }); }
+    catch (error) { if (error.code === 'checkout_closed') this.checkoutOperations.delete(planId); throw error; }
+    if (generation !== this.generation || !this.tokens) return { opened: false };
     const url = new URL(result.url);
     if (url.protocol !== 'https:' || url.hostname !== 'checkout.stripe.com' || url.username || url.password) throw new Error('Lien de paiement invalide.');
-    await this.openExternal(url.href); this.checkoutOperations.delete(planId);
+    await this.openExternal(url.href); this.watchPurchase(planId);
     return { opened: true };
+  }
+  watchPurchase(planId) {
+    this.clearTimer(this.purchaseTimer);
+    const generation = this.generation, deadline = this.now() + 15 * 60000;
+    const balance = this.account?.remaining;
+    const granted = () => this.account?.grants?.reduce((sum, g) => sum + g.total, 0);
+    const before = granted(), watch = Symbol();
+    this.purchaseWatch = watch;
+    this.purchasePending = true; this.publish();
+    const poll = async () => {
+      if (generation !== this.generation || this.purchaseWatch !== watch || !this.tokens) return;
+      try { await this.refresh(); } catch { /* Retry temporary outages without inventing credits. */ }
+      if (generation !== this.generation || this.purchaseWatch !== watch) return;
+      const credited = before === undefined ? this.account?.remaining > balance : granted() > before;
+      if (!this.tokens || credited || this.now() >= deadline) {
+        if (credited && planId) this.checkoutOperations.delete(planId);
+        this.purchasePending = false; this.publish(); return;
+      }
+      this.purchaseTimer = this.setTimer(poll, 5000);
+    };
+    this.purchaseTimer = this.setTimer(poll, 2000);
   }
   async portal() {
     const result = await this.request('/v1/portal', {}), url = new URL(result.url);
     if (url.protocol !== 'https:' || url.hostname !== 'billing.stripe.com' || url.username || url.password) throw new Error('Lien de facturation invalide.');
     await this.openExternal(url.href); return { opened: true };
   }
-  cancel() { ++this.generation; this.clearTimer(this.timer); this.flow = null; this.phase = this.tokens ? 'signed-in' : 'signed-out'; return this.publish(); }
+  cancel() { ++this.generation; this.clearTimer(this.purchaseTimer); this.purchasePending = false; this.clearTimer(this.timer); this.flow = null; this.phase = this.tokens ? 'signed-in' : 'signed-out'; return this.publish(); }
   logout() { this.cancel(); this.tokens = null; this.refreshing = null; this.account = null; this.checkoutOperations.clear(); this.phase = this.config?.enabled ? 'signed-out' : 'disabled'; this.message = ''; return this.publish(); }
   dispose() { this.cancel(); this.tokens = null; this.removeAllListeners(); }
 }
