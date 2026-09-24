@@ -56,10 +56,8 @@ try {
     assert.equal(await page.locator('#preversion').count(), 0);
     assert.ok(!(await page.locator('body').innerText()).includes('en préparation'));
     assert.ok((await page.locator('footer').innerText()).includes('Packs et abonnements'));
-    const offers = await page.locator('#offres').innerText();
-    assert.ok(offers.includes('Les offres sont disponibles à l’achat en France métropolitaine'));
-    assert.ok(offers.includes('TVA : 20 %'));
-    for (const total of ['34,80', '118,80', '178,80', '5,88', '17,88', '47,88']) assert.ok(offers.includes(total + ' € TTC'));
+    assert.equal(await page.locator('#offres').count(), 0);
+    assert.equal(await page.locator('.ipdf-product-links a[href="/tarifs"]').count(), 1);
 
     assert.equal(await page.locator('.ipdf-start li').count(), 3);
     assert.equal(await page.locator('#exemples a[download]').count(), 2);
@@ -82,6 +80,23 @@ try {
     await page.screenshot({ path: new URL(label + '.png', output).pathname, fullPage: true });
     assert.deepEqual(errors, [], 'Browser errors');
     results.pages.push({ label, status: response.status(), overflow: false, errors });
+    const pricingResponse = await page.goto(origin + '/tarifs', { waitUntil: 'networkidle' });
+    assert.equal(pricingResponse.status(), 200);
+    assert.match(await page.title(), /Tarifs Inklura PDF/);
+    assert.equal(await page.locator('h1').count(), 1);
+    assert.equal(await page.locator('link[rel=canonical]').getAttribute('href'), origin + '/tarifs');
+    assert.equal(await page.locator('.ipdf-product-links a[aria-current="page"]').getAttribute('href'), '/tarifs');
+    assert.equal(await page.locator('.ipdf-nav-download').getAttribute('href'), '/#telecharger');
+    const offers = await page.locator('#offres').innerText();
+    assert.ok(offers.includes('Les offres sont disponibles à l’achat en France métropolitaine'));
+    assert.ok(offers.includes('TVA : 20 %'));
+    for (const total of ['34,80', '118,80', '178,80', '5,88', '17,88', '47,88']) assert.ok(offers.includes(total + ' € TTC'));
+
+    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), label + ' pricing overflow');
+    await page.locator('.ipdf-nav-menu summary').click();
+    if (js) { await page.keyboard.press('Escape'); assert.equal(await page.locator('.ipdf-nav-menu').getAttribute('open'), null); }
+    assert.deepEqual(errors, [], 'Pricing browser errors');
+    await page.screenshot({ path: new URL('pricing-' + label + '.png', output).pathname, fullPage: true });
     await context.close();
   }
   const page = await browser.newPage();

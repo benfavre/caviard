@@ -55,7 +55,7 @@
       }
     });
   }
-  const sectionLinks = [...document.querySelectorAll('[data-section-link]')];
+  const sectionLinks = [...document.querySelectorAll('[data-section-link]')].filter(link => link.pathname === location.pathname && link.hash);
   const sections = [...new Set(sectionLinks.map(link => link.hash))].map(hash => document.querySelector(hash)).filter(Boolean);
   let scheduled = false;
   const updateNavigation = () => {

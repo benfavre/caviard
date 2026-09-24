@@ -18,7 +18,7 @@ function asset(suffix: string) {
 
 export default function Page(): any {
   return <main className="ipdf" id="contenu" tabIndex={-1}>
-    <link rel="stylesheet" href="/inklura-pdf/page.css?v=20260924-illustrations-1" />
+    <link rel="stylesheet" href="/inklura-pdf/page.css?v=20260924-pricing-1" />
     <div className="ipdf-wrap">
       <section className="ipdf-hero" aria-labelledby="ipdf-title">
         <div>
@@ -26,7 +26,7 @@ export default function Page(): any {
           <h1 id="ipdf-title">Partagez l’essentiel.<br /><em>Gardez le reste<br />pour vous.</em></h1>
           <p className="ipdf-lead">Préparez vos PDF avant de les partager avec une IA, un client ou un partenaire. Masquez les données personnelles et les informations confidentielles sur votre ordinateur, à la main ou avec un assistant IA local.</p>
           <div className="ipdf-actions"><a className="ipdf-primary" href="#telecharger">Télécharger Inklura PDF <span aria-hidden="true">↓</span></a><a className="ipdf-textlink" href="#demonstration">Voir la démo <span aria-hidden="true">↗</span></a></div>
-          <p className="ipdf-meta">Windows, macOS et Linux · Version {release.version} · 20 PDF d’essai par compte</p>
+          <p className="ipdf-meta">Windows, macOS et Linux · Version {release.version} · 20 PDF d’essai par compte · <a href="/tarifs">Voir les tarifs</a></p>
         </div>
         <RedactionDemo />
       </section>
@@ -68,15 +68,6 @@ export default function Page(): any {
 
       <TechnicalDetails />
 
-      <section className="ipdf-offers" id="offres" aria-labelledby="offers-title">
-        <div className="ipdf-section-head"><div><p className="ipdf-eyebrow">20 PDF POUR ESSAYER · DES OFFRES POUR CONTINUER</p><h2 id="offers-title">Choisissez une offre<br />adaptée à votre activité.</h2></div><p>Les offres sont disponibles à l’achat en France métropolitaine. TVA : 20 %. Connectez-vous dans l’application, puis ouvrez « Offres et crédits ».</p></div>
-        <div className="ipdf-features">
-          <article><h3>Essai gratuit</h3><p>20 PDF par compte Inklura, une seule fois. Importez, analysez et préparez vos caviardages librement. Un crédit est consommé après chaque export enregistré.</p><a className="ipdf-textlink" href="#telecharger">Télécharger et essayer →</a></article>
-          <article><h3>Volume · 12 mois</h3><p><strong>100 PDF</strong> · 29 € HT / 34,80 € TTC</p><p><strong>500 PDF</strong> · 99 € HT / 118,80 € TTC</p><p><strong>1 000 PDF</strong> · 149 € HT / 178,80 € TTC</p><p>Packs cumulables, valables 12 mois et rattachés à un compte.</p></article>
-          <article><h3>Entreprise · par mois</h3><p><strong>20 PDF</strong> · 4,90 € HT / 5,88 € TTC</p><p><strong>100 PDF</strong> · 14,90 € HT / 17,88 € TTC</p><p><strong>500 PDF</strong> · 39,90 € HT / 47,88 € TTC</p><p>Par mois et par compte, sans report. Résiliation pour la prochaine échéance.</p></article>
-        </div><p className="ipdf-small">Vos PDF restent locaux. La connexion, les crédits et le paiement nécessitent Internet. Les ventes hors France métropolitaine ne sont pas proposées. <a href="https://www.activ-communication.com/conditions-generales-de-ventes/">Conditions de vente d’ACTIV communication ↗</a></p>
-      </section>
-
       <section className="ipdf-section" id="telecharger" aria-labelledby="download-title">
         <div className="ipdf-section-head"><div><p className="ipdf-eyebrow">PRÊT À COMMENCER ?</p><h2 id="download-title">Choisissez votre ordinateur.</h2></div><p>Inklura PDF {release.version} · 20 PDF d’essai.<br />Installateurs hébergés sur pdf.inklura.fr.</p></div>
         <div className="ipdf-downloads">{platforms.map((platform) => {
@@ -97,6 +88,6 @@ export default function Page(): any {
         <details><summary>Faut-il un compte Inklura ?</summary><p>Oui, un compte Inklura et une connexion Internet sont nécessaires pour exporter. Le compte inclut 20 PDF d’essai, une seule fois. Vous pouvez ensuite acheter un pack ou un abonnement depuis l’application. Aucun document PDF n’est envoyé au service de facturation.</p></details>
       </section>
     </div>
-    <script src="/inklura-pdf/demos.js?v=20260924-editor-1" defer />
+    <script src="/inklura-pdf/demos.js?v=20260924-pricing-1" defer />
   </main>;
 }
