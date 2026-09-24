@@ -96,6 +96,7 @@ try {
     await page.locator('.ipdf-plan-action').first().click();
     assert.equal(new URL(page.url()).hash, '#acheter');
     assert.ok(await page.locator('#acheter').isVisible());
+    await page.locator('.ipdf-pricing-faq').evaluate(el => el.scrollIntoView({ behavior: 'instant', block: 'center' }));
     await page.getByText('Quand un crédit est-il consommé ?', { exact: true }).click();
     assert.equal(await page.locator('.ipdf-pricing-faq details').first().getAttribute('open'), '');
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), label + ' pricing overflow');
