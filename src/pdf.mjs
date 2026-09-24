@@ -50,7 +50,10 @@ export async function exportRedacted(
   } = {},
 ) {
   validateMarks(marks, pdf.numPages);
-  const output = await PDFDocument.create();
+  // Suppress pdf-lib's default Creator/Producer and creation/modification dates.
+  // A fresh document with metadata updates disabled has no Info dictionary,
+  // XMP stream or trailer ID. Source objects are never copied into this document.
+  const output = await PDFDocument.create({ updateMetadata: false });
   for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
     const page = await pdf.getPage(pageNumber);
     let canvas;

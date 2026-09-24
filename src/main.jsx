@@ -833,8 +833,8 @@ function App() {
                     : "Sélectionnez les zones sensibles"}
                 </strong>
                 <p>
-                  Le PDF exporté sera composé d’images. Son texte ne sera plus
-                  sélectionnable.
+                  Le PDF exporté sera composé d’images, sans métadonnées
+                  documentaires. Son texte ne sera plus sélectionnable.
                 </p>
               </div>
               <button
@@ -966,8 +966,10 @@ function App() {
           </p>
           <p>
             Chaque export crée un PDF composé uniquement des images caviardées
-            des pages. Le texte caché, les métadonnées d’origine, les
-            formulaires, les annotations et les pièces jointes sont écartés. Le
+            des pages. Aucune métadonnée documentaire (auteur, créateur,
+            producteur ou date) n’est ajoutée. Le texte caché, les métadonnées
+            d’origine, les formulaires, les annotations et les pièces jointes
+            sont écartés. Le
             texte du PDF exporté ne peut plus être sélectionné ni recherché.
           </p>
           <p>

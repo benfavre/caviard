@@ -27,7 +27,7 @@ Les versions actuelles ne sont pas encore signées avec un certificat d’édite
 4. Cliquez sur **Exporter le PDF**, puis choisissez où enregistrer la nouvelle copie. Plusieurs documents donnent des exports séparés.
 5. Ouvrez le résultat et vérifiez son contenu avant de le partager.
 
-Votre original reste intact. Le PDF exporté est composé d’images : le texte PDF d’origine, les annotations, les formulaires, les pièces jointes et les métadonnées source ne sont pas conservés. Le texte du résultat n’est plus sélectionnable ni recherchable. Les informations qui n’ont pas été caviardées restent visibles.
+Votre original reste intact. Le PDF exporté est composé d’images : le texte PDF d’origine, les annotations, les formulaires, les pièces jointes et les métadonnées source ne sont pas conservés. Depuis la version 1.2.2, aucun dictionnaire Info, flux XMP, identifiant PDF, auteur, créateur/producteur ou date intégrée n’est ajouté à la copie. Les dates du système de fichiers et le nom du fichier restent distincts du contenu du PDF. Le texte du résultat n’est plus sélectionnable ni recherchable. Les informations qui n’ont pas été caviardées restent visibles.
 
 ## Activer l’assistant local
 

@@ -19,16 +19,20 @@ for fixture in records:
         assert key not in root,(fixture['file'],key)
     assert not output.attachments,fixture['file']
     assert not output.get_fields(),fixture['file']
-    assert 'SECRET' not in str(output.metadata),fixture['file']
+    assert output.metadata is None,(fixture['file'],'document metadata remains')
+    assert '/Info' not in output.trailer,(fixture['file'],'Info dictionary remains')
+    assert '/ID' not in output.trailer,(fixture['file'],'document identifier remains')
     for p,page in enumerate(output.pages):
         assert not page.extract_text(),(fixture['file'],p,'text remains')
         assert not page.get('/Annots'),(fixture['file'],p,'annotations remain')
+        assert '/Metadata' not in page,(fixture['file'],p,'page metadata remains')
         resources=page['/Resources']
         assert not resources.get('/Font'),(fixture['file'],p,'fonts remain')
         images=resources['/XObject']
         assert len(images)==1,(fixture['file'],p,'extra objects')
         image=next(iter(images.values())).get_object()
         assert image['/Subtype']=='/Image'
+        assert '/Metadata' not in image,(fixture['file'],p,'image metadata remains')
         assert '/SMask' not in image and '/Mask' not in image
         assert image['/Width']<=8192 and image['/Height']<=8192
         assert image['/Width']*image['/Height']<=24000000,(fixture['file'],'canvas cap exceeded')

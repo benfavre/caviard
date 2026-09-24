@@ -65,6 +65,9 @@ for (const fixture of selected)
       assert.ok(!JSON.stringify(metadata.info).includes("SECRET"));
       // Separate parser: inspect the saved document, not just the renderer's text extraction.
       const saved = await PDFDocument.load(bytes, { updateMetadata: false });
+      assert.equal(saved.context.trailerInfo.Info, undefined, "No document Info metadata");
+      assert.equal(saved.context.trailerInfo.ID, undefined, "No document identifier");
+      assert.equal(metadata.metadata, null, "No XMP metadata");
       for (const key of [
         "AcroForm",
         "Names",
@@ -91,6 +94,7 @@ for (const fixture of selected)
         assert.equal((await outputPage.getTextContent()).items.length, 0);
         assert.deepEqual(await outputPage.getAnnotations(), []);
         const node = saved.getPage(n - 1).node;
+        assert.ok(!node.has(PDFName.of("Metadata")), "No page metadata");
         const resources = node.Resources();
         const fonts = resources.lookupMaybe(PDFName.of("Font"), PDFDict);
         assert.ok(
@@ -108,6 +112,7 @@ for (const fixture of selected)
           image.dict.get(PDFName.of("Subtype")).toString(),
           "/Image",
         );
+        assert.ok(!image.dict.has(PDFName.of("Metadata")), "No image metadata");
         assert.ok(
           !image.dict.has(PDFName.of("SMask")),
           "No hidden transparent image layer",

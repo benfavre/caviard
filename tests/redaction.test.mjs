@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createCanvas, DOMMatrix, ImageData, Path2D } from "@napi-rs/canvas";
-import { PDFDocument, StandardFonts, rgb, degrees } from "pdf-lib";
+import { PDFDocument, PDFName, PDFHexString, StandardFonts, rgb, degrees } from "pdf-lib";
 import { exportRedacted, normalizeRect } from "../src/pdf.mjs";
 import { writeFile, mkdir } from "node:fs/promises";
 Object.assign(globalThis, { DOMMatrix, ImageData, Path2D });
@@ -96,4 +96,62 @@ test("reverse and out-of-page drags produce bounded rectangles", () => {
     width: 1,
     height: 1,
   });
+});
+
+
+test("exports contain no document metadata, XMP or identifier, including library defaults", async () => {
+  const original = await PDFDocument.create();
+  original.setTitle("PRIVATE TITLE");
+  original.setAuthor("PRIVATE AUTHOR");
+  original.setSubject("PRIVATE SUBJECT");
+  original.setKeywords(["PRIVATE KEYWORD"]);
+  original.setCreator("PRIVATE CREATOR");
+  original.setProducer("PRIVATE PRODUCER");
+  original.setCreationDate(new Date("2000-01-01T00:00:00Z"));
+  original.setModificationDate(new Date("2001-01-01T00:00:00Z"));
+  const xmp = original.context.register(original.context.stream(
+    '<?xpacket begin=""?><x:xmpmeta xmlns:x="adobe:ns:meta/"><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"><rdf:Description xmlns:dc="http://purl.org/dc/elements/1.1/" dc:title="PRIVATE XMP"/></rdf:RDF></x:xmpmeta><?xpacket end="w"?>',
+    { Type: "Metadata", Subtype: "XML" },
+  ));
+  original.catalog.set(PDFName.of("Metadata"), xmp);
+  const page = original.addPage([200, 200]);
+  page.node.set(PDFName.of("Metadata"), xmp);
+  original.context.trailerInfo.ID = original.context.obj([
+    PDFHexString.of("00112233445566778899aabbccddeeff"),
+    PDFHexString.of("ffeeddccbbaa99887766554433221100"),
+  ]);
+  const source = await original.save();
+  const fixture = await PDFDocument.load(source, { updateMetadata: false });
+  assert.ok(fixture.context.trailerInfo.Info);
+  assert.ok(fixture.context.trailerInfo.ID);
+  assert.ok(fixture.catalog.has(PDFName.of("Metadata")));
+  const task = pdfjs.getDocument({ data: source });
+  const input = await task.promise;
+  try {
+    // Cover both a marked page and a page exported without any selections.
+    for (const marks of [[], [{ page: 1, x: 0, y: 0, width: 0.5, height: 0.5 }]]) {
+      const bytes = await exportRedacted(input, marks, { createCanvas: () => createCanvas(1, 1) });
+      const saved = await PDFDocument.load(bytes, { updateMetadata: false });
+      assert.equal(saved.context.trailerInfo.Info, undefined);
+      assert.equal(saved.context.trailerInfo.ID, undefined);
+      assert.ok(!saved.catalog.has(PDFName.of("Metadata")));
+      assert.ok(!saved.getPage(0).node.has(PDFName.of("Metadata")));
+      for (const [, object] of saved.context.enumerateIndirectObjects()) {
+        const dictionary = object.dict || object;
+        if (typeof dictionary.has === "function") {
+          for (const key of ["Metadata", "Title", "Author", "Subject", "Keywords", "Creator", "Producer", "CreationDate", "ModDate"]) {
+            assert.ok(!dictionary.has(PDFName.of(key)), "Unexpected metadata: " + key);
+          }
+        }
+      }
+      const reopened = pdfjs.getDocument({ data: bytes });
+      try {
+        const metadata = await (await reopened.promise).getMetadata();
+        assert.equal(metadata.metadata, null);
+        for (const key of ["Title", "Author", "Subject", "Keywords", "Creator", "Producer", "CreationDate", "ModDate"]) {
+          assert.equal(metadata.info[key], undefined, key);
+        }
+      } finally { await reopened.destroy(); }
+    }
+  } finally { await task.destroy(); }
 });
