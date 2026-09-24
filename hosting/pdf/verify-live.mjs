@@ -92,6 +92,12 @@ try {
     assert.ok(offers.includes('TVA : 20 %'));
     for (const total of ['34,80', '118,80', '178,80', '5,88', '17,88', '47,88']) assert.ok(offers.includes(total + ' € TTC'));
 
+    assert.equal(await page.locator('.ipdf-price-card tbody tr').count(), 6);
+    await page.locator('.ipdf-plan-action').first().click();
+    assert.equal(new URL(page.url()).hash, '#acheter');
+    assert.ok(await page.locator('#acheter').isVisible());
+    await page.getByText('Quand un crédit est-il consommé ?', { exact: true }).click();
+    assert.equal(await page.locator('.ipdf-pricing-faq details').first().getAttribute('open'), '');
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), label + ' pricing overflow');
     await page.locator('.ipdf-nav-menu summary').click();
     if (js) { await page.keyboard.press('Escape'); assert.equal(await page.locator('.ipdf-nav-menu').getAttribute('open'), null); }
