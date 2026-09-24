@@ -1,3 +1,4 @@
+import { confirmExport } from "../ui-helpers.mjs";
 import { test, expect } from "@playwright/test";
 import path from "node:path";
 import { readFile } from "node:fs/promises";
@@ -42,6 +43,7 @@ async function draw(page, start = [0.15, 0.15], end = [0.8, 0.3]) {
 async function save(page, testInfo) {
   const pending = page.waitForEvent("download");
   await page.getByRole("button", { name: /Exporter/ }).click();
+  await confirmExport(page);
   const download = await pending;
   expect(await download.failure()).toBeNull();
   const file = testInfo.outputPath(download.suggestedFilename());
@@ -207,6 +209,7 @@ for (const name of [
 ])
   test(`rejects ${name} and recovers for a valid PDF`, async ({ page }) => {
     await page.locator("input[type=file]:not([webkitdirectory])").setInputFiles(fixture(name));
+    if (name.startsWith("encrypted")) await page.getByRole("button", { name: "Ignorer ce PDF" }).click();
     await expect(page.getByRole("alert")).toContainText(
       name.startsWith("encrypted") ? "mot de passe" : "endommagé",
     );
@@ -217,12 +220,14 @@ for (const name of [
 test("mixed invalid and valid file batch loads the valid documents", async ({
   page,
 }) => {
-  await upload(page, [
+  await page.locator("input[type=file]:not([webkitdirectory])").setInputFiles([
     "invalid-empty.pdf",
     "invoice-01.pdf",
     "encrypted-01.pdf",
     "contract-01.pdf",
-  ]);
+  ].map(fixture));
+  await page.getByRole("button", { name: "Ignorer ce PDF" }).click();
+  await expect(page.locator(".drawing-layer")).toBeVisible();
   await expect(page.getByRole("alert")).toContainText("invalid-empty.pdf");
   await expect(page.getByLabel("Document actif").locator("option")).toHaveCount(
     2,
@@ -278,6 +283,7 @@ test("multi-file export emits a separate valid PDF for each document", async ({
   const downloads = [];
   page.on("download", (d) => downloads.push(d));
   await page.getByRole("button", { name: /Exporter/ }).click();
+  await confirmExport(page);
   await expect.poll(() => downloads.length).toBe(2);
   expect(downloads.map((d) => d.suggestedFilename())).toEqual([
     "invoice-01-caviarde.pdf",
@@ -400,6 +406,7 @@ test("export failure is visible and can be retried without losing selections", a
     };
   });
   await page.getByRole("button", { name: /Exporter/ }).click();
+  await confirmExport(page);
   await expect(page.getByRole("alert")).toContainText(
     "n’a pas pu être exporté",
   );

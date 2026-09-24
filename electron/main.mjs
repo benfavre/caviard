@@ -151,7 +151,7 @@ async function createWindow() {
         message: documentState.busy
           ? "Un PDF est en cours de traitement."
           : "Des caviardages n’ont pas encore été exportés.",
-        detail: "Les modifications non exportées seront perdues.",
+        detail: "Enregistrez un projet ou attendez la confirmation de récupération pour reprendre vos modifications après fermeture.",
         buttons: ["Continuer à travailler", "Quitter"],
         defaultId: 0,
         cancelId: 0,
@@ -276,7 +276,7 @@ if (primary) app
       reason: !app.isPackaged
         ? "Les mises à jour sont disponibles dans la version installée."
         : !signedMac
-          ? "Version macOS non signée : téléchargez les mises à jour sur GitHub."
+          ? "Mises à jour macOS manuelles : téléchargez la dernière version pour votre Mac."
           : !supported
             ? "Utilisez la version AppImage pour les mises à jour automatiques."
             : "Les mises à jour ne sont pas configurées pour cette version.",
@@ -300,7 +300,7 @@ if (primary) app
     });
     ipcMain.handle("desktop:info", (event) => {
       trusted(event);
-      return { version: app.getVersion(), platform: process.platform };
+      return { version: app.getVersion(), platform: process.platform, arch: process.arch };
     });
     ipcMain.on("desktop:document-state", (event, state) => {
       trusted(event);

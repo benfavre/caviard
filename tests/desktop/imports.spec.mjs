@@ -1,3 +1,4 @@
+import { confirmExport } from "../ui-helpers.mjs";
 import { test, expect, _electron as electron } from "@playwright/test";
 import { mkdtemp, mkdir, copyFile, writeFile, readdir, readFile, rm } from "node:fs/promises";
 import path from "node:path";
@@ -114,6 +115,7 @@ test("batch export asks for one folder and saves distinct, flattened copies in t
     dialog.showSaveDialog = async () => { throw new Error("A batch must not prompt per file"); };
   }, output);
   await page.getByRole("button", { name: "Exporter les PDF", exact: true }).click();
+  await confirmExport(page);
   await expect(page.getByRole("status")).toContainText("2 PDF enregistrés");
   expect(await app.evaluate(() => globalThis.folderPrompts)).toBe(1);
   const [exportFolder] = await readdir(output);
@@ -134,6 +136,7 @@ test("OS imports wait until an in-progress export finishes", async () => {
     dialog.showSaveDialog = () => new Promise((resolve) => { globalThis.finishSaveDialog = resolve; });
   });
   await page.getByRole("button", { name: "Exporter le PDF", exact: true }).click();
+  await confirmExport(page);
   await expect.poll(() => app.evaluate(() => typeof globalThis.finishSaveDialog)).toBe("function");
   await app.evaluate(({ app }, file) => app.emit("open-file", { preventDefault() {} }, file),
     path.join(folder, "Client B", "facture.pdf"));
@@ -152,6 +155,7 @@ test("canceling batch destination does not reserve credits or discard edits", as
     dialog.showOpenDialog = async () => ({ canceled: true, filePaths: [] });
   });
   await page.getByRole("button", { name: "Exporter les PDF", exact: true }).click();
+  await confirmExport(page);
   await expect(page.getByRole("status")).toContainText("Enregistrement annulé");
   await expect(page.locator(".redaction:not(.draft)")).toHaveCount(1);
   await expect(page.getByRole("alert")).toHaveCount(0);
@@ -179,6 +183,7 @@ test("partial batch failure preserves earlier saves and leaves remaining edits u
     };
   }, output);
   await page.getByRole("button", { name: "Exporter les PDF", exact: true }).click();
+  await confirmExport(page);
   await expect(page.getByRole("alert")).toContainText("1 PDF déjà enregistré");
   await page.getByLabel("Document actif").selectOption("0");
   await page.getByRole("button", { name: "Fermer ce document", exact: true }).click();

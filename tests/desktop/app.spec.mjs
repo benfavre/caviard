@@ -1,3 +1,4 @@
+import { confirmExport } from "../ui-helpers.mjs";
 import { test, expect, _electron as electron } from "@playwright/test";
 import path from "node:path";
 import { readFileSync } from "node:fs";
@@ -81,6 +82,7 @@ test("native Save dialog exports black pixels and removes searchable text", asyn
     dialog.showSaveDialog = async () => ({ canceled: false, filePath });
   }, destination);
   await page.getByRole("button", { name: /Exporter/ }).click();
+  await confirmExport(page);
   await expect(page.getByRole("status")).toContainText("enregistré");
   const result = await loadPdf(destination);
   try {
@@ -103,6 +105,7 @@ test('account-enabled build refuses unauthenticated export and preserves edits',
   await edit();
   await app.evaluate(({ dialog }, filePath) => { dialog.showSaveDialog = async () => ({ canceled: false, filePath }); }, info.outputPath('must-not-exist.pdf'));
   await page.getByRole('button', { name: /Exporter/ }).click();
+  await confirmExport(page);
   await expect(page.getByRole('alert')).toContainText('Connectez-vous');
   await expect(page.locator('.redaction:not(.draft)')).toHaveCount(1);
   const { existsSync } = await import('node:fs');
@@ -114,6 +117,7 @@ test("canceling native Save preserves selections and does not report success", a
     dialog.showSaveDialog = async () => ({ canceled: true });
   });
   await page.getByRole("button", { name: /Exporter/ }).click();
+  await confirmExport(page);
   await expect(page.getByRole("status")).toContainText("annulé");
   await expect(page.locator(".redaction:not(.draft)")).toHaveCount(1);
 });

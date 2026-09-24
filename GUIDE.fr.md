@@ -29,6 +29,26 @@ Les versions actuelles ne sont pas encore signées avec un certificat d’édite
 
 Votre original reste intact. Le PDF exporté est composé d’images : le texte PDF d’origine, les annotations, les formulaires, les pièces jointes et les métadonnées source ne sont pas conservés. Depuis la version 1.2.2, aucun dictionnaire Info, flux XMP, identifiant PDF, auteur, créateur/producteur ou date intégrée n’est ajouté à la copie. Les dates du système de fichiers et le nom du fichier restent distincts du contenu du PDF. Le texte du résultat n’est plus sélectionnable ni recherchable. Les informations qui n’ont pas été caviardées restent visibles.
 
+## Nouveaux espaces de travail (version de développement)
+
+Les fonctions suivantes seront disponibles dans la prochaine version ; le téléchargement public reste actuellement en 1.3.0.
+
+**Projets et récupération.** Ouvrez ce volet, donnez un nom au projet et cliquez sur « Enregistrer le projet ». Les PDF originaux, les zones, l’historique d’annulation et les pages relues sont conservés sur cet appareil. Choisissez ensuite un projet enregistré et « Ouvrir le projet » pour reprendre. « Supprimer le projet » efface ses copies locales lorsqu’aucun autre projet ou récupération ne les utilise.
+
+Vous pouvez cocher « Conserver une récupération automatique pendant cette session ». Une sauvegarde suit chaque pause de 1,2 seconde ; attendez le message de confirmation avant de fermer. Au prochain lancement, le volet propose de restaurer ou de supprimer la récupération. Décocher l’option efface la copie automatique. Les modifications postérieures à la dernière sauvegarde ne peuvent pas être récupérées.
+
+Ces copies contiennent les **PDF d’origine non caviardés**. Elles ne sont pas transmises à un serveur. Leur suppression depuis l’application retire les données du stockage local ; elle ne constitue pas un effacement physique garanti du disque. Effacer les données du navigateur ou de l’application supprime également les projets. Ne les utilisez pas comme unique sauvegarde de vos originaux.
+
+**Dossiers.** La colonne des documents conserve les sous-dossiers, permet une recherche par nom et affiche « À traiter », « Modifié », « Relu » ou « Exporté ». Cliquez sur un fichier pour l’afficher ; les zones des autres fichiers restent disponibles.
+
+**Rechercher et profils.** Pour un texte exact, saisissez un nom ou une référence, choisissez le document courant ou tous les documents, puis lancez la recherche. La casse est ignorée. Sans OCR, les scans et les images ne sont pas analysés. Prévisualisez les résultats avec « Voir la zone », ajustez la sélection et ajoutez les résultats aux zones. L’ajout peut être annulé dans chaque document.
+
+Dans « Profils réutilisables », choisissez les catégories, les expressions à masquer et les exceptions (une par ligne). Enregistrez un profil nommé pour le réutiliser sur cet appareil, ou supprimez-le. La détection des personnes, lieux et organisations ainsi que l’OCR demandent les modèles locaux ; le texte exact et les catégories détectées par règles fonctionnent sans ceux-ci.
+
+**Relire et exporter.** Cochez « Page relue » après vérification. Toute modification des zones de cette page invalide cette indication. Le récapitulatif d’export permet de sélectionner les PDF, de revenir aux pages à relire et de voir le nombre de crédits nécessaires si tous les enregistrements réussissent. Confirmez explicitement si vous choisissez d’exporter des pages non marquées comme relues. Aucun crédit n’est réservé avant la confirmation et le choix de destination.
+
+**PDF protégés.** Le mot de passe est demandé à l’ouverture. En cas d’erreur, réessayez ou ignorez le fichier pour poursuivre l’import. Les projets conservent les octets du PDF protégé, sans le mot de passe : celui-ci sera demandé à nouveau lors de la reprise.
+
 ## Activer l’assistant local
 
 Dans **Assistant local**, cliquez sur **Installer les modèles**. Le téléchargement initial représente environ **1,18 Go** ; prévoyez l’espace disponible correspondant. Une fois les modèles installés, l’analyse fonctionne hors ligne. Les modèles restent installés après une mise à jour de l’application. Une mémoire vive de 8 Go est conseillée.

@@ -69,6 +69,12 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          INKLURA_REQUIRE_SIGNING: ${{ vars.INKLURA_REQUIRE_SIGNING }}
+      - name: Verify configured signatures and notarization
+        run: node scripts/verify-signatures.mjs
+        env:
+          CSC_LINK: ${{ runner.os == 'macOS' && secrets.CSC_LINK || '' }}
+          WIN_CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
       - name: Enable Electron's sandbox helper on the isolated Linux runner
         if: runner.os == 'Linux'
         run: sudo chown root:root release/linux-unpacked/chrome-sandbox && sudo chmod 4755 release/linux-unpacked/chrome-sandbox

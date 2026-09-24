@@ -4,7 +4,9 @@ for (const name of ["CSC_LINK", "WIN_CSC_LINK"]) {
   if (!process.env[name]?.trim()) delete process.env[name];
 }
 
+const signing = require("./build/signing.cjs")(process.env, process.platform);
 module.exports = {
+  forceCodeSigning: signing.force,
   appId: "com.benfavre.caviard",
   productName: "Inklura PDF",
   executableName: "caviard",
@@ -20,7 +22,7 @@ module.exports = {
   asar: true,
   npmRebuild: false,
   extraMetadata: {
-    macAutoUpdates: !!process.env.CSC_LINK,
+    macAutoUpdates: signing.mac && signing.notarize,
     // Account rollout is explicit. Existing released installers remain evaluation builds.
     ...(process.env.INKLURA_PDF_ACCOUNT_API ? { accountApi: process.env.INKLURA_PDF_ACCOUNT_API } : {}),
   },
@@ -53,13 +55,9 @@ module.exports = {
     target: ["dmg", "zip"],
     category: "public.app-category.productivity",
     icon: "build/icon.png",
-    identity: process.env.CSC_LINK ? undefined : "-",
-    notarize: !!(
-      process.env.APPLE_ID &&
-      process.env.APPLE_APP_SPECIFIC_PASSWORD &&
-      process.env.APPLE_TEAM_ID
-    ),
-    hardenedRuntime: !!process.env.CSC_LINK,
+    identity: signing.mac ? undefined : "-",
+    notarize: signing.notarize,
+    hardenedRuntime: signing.mac,
     entitlements: "build/entitlements.mac.plist",
     entitlementsInherit: "build/entitlements.mac.plist",
   },

@@ -2,6 +2,9 @@ export const emptyHistory = { marks: {}, undo: {}, redo: {} };
 
 // Each document owns its history, including removals and clearing all regions.
 export function redactionHistory(state, action) {
+  if (action.type === "restore") return action.history;
+  if (action.type === "multi") return Object.entries(action.groups).reduce((next, [id, marks]) =>
+    redactionHistory(next, { type: "batch", id, marks }), state);
   const { id, type } = action;
   const current = state.marks[id] || [];
   const past = state.undo[id] || [];

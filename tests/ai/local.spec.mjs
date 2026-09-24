@@ -2,6 +2,7 @@ import { test, expect, _electron as electron } from "@playwright/test";
 import path from "node:path";
 import { loadPdf, render } from "../helpers.mjs";
 import { fixtureAccount } from "../desktop/helpers.mjs";
+import { confirmExport } from "../ui-helpers.mjs";
 let app,
   page,
   requests = [];
@@ -112,6 +113,7 @@ for (const angle of [0, 90, 180, 270])
     await page
       .getByRole("button", { name: "Exporter le PDF", exact: true })
       .click();
+    await confirmExport(page);
     await expect(page.getByRole("status")).toContainText("enregistré");
     const output = await loadPdf(destination),
       source = await loadPdf(

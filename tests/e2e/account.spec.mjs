@@ -1,3 +1,4 @@
+import { confirmExport } from "../ui-helpers.mjs";
 import { test, expect } from '@playwright/test';
 import path from 'node:path';
 import { DOCUMENT_PLANS } from '../../electron/commerce-catalog.mjs';
@@ -41,6 +42,7 @@ test('exhausted quota blocks export without discarding the PDF or redaction sele
   await page.mouse.move(b.x + b.width * .15, b.y + b.height * .15); await page.mouse.down();
   await page.mouse.move(b.x + b.width * .8, b.y + b.height * .3, { steps: 5 }); await page.mouse.up();
   await page.getByRole('button', { name: /Exporter/ }).click();
+  await confirmExport(page);
   await expect(page.getByRole('alert')).toContainText('tous vos crédits');
   await expect(page.locator('.redaction:not(.draft)')).toHaveCount(1);
   await expect(page.getByRole('button', { name: /Exporter/ })).toBeEnabled();

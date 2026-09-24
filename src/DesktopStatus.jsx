@@ -41,6 +41,9 @@ export default function DesktopStatus({ dirty, busy }) {
     <aside className="desktop-status" aria-label="Version et mises à jour">
       <span className="desktop-version">Inklura PDF {info?.version}</span>
       <span aria-live="polite">{message || labels[state.phase]}</span>
+      {info?.platform === "darwin" && state.phase === "disabled" &&
+        <a href={`https://pdf.inklura.fr/#${info.arch === "arm64" ? "mac-apple" : "mac-intel"}`} target="_blank" rel="noreferrer">Télécharger pour mon Mac</a>}
+      <a href="https://pdf.inklura.fr/changelog" target="_blank" rel="noreferrer">Historique des versions</a>
       {state.phase === "ready" ? (
         <button
           className="primary"

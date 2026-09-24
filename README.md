@@ -26,7 +26,7 @@ Inklura PDF helps you remove sensitive information before sharing a document. Dr
 
 Version 1.3.0 requires an Inklura account and an Internet connection for exports. Each account receives 20 trial PDFs once. An export consumes one credit only after the file is saved; import, analysis and canceled saves do not consume credits.
 
-Purchases are available in metropolitan France: packs of 100/500/1,000 PDFs valid for 12 months, or subscriptions of 20/100/500 PDFs per month and account. Prices include 20% French VAT; [see all prices](https://pdf.inklura.fr/#offres). Monthly credits do not roll over. Documents and local AI processing stay on the computer. Previous evaluation installers are retired from distribution.
+Purchases are available in metropolitan France: packs of 100/500/1,000 PDFs valid for 12 months, or subscriptions of 20/100/500 PDFs per month and account. Prices include 20% French VAT; [see all prices](https://pdf.inklura.fr/tarifs). Monthly credits do not roll over. Documents and local AI processing stay on the computer. Previous evaluation installers are retired from distribution.
 
 ## Download and start
 
@@ -46,6 +46,19 @@ The download page includes file sizes, SHA-256 checksums and installation detail
 You can also import a whole folder, including subfolders, or drop it into the workspace. The desktop app accepts PDFs from the OS **Open with** menu and brings new selections into the existing window. Multi-document exports use one destination folder and preserve the imported subfolders. [Desktop integration and folder limits](DESKTOP.md#open-files-and-folders-from-your-desktop).
 
 [Read the French getting-started guide →](GUIDE.fr.md)
+
+## Next version: document workspaces
+
+The development version adds these workflows (the public download remains 1.3.0 until the next release):
+
+- **Local projects and recovery:** save source PDFs, redactions, undo history and page review states under a project name. Recovery is opt-in for each session. Both can be restored after restarting and explicitly deleted; passwords and account credentials are excluded.
+- **Folder navigation:** browse the imported hierarchy, search filenames and see whether a document is untouched, modified, reviewed or exported.
+- **Find and redact:** search exact text across all documents, preview and select results, then apply them with per-document undo. Optional OCR covers scans when models are installed.
+- **Reusable profiles:** save categories, exact phrases and exceptions on this device. Built-in policies can be used as starting points. Text search and rule-based categories do not require the language models.
+- **Export review:** mark pages as reviewed, revisit unchecked pages, select documents and see the number of credits before saving. Changing a page’s redactions invalidates its review status.
+- **Protected PDFs:** retry a password or skip a locked file while continuing the import. Reopening a protected project asks for its password again.
+
+Projects contain the **original, unredacted PDF bytes**. They remain in this application’s local storage until deleted; clearing browser/app data also removes them. Deleting a project removes source copies only when no other project or recovery uses them. These are local working copies, not portable backups. Recovery is debounced by 1.2 seconds and cannot recover changes made after the last successful save.
 
 ## Three ways to use local AI
 
@@ -71,7 +84,7 @@ The assistant can miss information or select an entire text line. Review every p
 - **Local processing:** no document uploads, cloud inference or telemetry. Model downloads and application update checks use the network. The account-enabled edition also uses the network for login, credits and billing, without sending document content.
 - **A new exported file:** pages are rebuilt from redacted images; source text, annotations, forms, attachments and layers are not copied. Exports contain no document metadata: no Info dictionary, XMP, PDF document ID, author, title, creator/producer or embedded timestamps. Filesystem timestamps and filenames are outside the PDF.
 - **An intact original:** undo/redo, page navigation, region counts, zoom and unsaved-document protection help you review your work.
-- **An image-based result:** exported text cannot be selected or searched. Output uses up to 144 DPI, with a canvas size limit for unusually large pages. Password-protected PDFs must be unlocked before import.
+- **An image-based result:** exported text cannot be selected or searched. Output uses up to 144 DPI, with a canvas size limit for unusually large pages. The development version opens password-protected PDFs with a password prompt; passwords are never stored in projects.
 
 The interface is in French, with built-in help and keyboard shortcuts. Multiple documents produce separate exports.
 

@@ -36,7 +36,7 @@ The Linux integration and Electron launch/import/export flows can be exercised o
 
 PDFs are processed locally. Only update metadata and application binaries are fetched from GitHub. The renderer has no Node access and uses a sandboxed preload exposing narrowly scoped operations. Saving uses the OS file dialog and a temporary file followed by rename.
 
-The first builds have no verified publisher signature (Mac apps receive an ad-hoc signature for Apple Silicon compatibility). Windows and Linux updates are enabled. **Unsigned macOS builds cannot self-update**; their UI directs users to GitHub. To enable signed macOS updates, configure repository Actions secrets `CSC_LINK` (base64 Developer ID Application .p12 certificate) and `CSC_KEY_PASSWORD`. For notarization also set `APPLE_ID`, `APPLE_APP_SPECIFIC_PASSWORD`, and `APPLE_TEAM_ID`. The builder imports and signs with that certificate and enables Mac updates in the resulting package. Existing unsigned Mac installations must be replaced manually with the first signed build. Signed update installation has not been validated without these credentials.
+The first builds have no verified publisher signature (Mac apps receive an ad-hoc signature for Apple Silicon compatibility). Windows and Linux updates are enabled. **Unsigned macOS builds cannot self-update**; their UI links directly to the appropriate Apple Silicon or Intel download on pdf.inklura.fr. To enable signed macOS updates, configure repository Actions secrets `CSC_LINK` (base64 Developer ID Application .p12 certificate) and `CSC_KEY_PASSWORD`. For notarization also set `APPLE_ID`, `APPLE_APP_SPECIFIC_PASSWORD`, and `APPLE_TEAM_ID`. The builder imports and signs with that certificate and enables Mac updates in the resulting package. Existing unsigned Mac installations must be replaced manually with the first signed build. Signed update installation has not been validated without these credentials.
 
 To release a new version, update `package.json` and the lockfile (`npm version patch --no-git-tag-version`), update `RELEASE_NOTES.md`, run the tests, commit and push, then push a matching tag such as `v1.0.1`. The workflow waits for every platform, uploads installers and `latest*.yml` manifests into a draft release, then publishes it. Never publish a manifest without all its referenced files. Do not commit signing credentials or put GitHub tokens in the app.
 
@@ -60,3 +60,20 @@ The public product name is **Inklura PDF**. The existing `com.benfavre.caviard` 
 ## Local assistant
 
 Inklura PDF includes optional on-device suggestions, automatic policy previews, and natural-language redaction plans. The same WebAssembly runtime runs on each packaged platform; no Python or separately installed model server is needed. Models download separately (about 1.18 GB), remain in the app's user-data folder across updates, and are checksum-verified. See [AI.md](AI.md) for supported categories, OCR, privacy, memory expectations and real-model testing.
+
+## Signing and notarization
+
+The configuration uses electron-builder 26. See its [versioned signing documentation](https://www.electron.build/v26/docs/features/code-signing/).
+
+Configure these repository Actions secrets through GitHub settings or `gh secret set`:
+
+| Platform | Secrets |
+| --- | --- |
+| macOS | `CSC_LINK` (Developer ID Application certificate), `CSC_KEY_PASSWORD`, `APPLE_ID`, `APPLE_APP_SPECIFIC_PASSWORD`, `APPLE_TEAM_ID` |
+| Windows | `WIN_CSC_LINK` (a certificate supported by your signing provider), `WIN_CSC_KEY_PASSWORD` |
+
+For certificates that cannot be exported, use a supported hardware or cloud signing provider and adapt the builder's Windows signing configuration; do not try to export a hardware-protected private key. The current workflow accepts the certificate-link configuration above.
+
+Set the Actions **variable** `INKLURA_REQUIRE_SIGNING=true` after configuring both platforms. Builds then fail when signing is missing. Configured signing always sets `forceCodeSigning`; a Mac certificate without notarization credentials is rejected. The workflow verifies Windows Authenticode signatures and both Mac applications with `codesign`, `spctl` and `stapler` before uploading artifacts. Mac automatic updates are enabled only when both signing and notarization are configured. The first signed Mac build still requires manual installation over an older unsigned build.
+
+No signing credentials were configured during development of these changes. Configuration and unsigned packaged workflows can be tested without them; actual signatures, notarization and a signed Mac-to-Mac update require the publisher's credentials and native release checks.

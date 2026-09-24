@@ -32,6 +32,12 @@ import { exportRedacted, normalizeRect } from "./pdf.mjs";
 import "./styles.css";
 import DesktopStatus from "./DesktopStatus.jsx";
 import Assistant from "./Assistant.jsx";
+import Projects from "./Projects.jsx";
+import PasswordDialog from "./PasswordDialog.jsx";
+import DocumentTree from "./DocumentTree.jsx";
+import WorkspaceTools from "./WorkspaceTools.jsx";
+import ExportReview from "./ExportReview.jsx";
+import { isReviewed, pageSignature } from "./workspace.mjs";
 document.title = "Inklura PDF — Caviardage";
 
 pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
@@ -220,6 +226,10 @@ function App() {
     [active, setActive] = useState(0),
     [page, setPage] = useState(1);
   const [aiBusy, setAiBusy] = useState(false);
+  const [projectBusy, setProjectBusy] = useState(false);
+  const [reviewed, setReviewed] = useState({}), [reviewOpen, setReviewOpen] = useState(false);
+  const [passwordRequest, setPasswordRequest] = useState(null), passwordReply = useRef(null);
+  const [searchPreview, setSearchPreview] = useState(null);
   const [preview, setPreview] = useState([]);
   const [savedMarks, setSavedMarks] = useState({});
   const [history, dispatch] = useReducer(redactionHistory, emptyHistory);
@@ -243,6 +253,45 @@ function App() {
     docsRef = useRef([]);
   const [pendingClose, setPendingClose] = useState(null);
   const current = documents[active];
+  function selectDocument(index, number = 1) {
+    setActive(index); setPage(number); setPreview([]); setSearchPreview(null); setNotice("");
+  }
+  function inspectDocument(id, number, regions = []) {
+    const index = documents.findIndex(d => d.id === id);
+    if (index < 0) return;
+    selectDocument(index, number); setSearchPreview({ id, regions });
+  }
+  function answerPassword(value) {
+    const reply = passwordReply.current; passwordReply.current = null; setPasswordRequest(null);
+    reply?.(value === null ? new Error("Ouverture annulée") : value);
+  }
+  function loadingTask(data, name) {
+    const task = pdfjs.getDocument({ worker: sharedWorker, data: new Uint8Array(data), isEvalSupported: false });
+    task.onPassword = (reply, reason) => {
+      passwordReply.current = value => { task.cancelled = value instanceof Error; reply(value); };
+      setPasswordRequest({ name, incorrect: reason === pdfjs.PasswordResponses.INCORRECT_PASSWORD });
+    };
+    return task;
+  }
+  async function restoreProject(project) {
+    const loaded = [];
+    setLoading(true);
+    try {
+      for (const source of project.documents) {
+        const task = loadingTask(await source.bytes.arrayBuffer(), source.relativePath || source.name);
+        try { loaded.push({ ...source, bytes: undefined, task, pdf: await task.promise }); }
+        catch (e) { await task.destroy(); throw e; }
+      }
+      const previous = docsRef.current;
+      docsRef.current = loaded; setDocuments(loaded);
+      dispatch({ type: "restore", history: project.history });
+      setReviewed(project.reviewed || {}); setSavedMarks(project.savedMarks || {});
+      setActive(Math.min(project.active || 0, Math.max(0, loaded.length - 1)));
+      setPage(project.page || 1); setSearchPreview(null); setPreview([]);
+      setTimeout(() => previous.forEach(doc => doc.task.destroy()), 0);
+    } catch (e) { await Promise.all(loaded.map(doc => doc.task.destroy())); throw e; }
+    finally { setLoading(false); }
+  }
   useEffect(() => setPreview([]), [current?.id]);
   const currentMarks = current ? marks[current.id] || [] : [];
   const count = documents.reduce(
@@ -263,7 +312,7 @@ function App() {
     setImportSignal((value) => value + 1);
   }), []);
   useEffect(() => {
-    if (!bridge?.takeDocuments || !workerReady || loading || busy || aiBusy ||
+    if (!bridge?.takeDocuments || !workerReady || loading || busy || aiBusy || projectBusy || reviewOpen ||
       importLock.current || !pendingImport.current) return;
     pendingImport.current = false;
     void importSelection(async () => {
@@ -273,9 +322,9 @@ function App() {
         arrayBuffer: () => bridge.readDocument(file.id),
       })) };
     });
-  }, [workerReady, loading, busy, aiBusy, importSignal]);
+  }, [workerReady, loading, busy, aiBusy, projectBusy, reviewOpen, importSignal]);
   async function importSelection(selection) {
-    if (importLock.current || loading || busy || aiBusy || !workerReady) return;
+    if (importLock.current || loading || busy || aiBusy || projectBusy || reviewOpen || !workerReady) return;
     importLock.current = true;
     setLoading(true);
     let files = [];
@@ -308,11 +357,7 @@ function App() {
         let task;
         try {
           setProgress(`Importation ${added.length + 1} / ${files.length} — ${relativeName(file)}`);
-          task = pdfjs.getDocument({
-            worker: sharedWorker,
-            data: new Uint8Array(await file.arrayBuffer()),
-            isEvalSupported: false,
-          });
+          task = loadingTask(await file.arrayBuffer(), relativeName(file));
           const pdf = await task.promise;
           added.push({ id: crypto.randomUUID(), name: file.name,
             relativePath: relativeName(file), sourceKey, size: file.size, pdf, task });
@@ -320,8 +365,8 @@ function App() {
           bytes += file.size;
         } catch (e) {
           await task?.destroy();
-          errors.push(`${relativeName(file)} : ${e.name === "PasswordException"
-            ? "ce PDF est protégé par un mot de passe. Déverrouillez-le avant de l’ouvrir."
+          errors.push(`${relativeName(file)} : ${task?.cancelled || e.name === "PasswordException"
+            ? "ouverture annulée : mot de passe requis."
             : "ce fichier est endommagé ou ne peut pas être ouvert."}`);
         }
       }
@@ -373,11 +418,11 @@ function App() {
     }
   }
   const isDirty = (doc) =>
-    (marks[doc.id]?.length || 0) > 0 &&
-    JSON.stringify(marks[doc.id]) !== JSON.stringify(savedMarks[doc.id] || []);
+    JSON.stringify(marks[doc.id] || []) !== JSON.stringify(savedMarks[doc.id] || []);
   const dirty = documents.some(isDirty);
   function edit(type, extra = {}) {
-    if (!current || busy || aiBusy || loading) return;
+    if (!current || busy || aiBusy || loading || projectBusy) return;
+    setSearchPreview(null);
     setNotice("");
     dispatch({ type, id: current.id, ...extra });
   }
@@ -406,7 +451,7 @@ function App() {
   }
   useEffect(() => {
     const beforeUnload = (event) => {
-      if (dirty || busy || aiBusy || loading) {
+      if (dirty || busy || aiBusy || loading || projectBusy) {
         event.preventDefault();
         event.returnValue = "";
       }
@@ -414,24 +459,26 @@ function App() {
     if (!window.caviardDesktop)
       window.addEventListener("beforeunload", beforeUnload);
     return () => window.removeEventListener("beforeunload", beforeUnload);
-  }, [dirty, busy, aiBusy, loading]);
-  async function download() {
+  }, [dirty, busy, aiBusy, loading, projectBusy]);
+  async function download(ids = documents.map(doc => doc.id)) {
+    const targets = documents.filter(doc => ids.includes(doc.id));
+    if (!targets.length) return;
     setBusy(true);
     setError("");
     setNotice("");
     let batch, saved = 0;
     try {
-      if (documents.length > 1 && bridge?.beginBatchExport) {
-        batch = await bridge.beginBatchExport(documents.map(({ id, name, relativePath }) => ({ id, name, relativePath })));
+      if (targets.length > 1 && bridge?.beginBatchExport) {
+        batch = await bridge.beginBatchExport(targets.map(({ id, name, relativePath }) => ({ id, name, relativePath })));
         if (!batch) {
           setNotice("Enregistrement annulé. Les caviardages restent disponibles.");
           return;
         }
       }
-      for (const doc of documents) {
+      for (const doc of targets) {
         const bytes = await exportRedacted(doc.pdf, marks[doc.id] || [], {
           onProgress: (done, total) =>
-            setProgress(`${saved + 1} / ${documents.length} PDF — ${doc.relativePath || doc.name} — page ${done} / ${total}`),
+            setProgress(`${saved + 1} / ${targets.length} PDF — ${doc.relativePath || doc.name} — page ${done} / ${total}`),
         });
         const filename = `${doc.name.replace(/\.pdf$/i, "")}-caviarde.pdf`;
         if (window.caviardDesktop) {
@@ -492,7 +539,8 @@ function App() {
         current &&
         !busy &&
         !aiBusy &&
-        !loading
+        !loading &&
+        !projectBusy
       ) {
         event.preventDefault();
         setNotice("");
@@ -509,7 +557,7 @@ function App() {
     };
     window.addEventListener("keydown", shortcut);
     return () => window.removeEventListener("keydown", shortcut);
-  }, [current, busy, aiBusy, loading]);
+  }, [current, busy, aiBusy, loading, projectBusy]);
   return (
     <>
       <header className="header">
@@ -540,7 +588,13 @@ function App() {
           </button>
         </nav>
       </header>
-      <AccountStatus busy={busy || aiBusy || loading} />
+      <AccountStatus busy={busy || aiBusy || loading || projectBusy} />
+      <Projects workspace={{ documents, history, reviewed, savedMarks, active, page }}
+        disabled={busy || aiBusy || loading || reviewOpen || !workerReady} dirty={dirty}
+        onRestore={restoreProject} onWorking={setProjectBusy} />
+      <PasswordDialog request={passwordRequest} onAnswer={answerPassword} />
+      <ExportReview open={reviewOpen} documents={documents} marks={marks} reviewed={reviewed}
+        onClose={() => setReviewOpen(false)} onExport={download} onInspect={inspectDocument} />
       <main className={current ? "app-main editing" : "app-main"}>
         <section className="intro">
           <div>
@@ -702,7 +756,7 @@ function App() {
                 <Icon icon={faFilePdf} />
                 <select
                   aria-label="Document actif"
-                  disabled={busy || aiBusy || loading}
+                  disabled={busy || aiBusy || loading || projectBusy}
                   value={active}
                   onChange={(event) => {
                     setActive(Number(event.target.value));
@@ -730,21 +784,27 @@ function App() {
                     : "Prêt à caviarder"}
               </span>
               <div className="actions">
+                <WorkspaceTools documents={documents} current={current} marks={marks}
+                  disabled={busy || aiBusy || loading || projectBusy} onBusy={setAiBusy}
+                  onPreview={inspectDocument} onApply={groups => {
+                    dispatch({ type: "multi", groups }); setPreview([]); setSearchPreview(null);
+                    setNotice("Zones ajoutées. Vérifiez chaque page avant d’exporter.");
+                  }} />
                 <button
-                  disabled={busy || aiBusy || loading}
+                  disabled={busy || aiBusy || loading || projectBusy}
                   onClick={() => chooseDocuments()}
                 >
                   <Icon icon={faPlus} />
                   <span>Ajouter des fichiers</span>
                 </button>
-                <button disabled={busy || aiBusy || loading} onClick={() => chooseDocuments(true)}
+                <button disabled={busy || aiBusy || loading || projectBusy} onClick={() => chooseDocuments(true)}
                   title="Importer un dossier et ses sous-dossiers">
                   <Icon icon={faFolderOpen} /><span>Importer un dossier</span>
                 </button>
                 <button
                   title="Fermer ce document"
                   aria-label="Fermer ce document"
-                  disabled={busy || aiBusy || loading}
+                  disabled={busy || aiBusy || loading || projectBusy}
                   onClick={closeDocument}
                 >
                   <Icon icon={faXmark} />
@@ -755,7 +815,7 @@ function App() {
               <div className="actions page-navigation">
                 <button
                   aria-label="Page précédente"
-                  disabled={page <= 1 || busy || aiBusy || loading}
+                  disabled={page <= 1 || busy || aiBusy || loading || projectBusy}
                   onClick={() => setPage(page - 1)}
                 >
                   <Icon icon={faChevronLeft} />
@@ -769,7 +829,7 @@ function App() {
                     min="1"
                     max={current.pdf.numPages}
                     defaultValue={page}
-                    disabled={busy || aiBusy || loading}
+                    disabled={busy || aiBusy || loading || projectBusy}
                     onBlur={(event) => {
                       const number = Math.min(
                         current.pdf.numPages,
@@ -849,7 +909,7 @@ function App() {
                   <span>Rétablir</span>
                 </button>
                 <button
-                  disabled={!currentMarks.length || busy || aiBusy || loading}
+                  disabled={!currentMarks.length || busy || aiBusy || loading || projectBusy}
                   onClick={() => edit("clear")}
                   title="Effacer toutes les zones de ce document"
                 >
@@ -863,7 +923,7 @@ function App() {
               doc={current}
               page={page}
               marks={currentMarks}
-              disabled={busy || loading}
+              disabled={busy || loading || projectBusy}
               onBusy={setAiBusy}
               onApply={(regions) => {
                 setNotice(
@@ -875,6 +935,7 @@ function App() {
               onPreview={(number, regions) => {
                 if (number) setPage(number);
                 setPreview(regions);
+                setSearchPreview(null);
               }}
             />
             <div className="editor-instructions">
@@ -886,9 +947,17 @@ function App() {
                 {currentMarks.length} zone{currentMarks.length > 1 ? "s" : ""}{" "}
                 dans ce document
               </span>
+              <label className="page-review"><input type="checkbox" checked={isReviewed(current, page, marks, reviewed)}
+                disabled={busy || aiBusy || loading || projectBusy} onChange={e => {
+                  setReviewed(prev => { const pages = { ...prev[current.id] };
+                    if (e.target.checked) pages[page] = pageSignature(currentMarks, page); else delete pages[page];
+                    return { ...prev, [current.id]: pages }; });
+                }} />Page relue</label>
             </div>
             <div className="editor-body">
               <aside className="page-sidebar" aria-label="Pages du document">
+                <DocumentTree documents={documents} active={active} marks={marks} reviewed={reviewed}
+                  savedMarks={savedMarks} disabled={busy || aiBusy || loading || projectBusy} onSelect={selectDocument} />
                 <div className="sidebar-title">
                   PAGES <span>{current.pdf.numPages}</span>
                 </div>
@@ -901,7 +970,7 @@ function App() {
                     return (
                       <button
                         key={number}
-                        disabled={busy || aiBusy || loading}
+                        disabled={busy || aiBusy || loading || projectBusy}
                         className={number === page ? "selected" : ""}
                         aria-current={number === page ? "page" : undefined}
                         aria-label={`Afficher la page ${number}${regions ? `, ${regions} zone${regions > 1 ? "s" : ""}` : ""}`}
@@ -916,6 +985,7 @@ function App() {
                             {regions
                               ? `${regions} zone${regions > 1 ? "s" : ""}`
                               : "Aucune zone"}
+                            {isReviewed(current, number, marks, reviewed) ? " · Relue" : " · À relire"}
                           </small>
                         </span>
                         {regions > 0 && <i />}
@@ -930,11 +1000,11 @@ function App() {
                   pdf={current.pdf}
                   number={page}
                   marks={currentMarks}
-                  preview={preview}
+                  preview={searchPreview?.id === current.id ? searchPreview.regions : preview}
                   addMark={addMark}
                   removeMark={removeMark}
                   zoom={zoom}
-                  busy={busy || aiBusy || loading}
+                  busy={busy || aiBusy || loading || projectBusy}
                   onError={setError}
                 />
               </div>
@@ -955,8 +1025,8 @@ function App() {
               </div>
               <button
                 className="primary download"
-                disabled={busy || aiBusy || loading || !count}
-                onClick={download}
+                disabled={busy || aiBusy || loading || projectBusy || !count}
+                onClick={() => setReviewOpen(true)}
               >
                 <Icon icon={faDownload} />
                 {busy
@@ -1000,7 +1070,7 @@ function App() {
           <a href="mailto:contact@inklura.fr">Contact</a>
         </div>
       </footer>
-      <DesktopStatus dirty={dirty} busy={busy || aiBusy || loading} />
+      <DesktopStatus dirty={dirty} busy={busy || aiBusy || loading || projectBusy} />
       <dialog
         ref={help}
         className="info-dialog"
@@ -1054,6 +1124,9 @@ function App() {
             <span>Aide</span>
             <kbd>F1</kbd>
           </div>
+          <p>« Projets et récupération » conserve votre travail sur cet appareil.
+            « Rechercher et profils » permet de retrouver un texte dans plusieurs PDF et de réutiliser vos règles.
+            Marquez les pages relues puis vérifiez la sélection et le coût dans le récapitulatif d’export.</p>
           <p className="dialog-note">
             Le caviardage s’applique à l’export. Vos fichiers originaux restent
             inchangés.
@@ -1080,6 +1153,10 @@ function App() {
             téléversement. Les fichiers que vous exportez restent à
             l’emplacement que vous choisissez sur votre ordinateur.
           </p>
+          <p>Si vous enregistrez un projet ou activez la récupération, une copie des PDF originaux non caviardés,
+            des zones et de la relecture reste dans le stockage local de l’application.
+            Vous pouvez supprimer ces copies dans « Projets et récupération ».
+            Les mots de passe des PDF ne sont pas enregistrés.</p>
           <p>
             Chaque export crée un PDF composé uniquement des images caviardées
             des pages. Aucune métadonnée documentaire (auteur, créateur,
@@ -1115,8 +1192,7 @@ function App() {
         <div className="dialog-content">
           <p>
             Les zones sélectionnées dans <strong>{pendingClose?.name}</strong>{" "}
-            n’ont pas été exportées. Elles seront perdues si vous fermez ce
-            document.
+            n’ont pas été exportées. Enregistrez un projet avant de fermer si vous souhaitez les reprendre plus tard.
           </p>
           <div className="dialog-actions">
             <button

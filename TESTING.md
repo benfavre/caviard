@@ -60,3 +60,17 @@ Folder tests cover nested and chunked directory enumeration, duplicate imports, 
 The suite uses synthetic PDFs generated with ReportLab and pypdf. It does not yet include a licensed, independently sourced corpus from every PDF producer; a complete malformed-PDF fuzzer; every CJK font or image codec; digital-signature preservation; or browser-engine coverage beyond Chromium. The app deliberately rasterizes output, removes document interactivity, and rejects password-protected imports. The offline test covers a loaded app, not reopening the website offline.
 
 Production PDFs that fail or render unexpectedly should become sanitized regression fixtures with a documented expected result. Do not add real confidential documents to this repository or CI artifacts.
+
+## Workspace and project regression checks
+
+`tests/e2e/workspace.spec.mjs` exercises named-project restoration, opt-in recovery,
+explicit deletion with source-copy garbage collection, interrupted atomic writes,
+password retry and canceled restoration, cross-document exact search, reusable
+profiles, per-page review invalidation and selective exports. The desktop
+workspace test uses an isolated `--user-data-dir` and verifies a complete process
+restart against the real packaged custom protocol, with no PDF upload requests.
+
+`tests/workspace.test.mjs` covers folder indexing, review fingerprints, multi-file
+undo and profile validation. `tests/desktop/signing.test.mjs` checks required
+signing credentials and notarization gating. Actual publisher signatures and
+signed Mac update installation require the credentials documented in DESKTOP.md.
