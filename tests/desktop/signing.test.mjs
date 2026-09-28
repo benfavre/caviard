@@ -31,3 +31,20 @@ test("mandatory signing fails closed without credentials; unsigned Linux remains
     false,
   );
 });
+test("Azure Artifact Signing enables Windows signing without a certificate file", () => {
+  assert.equal(signing({}, "win32").azure, null);
+  const result = signing({ AZURE_SIGNING_PROFILE: "inklura-pdf" }, "win32");
+  assert.equal(result.force, true);
+  assert.deepEqual(result.azure, {
+    publisherName: "BEO PLUS",
+    endpoint: "https://neu.codesigning.azure.net/",
+    codeSigningAccountName: "beoplus-signing",
+    certificateProfileName: "inklura-pdf",
+  });
+  assert.doesNotThrow(() =>
+    signing(
+      { INKLURA_REQUIRE_SIGNING: "true", AZURE_SIGNING_PROFILE: "inklura-pdf" },
+      "win32",
+    ),
+  );
+});

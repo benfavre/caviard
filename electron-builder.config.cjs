@@ -41,7 +41,10 @@ module.exports = {
     mimeTypes: ["application/pdf", "inode/directory"],
     executableArgs: ["--", "%F"],
   },
-  win: { target: ["nsis"], icon: "build/icon.png", executableName: "Inklura PDF" },
+  win: {
+    target: ["nsis"], icon: "build/icon.png", executableName: "Inklura PDF",
+    ...(signing.azure ? { azureSignOptions: signing.azure } : {}),
+  },
   nsis: {
     include: "build/installer.nsh",
     oneClick: false,

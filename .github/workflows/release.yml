@@ -46,6 +46,11 @@ jobs:
             executable: release/mac-arm64/Inklura PDF.app/Contents/MacOS/Inklura PDF
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
+    # The Azure federated credential trusts this environment's OIDC subject.
+    environment: release
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -58,6 +63,13 @@ jobs:
         with:
           name: smoke-test-pdfs
           path: output/pdf/examples
+      - name: Sign in to Azure for Windows code signing (OIDC, no stored secret)
+        if: runner.os == 'Windows' && vars.AZURE_SIGNING_PROFILE != ''
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          allow-no-subscriptions: true
       - name: Build installers and update manifests
         run: npm run desktop:dist -- ${{ matrix.flags }}
         env:
@@ -70,11 +82,13 @@ jobs:
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           INKLURA_REQUIRE_SIGNING: ${{ vars.INKLURA_REQUIRE_SIGNING }}
+          AZURE_SIGNING_PROFILE: ${{ runner.os == 'Windows' && vars.AZURE_SIGNING_PROFILE || '' }}
       - name: Verify configured signatures and notarization
         run: node scripts/verify-signatures.mjs
         env:
           CSC_LINK: ${{ runner.os == 'macOS' && secrets.CSC_LINK || '' }}
           WIN_CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
+          AZURE_SIGNING_PROFILE: ${{ runner.os == 'Windows' && vars.AZURE_SIGNING_PROFILE || '' }}
       - name: Enable Electron's sandbox helper on the isolated Linux runner
         if: runner.os == 'Linux'
         run: sudo chown root:root release/linux-unpacked/chrome-sandbox && sudo chmod 4755 release/linux-unpacked/chrome-sandbox

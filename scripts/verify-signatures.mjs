@@ -15,7 +15,10 @@ if (process.platform === "darwin" && process.env.CSC_LINK) {
   console.log(
     "Both Mac apps have valid signatures and stapled notarization tickets.",
   );
-} else if (process.platform === "win32" && process.env.WIN_CSC_LINK) {
+} else if (
+  process.platform === "win32" &&
+  (process.env.WIN_CSC_LINK || process.env.AZURE_SIGNING_PROFILE)
+) {
   const files = [
     path.resolve("release/win-unpacked/Inklura PDF.exe"),
     ...readdirSync("release")
@@ -30,9 +33,18 @@ if (process.platform === "darwin" && process.env.CSC_LINK) {
         "-NoProfile",
         "-NonInteractive",
         "-Command",
-        '$s = Get-AuthenticodeSignature -LiteralPath $env:INKLURA_VERIFY_FILE; if ($s.Status -ne "Valid") { throw "Invalid Authenticode signature" }',
+        '$s = Get-AuthenticodeSignature -LiteralPath $env:INKLURA_VERIFY_FILE; if ($s.Status -ne "Valid") { throw "Invalid Authenticode signature" }; if ($env:INKLURA_VERIFY_PUBLISHER -and $s.SignerCertificate.Subject -notmatch [regex]::Escape("CN=$env:INKLURA_VERIFY_PUBLISHER")) { throw "Unexpected signer: $($s.SignerCertificate.Subject)" }; Write-Host "$($s.SignerCertificate.Subject) OK"',
       ],
-      { stdio: "inherit", env: { ...process.env, INKLURA_VERIFY_FILE: file } },
+      {
+        stdio: "inherit",
+        env: {
+          ...process.env,
+          INKLURA_VERIFY_FILE: file,
+          INKLURA_VERIFY_PUBLISHER: process.env.AZURE_SIGNING_PROFILE
+            ? process.env.AZURE_SIGNING_PUBLISHER || "BEO PLUS"
+            : "",
+        },
+      },
     );
   }
   console.log(
