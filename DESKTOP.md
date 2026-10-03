@@ -70,10 +70,14 @@ Configure these repository Actions secrets through GitHub settings or `gh secret
 | Platform | Secrets |
 | --- | --- |
 | macOS | `CSC_LINK` (Developer ID Application certificate), `CSC_KEY_PASSWORD`, `APPLE_ID`, `APPLE_APP_SPECIFIC_PASSWORD`, `APPLE_TEAM_ID` |
-| Windows | `WIN_CSC_LINK` (a certificate supported by your signing provider), `WIN_CSC_KEY_PASSWORD` |
+| Windows (classic certificate) | `WIN_CSC_LINK` (a certificate supported by your signing provider), `WIN_CSC_KEY_PASSWORD` |
 
-For certificates that cannot be exported, use a supported hardware or cloud signing provider and adapt the builder's Windows signing configuration; do not try to export a hardware-protected private key. The current workflow accepts the certificate-link configuration above.
+Windows releases also support **Azure Artifact Signing**, using GitHub OIDC instead of a stored certificate or client secret. Configure repository Actions **variables** `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, and `AZURE_SIGNING_PROFILE`. The release build uses the `release` environment, which must match the subject trusted by the Azure application's federated credential. The application needs the Artifact Signing Certificate Profile Signer role on the signing account or profile.
+
+The configured defaults are account `beoplus-signing`, North Europe endpoint `https://neu.codesigning.azure.net/`, and publisher `BEO PLUS`. Create a **Public Trust** certificate profile named `inklura-pdf` only after the BEO PLUS organization identity validation is **Completed**. Then set `AZURE_SIGNING_PROFILE=inklura-pdf` and run `Desktop releases` manually before tagging a release. The Windows verification step must report a valid Authenticode signature from BEO PLUS for the packaged application and installer. An unsigned successful build does not validate Azure login or cloud signing.
+
+For certificates that cannot be exported, use a supported hardware or cloud signing provider; do not try to export a hardware-protected private key. Leave `WIN_CSC_LINK` unset when using Azure Artifact Signing.
 
 Set the Actions **variable** `INKLURA_REQUIRE_SIGNING=true` after configuring both platforms. Builds then fail when signing is missing. Configured signing always sets `forceCodeSigning`; a Mac certificate without notarization credentials is rejected. The workflow verifies Windows Authenticode signatures and both Mac applications with `codesign`, `spctl` and `stapler` before uploading artifacts. Mac automatic updates are enabled only when both signing and notarization are configured. The first signed Mac build still requires manual installation over an older unsigned build.
 
-No signing credentials were configured during development of these changes. Configuration and unsigned packaged workflows can be tested without them; actual signatures, notarization and a signed Mac-to-Mac update require the publisher's credentials and native release checks.
+Configuration and unsigned packaged workflows can be tested without signing credentials. Actual Azure signatures require the approved Public Trust profile and a successful signed Windows build. Mac signatures, notarization and a signed Mac-to-Mac update require the publisher's Apple Developer credentials and native release checks. Keep the existing published release until these checks pass; repository configuration alone does not sign an existing installer.
