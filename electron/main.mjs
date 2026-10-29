@@ -20,7 +20,6 @@ import { installDesktopEntry, removeDesktopEntry } from "./linux-integration.mjs
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
-import electronUpdater from "electron-updater";
 import {
   APP_URL,
   isAppUrl,
@@ -29,7 +28,7 @@ import {
   safePdfName,
   pdfBuffer,
 } from "./security.mjs";
-import { UpdateController } from "./updater.mjs";
+import { distributionChannel, createUpdateController } from "./distribution.mjs";
 const here = path.dirname(fileURLToPath(import.meta.url));
 const dist = path.join(here, "../dist");
 app.setName("Inklura PDF");
@@ -227,20 +226,17 @@ if (primary) app
       (_contents, _permission, callback) => callback(false),
     );
     session.defaultSession.setPermissionCheckHandler(() => false);
-    const { autoUpdater } = electronUpdater;
-    autoUpdater.logger = {
-      info: () => {},
-      warn: () => {},
-      error: () => {},
-      debug: () => {},
-    };
     const configured = existsSync(
       path.join(process.resourcesPath, "app-update.yml"),
     );
     const metadata = JSON.parse(
       await readFile(path.join(app.getAppPath(), "package.json"), "utf8"),
     );
+    const channel = distributionChannel({ mas: process.mas, windowsStore: process.windowsStore, metadata });
     accountController = new AccountController({
+      // StoreKit commerce is a release prerequisite for MAS. Never fall back to
+      // Stripe from a store build while that integration is being prepared.
+      externalPurchases: channel !== "mac-app-store",
       apiUrl: (!app.isPackaged && process.env.INKLURA_PDF_ACCOUNT_API) || metadata.accountApi,
       development: !app.isPackaged,
       openExternal: (url) => shell.openExternal(url),
@@ -271,7 +267,9 @@ if (primary) app
     const supported =
       (process.platform !== "linux" || !!process.env.APPIMAGE) && signedMac;
     const enabled = app.isPackaged && configured && supported;
-    controller = new UpdateController(autoUpdater, {
+    controller = await createUpdateController({
+      channel,
+      loadUpdater: async () => (await import("electron-updater")).default.autoUpdater,
       enabled,
       reason: !app.isPackaged
         ? "Les mises à jour sont disponibles dans la version installée."
@@ -300,7 +298,7 @@ if (primary) app
     });
     ipcMain.handle("desktop:info", (event) => {
       trusted(event);
-      return { version: app.getVersion(), platform: process.platform, arch: process.arch };
+      return { version: app.getVersion(), platform: process.platform, arch: process.arch, distributionChannel: channel };
     });
     ipcMain.on("desktop:document-state", (event, state) => {
       trusted(event);
@@ -447,7 +445,8 @@ if (primary) app
           label: "Aide",
           submenu: [
             {
-              label: "Rechercher une mise à jour",
+              label: channel === "direct" ? "Rechercher une mise à jour" : channel === "mac-app-store" ? "Mises à jour via l’App Store" : "Mises à jour via le Microsoft Store",
+              enabled: channel === "direct",
               click: () => controller.check(),
             },
             {

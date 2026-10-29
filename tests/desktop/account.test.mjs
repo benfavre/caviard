@@ -7,6 +7,19 @@ const device={device_code:'private-device-code',user_code:'ABCD-EFGH',verificati
 const tokens={access_token:'private-access-token',refresh_token:'private-refresh-token',token_type:'Bearer',expires_in:3600};
 const account={accountId:'account-fixture',remaining:20,reserved:0,plans:[],paymentsEnabled:false};
 const response=(data,status=200)=>({ok:status<400,status,text:async()=>JSON.stringify(data)});
+test('Mac Store preparation blocks Stripe at the main-process boundary while preserving existing credits',async()=>{
+ const controller=new AccountController({apiUrl:base,externalPurchases:false,
+   openExternal:()=>assert.fail('No external purchase or billing page may open'),
+   fetcher:()=>assert.fail('No purchase request may be made')});
+ controller.account={...account,remaining:123,paymentsEnabled:true,plans:[{id:'volume-100',purchasable:true}]};
+ controller.phase='signed-in';
+ assert.equal(controller.snapshot().account.remaining,123);
+ assert.equal(controller.snapshot().paymentsEnabled,false);
+ assert.deepEqual(controller.snapshot().plans,[]);
+ await assert.rejects(()=>controller.checkout('volume-100',{}),/externes/);
+ await assert.rejects(()=>controller.portal(),/externe/);
+ controller.dispose();
+});
 function create(override){const timers=[],opened=[],requests=[];const controller=new AccountController({apiUrl:base,openExternal:async url=>opened.push(url),setTimer:(_fn,ms)=>{timers.push(ms);return timers.length;},clearTimer:()=>{},fetcher:async(url,options)=>{requests.push({url,options});if(override){const r=await override(url,options);if(r)return r;}return response(url.endsWith('/config')?config:url.endsWith('/device')?device:url.endsWith('/token')?tokens:account);}});return{controller,timers,opened,requests};}
 test('only dedicated HTTPS service is allowed in production; loopback override is development only',()=>{
  assert.equal(accountApiUrl(base),base);assert.equal(accountApiUrl(undefined),null);

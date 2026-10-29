@@ -36,17 +36,17 @@ export default function AccountStatus({ busy }) {
       <span aria-live="polite">{state.phase === 'signed-in' ? `${state.account?.remaining ?? 0} PDF disponibles` : state.phase === 'waiting' ? `Confirmez le code ${state.userCode} dans votre navigateur` : '20 PDF d’essai avec votre compte Inklura'}</span>
       {state.phase === 'signed-in' ? <>
         <button disabled={working || busy} onClick={() => run(() => desktop.refreshAccount())}>Actualiser</button>
-        <button disabled={working || busy} onClick={() => setOffers(!offers)} aria-expanded={offers}>Offres et crédits</button>
-        <button disabled={working || busy || !state.paymentsEnabled} onClick={() => run(() => desktop.billingPortal())}>Facturation</button>
+        {state.externalPurchases !== false && <button disabled={working || busy} onClick={() => setOffers(!offers)} aria-expanded={offers}>Offres et crédits</button>}
+        {state.externalPurchases !== false && <button disabled={working || busy || !state.paymentsEnabled} onClick={() => run(() => desktop.billingPortal())}>Facturation</button>}
         <button disabled={working || busy} onClick={() => run(() => desktop.signOut())}>Se déconnecter</button>
       </> : state.phase === 'waiting' ? <button disabled={working} onClick={() => run(() => desktop.cancelSignIn())}>Annuler la connexion</button> : <button className="primary" disabled={working || state.phase === 'connecting' || state.phase === 'loading'} onClick={() => run(() => desktop.signIn())}>{working ? 'Connexion…' : 'Se connecter à Inklura'}</button>}
     </div>
     {(error || state.message) && <p role="alert">{error || state.message}</p>}
     {state.purchasePending && <p role="status">Terminez le paiement dans votre navigateur. Vos crédits se mettent à jour automatiquement après confirmation de Stripe. Un paiement annulé n’ajoute aucun crédit.</p>}
-    {state.account?.remaining === 0 && <p>Vous n’avez plus de crédits disponibles. Choisissez « Offres et crédits » pour en ajouter ; votre travail reste ouvert.</p>}
+    {state.account?.remaining === 0 && <p>Vous n’avez plus de crédits disponibles. {state.externalPurchases !== false && 'Choisissez « Offres et crédits » pour en ajouter ; '}votre travail reste ouvert.</p>}
     {state.account?.blocked && <p role="alert">La facturation de votre compte nécessite une vérification. Vos documents restent ouverts.</p>}
     {!!state.account?.reserved && <p>{state.account.reserved} export(s) en attente de synchronisation. Cliquez sur Actualiser après reconnexion.</p>}
-    {state.phase === 'signed-in' && <dialog ref={offersDialog} className="account-dialog" aria-labelledby="account-offers-title" onCancel={() => setOffers(false)} onClose={() => setOffers(false)}>
+    {state.phase === 'signed-in' && state.externalPurchases !== false && <dialog ref={offersDialog} className="account-dialog" aria-labelledby="account-offers-title" onCancel={() => setOffers(false)} onClose={() => setOffers(false)}>
       <div className="dialog-title"><h2 id="account-offers-title">Offres et crédits</h2><button aria-label="Fermer les offres" onClick={() => setOffers(false)}>✕</button></div>
       <div className="account-offers">
       {error && <p role="alert">{error}</p>}

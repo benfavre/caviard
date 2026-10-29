@@ -24,8 +24,9 @@ export function accountApiUrl(value, development = false) {
   return u.href.replace(/\/$/, '');
 }
 export class AccountController extends EventEmitter {
-  constructor({ apiUrl, development = false, fetcher = fetch, openExternal, now = () => Date.now(), setTimer = setTimeout, clearTimer = clearTimeout, onSignedIn = async () => {} }) {
+  constructor({ apiUrl, development = false, externalPurchases = true, fetcher = fetch, openExternal, now = () => Date.now(), setTimer = setTimeout, clearTimer = clearTimeout, onSignedIn = async () => {} }) {
     super(); Object.assign(this, { fetcher, openExternal, now, setTimer, clearTimer, onSignedIn });
+    this.externalPurchases = externalPurchases;
     this.apiUrl = accountApiUrl(apiUrl, development); this.phase = this.apiUrl ? 'loading' : 'disabled';
     this.config = null; this.account = null; this.tokens = null; this.flow = null; this.timer = null; this.message = ''; this.generation = 0;
     this.checkoutOperations = new Map(); this.purchaseTimer = null; this.purchasePending = false;
@@ -33,7 +34,8 @@ export class AccountController extends EventEmitter {
   snapshot() {
     return { phase: this.phase, enabled: !!this.apiUrl && !!this.config?.enabled, message: this.message,
       account: this.account, purchasePending: this.purchasePending, userCode: this.flow?.userCode || null,
-      plans: this.account?.plans || this.config?.plans || [], paymentsEnabled: !!this.account?.paymentsEnabled };
+      externalPurchases: this.externalPurchases,
+      plans: this.externalPurchases ? this.account?.plans || this.config?.plans || [] : [], paymentsEnabled: this.externalPurchases && !!this.account?.paymentsEnabled };
   }
   publish() { this.emit('state', this.snapshot()); return this.snapshot(); }
   async json(url, options = {}) {
@@ -154,6 +156,7 @@ export class AccountController extends EventEmitter {
     return this.publish();
   }
   async checkout(planId, billing) {
+    if (!this.externalPurchases) throw new Error('Les achats externes ne sont pas disponibles dans cette édition.');
     const plan = this.account?.plans?.find(p => p.id === planId);
     if (!plan?.purchasable || !this.account.paymentsEnabled) throw new Error(messages.purchases_not_enabled);
     if (!this.checkoutOperations.has(planId)) this.checkoutOperations.set(planId, randomUUID());
@@ -189,6 +192,7 @@ export class AccountController extends EventEmitter {
     this.purchaseTimer = this.setTimer(poll, 2000);
   }
   async portal() {
+    if (!this.externalPurchases) throw new Error('La facturation externe n’est pas disponible dans cette édition.');
     const result = await this.request('/v1/portal', {}), url = new URL(result.url);
     if (url.protocol !== 'https:' || url.hostname !== 'billing.stripe.com' || url.username || url.password) throw new Error('Lien de facturation invalide.');
     await this.openExternal(url.href); return { opened: true };
