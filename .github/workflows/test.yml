@@ -41,7 +41,11 @@ jobs:
       - run: npm run test:desktop:unit
       - run: npm run desktop:dist
       - name: Enable Electron's sandbox helper on the isolated runner
-        run: sudo chown root:root release/linux-unpacked/chrome-sandbox && sudo chmod 4755 release/linux-unpacked/chrome-sandbox
+        # Store-metadata fixtures launch the development Electron binary;
+        # ordinary regression tests launch the packaged direct edition.
+        run: |
+          sudo chown root:root release/linux-unpacked/chrome-sandbox node_modules/electron/dist/chrome-sandbox
+          sudo chmod 4755 release/linux-unpacked/chrome-sandbox node_modules/electron/dist/chrome-sandbox
       - run: xvfb-run -a npm run test:desktop
         env:
           CAVIARD_EXECUTABLE: ${{ github.workspace }}/release/linux-unpacked/caviard

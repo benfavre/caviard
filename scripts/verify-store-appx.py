@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 import xml.etree.ElementTree as ET
 import zipfile
+from urllib.parse import unquote
 
 root = Path("release-microsoft-store")
 packages = list(root.glob("*.appx"))
@@ -14,7 +15,9 @@ ns = {"m": "http://schemas.microsoft.com/appx/manifest/foundation/windows10",
       "uap": "http://schemas.microsoft.com/appx/manifest/uap/windows10",
       "rescap": "http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"}
 with zipfile.ZipFile(package) as archive:
-    names = archive.namelist()
+    # AppX ZIP entry names are percent-encoded; manifest paths are not.
+    # Decode once (not unquote_plus, since '+' is a filename character).
+    names = [unquote(name, errors="strict") for name in archive.namelist()]
     manifest = ET.fromstring(archive.read("AppxManifest.xml"))
     identity = manifest.find("m:Identity", ns)
     assert identity.attrib["Name"] == os.environ["INKLURA_WINDOWS_IDENTITY_NAME"]
