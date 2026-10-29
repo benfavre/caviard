@@ -26,7 +26,8 @@ with zipfile.ZipFile(package) as archive:
     assert publisher.text == os.environ["INKLURA_WINDOWS_PUBLISHER_DISPLAY_NAME"]
     app = manifest.find("m:Applications/m:Application", ns)
     assert app.attrib["Id"] == "InkluraPDF"
-    assert app.attrib["Executable"].replace("\\", "/") in names
+    executable = app.attrib["Executable"].replace("\\", "/")
+    assert executable in names, f"Manifest executable {executable!r} missing; archive executables: {[name for name in names if name.lower().endswith('.exe')]}"
     assert app.find("m:Extensions/uap:Extension/uap:FileTypeAssociation/uap:SupportedFileTypes/uap:FileType", ns).text == ".pdf"
     assert manifest.find("m:Capabilities/rescap:Capability[@Name='runFullTrust']", ns) is not None
     assert not any(name.endswith(("app-update.yml", "latest.yml")) for name in names)
