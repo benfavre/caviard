@@ -30,7 +30,7 @@ for app in apps:
     architecture = subprocess.check_output(["lipo", "-archs", str(app / "Contents/MacOS/Inklura PDF")], text=True).strip()
     architectures.add(architecture)
 assert architectures == {"x86_64", "arm64"}
-packages = list(root.glob("*.pkg"))
+packages = list(root.glob("mas*/*.pkg"))
 assert len(packages) == 2, "Expected two MAS installer packages"
 for package in packages:
     result = subprocess.check_output(["pkgutil", "--check-signature", str(package)], text=True)

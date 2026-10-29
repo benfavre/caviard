@@ -1,7 +1,8 @@
 import { createCanvas, loadImage } from "@napi-rs/canvas";
 import { mkdir, writeFile } from "node:fs/promises";
+import { fileURLToPath } from "node:url";
 // Use the existing product icon, not electron-builder's sample Store tiles.
-const icon = await loadImage(new URL("../build/icon.png", import.meta.url).pathname);
+const icon = await loadImage(fileURLToPath(new URL("../build/icon.png", import.meta.url)));
 const root = new URL("../build/appx/", import.meta.url);
 await mkdir(root, { recursive: true });
 for (const [name, width, height] of [

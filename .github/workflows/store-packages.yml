@@ -130,6 +130,6 @@ jobs:
         with:
           name: mac-app-store-internal-review
           path: |
-            release-mac-app-store/*.pkg
+            release-mac-app-store/mas*/*.pkg
             release-mac-app-store/verification.json
           if-no-files-found: error
