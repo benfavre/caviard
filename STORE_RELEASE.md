@@ -138,7 +138,16 @@ Local validation: 59 desktop unit tests, electron-builder schema validation for
 all four configurations, a production web build, and two real Electron UI/IPC
 tests for Store update isolation. These tests validate metadata-driven behavior,
 not an installed native Store package, approved listing, payment or Store update.
-The native Windows QA job supplies separate package evidence when it completes.
+The [native Windows QA build](https://github.com/benfavre/caviard/actions/runs/40910998781)
+passed AppX manifest/content verification using the explicitly non-submittable
+QA identity. The direct Linux AppImage build and real update-feed integrity test
+also passed. The local desktop run passed 14/15; the second-instance exit-code
+assertion also fails on unchanged `8c00588` in this environment. The full CI run
+also exposed a pre-existing export-test race, reproduced on that baseline: the
+test could check the old hidden acknowledgement before the dialog reset it.
+The shared test helper now waits for the visible dialog and fresh reset. Check
+the PR's current CI result before merging; native installed Store acceptance is
+still outstanding.
 
 ## Primary references (checked 29 October 2026)
 
