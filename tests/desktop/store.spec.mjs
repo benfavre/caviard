@@ -1,5 +1,5 @@
 import { test, expect, _electron as electron } from "@playwright/test";
-import { mkdtemp, writeFile, symlink, rm } from "node:fs/promises";
+import { mkdtemp, mkdir, writeFile, symlink, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
@@ -11,13 +11,21 @@ for (const channel of ["mac-app-store", "microsoft-store"]) {
     let app;
     try {
       await symlink(path.resolve("electron"), path.join(root, "electron"), "junction");
+      const profile = path.join(root, "profile");
+      await mkdir(profile);
+      await writeFile(path.join(root, "fixture.mjs"), `
+        import { app } from 'electron';
+        app.setPath('userData', ${JSON.stringify(profile)});
+        await import('./electron/main.mjs');
+      `);
       await writeFile(path.join(root, "package.json"), JSON.stringify({
-        name: "inklura-store-test", version: "1.4.0", main: "electron/main.mjs",
+        name: "inklura-store-test", version: "1.4.0", main: "fixture.mjs",
         type: "module", distributionChannel: channel,
         accountApi: "https://outils.inklura.fr/api/inklura-pdf",
       }));
-      app = await electron.launch({ args: [root] });
-      const page = await app.firstWindow();
+      app = await test.step("Launch with an isolated profile", () => electron.launch({ args: [root] }));
+      const page = await test.step("Open the desktop window", () => app.firstWindow());
+      expect(await app.evaluate(({ app }) => app.getPath("userData"))).toBe(profile);
       await expect(page.getByLabel("Version et mises à jour")).toContainText(
         channel === "mac-app-store" ? "gérées par App Store" : "gérées par Microsoft Store");
       await expect(page.getByRole("button", { name: "Rechercher une mise à jour" })).toHaveCount(0);
@@ -44,8 +52,7 @@ for (const channel of ["mac-app-store", "microsoft-store"]) {
       })).toBe(false);
     } finally {
       if (app) {
-        await app.evaluate(({ BrowserWindow }) => { for (const window of BrowserWindow.getAllWindows()) window.destroy(); });
-        await app.close();
+        await test.step("Quit the clean fixture", () => app.close());
       }
       await rm(root, { recursive: true, force: true });
     }
