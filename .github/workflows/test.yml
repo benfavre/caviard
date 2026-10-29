@@ -40,6 +40,8 @@ jobs:
       - run: npm run test:all
       - run: npm run test:desktop:unit
       - run: npm run desktop:dist
+      - name: Ensure the development Electron runtime for Store fixtures
+        run: node node_modules/electron/install.js
       - name: Enable Electron's sandbox helper on the isolated runner
         # Store-metadata fixtures launch the development Electron binary;
         # ordinary regression tests launch the packaged direct edition.
