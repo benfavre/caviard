@@ -12,10 +12,10 @@ on:
   workflow_dispatch:
     inputs:
       channel:
-        description: Internal package only; does not submit or publish
+        description: Prepare/test packages, or explicitly validate/upload the reviewed MAS package
         required: true
         type: choice
-        options: [microsoft-store, microsoft-store-test, microsoft-store-screenshots, mac-app-store, mac-app-store-screenshots]
+        options: [microsoft-store, microsoft-store-test, microsoft-store-screenshots, mac-app-store, mac-app-store-screenshots, mac-app-store-inspect-upload, mac-app-store-validate, mac-app-store-upload]
 permissions:
   contents: read
 jobs:
@@ -238,3 +238,41 @@ jobs:
           name: mac-app-store-UI-ONLY-screenshots
           path: output/store-screenshots/*
           if-no-files-found: error
+
+  mac-store-delivery:
+    if: github.event_name == 'workflow_dispatch' && contains(fromJSON('["mac-app-store-inspect-upload", "mac-app-store-validate", "mac-app-store-upload"]'), inputs.channel)
+    runs-on: macos-latest
+    timeout-minutes: 25
+    environment: release
+    concurrency:
+      group: inklura-mas-delivery
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      # Exact signed 33ba8a3 artifact; upload script independently pins SHA-256.
+      - uses: actions/download-artifact@v4
+        with:
+          name: mac-app-store-internal-review
+          run-id: 41074259179
+          github-token: ${{ github.token }}
+          path: source-mas-package
+      - name: Inspect exact package and Apple delivery tools (no credentials)
+        run: node scripts/upload-store-mas.mjs inspect
+      - name: Validate or upload to Apple (does not submit App Review)
+        if: inputs.channel != 'mac-app-store-inspect-upload'
+        env:
+          MAS_ASC_KEY_ID: ${{ vars.MAS_ASC_KEY_ID }}
+          MAS_ASC_PRIVATE_KEY: ${{ secrets.MAS_ASC_PRIVATE_KEY }}
+          DELIVERY_CHANNEL: ${{ inputs.channel }}
+        run: |
+          case "$DELIVERY_CHANNEL" in
+            mac-app-store-validate) node scripts/upload-store-mas.mjs verify ;;
+            mac-app-store-upload) node scripts/upload-store-mas.mjs upload ;;
+            *) exit 1 ;;
+          esac
