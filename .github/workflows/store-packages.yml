@@ -180,15 +180,15 @@ jobs:
       - run: node -e "require('./electron-builder.config.cjs')"
       - run: npm ci
       - run: npm run build
-      - name: Build signed MAS packages (not Developer ID DMGs)
+      - name: Import certificates into a dedicated ephemeral keychain
         env:
-          CSC_LINK: ${{ secrets.MAS_CSC_LINK }}
-          CSC_KEY_PASSWORD: ${{ secrets.MAS_CSC_KEY_PASSWORD }}
-          CSC_INSTALLER_LINK: ${{ secrets.MAS_INSTALLER_LINK }}
-          CSC_INSTALLER_KEY_PASSWORD: ${{ secrets.MAS_INSTALLER_KEY_PASSWORD }}
-        run: |
-          node -e "for (const key of ['CSC_LINK','CSC_INSTALLER_LINK']) if (!process.env[key]) throw new Error('Missing '+key)"
-          npx electron-builder --config electron-builder.config.cjs --mac mas --x64 --arm64 --publish never
+          MAS_CSC_LINK: ${{ secrets.MAS_CSC_LINK }}
+          MAS_CSC_KEY_PASSWORD: ${{ secrets.MAS_CSC_KEY_PASSWORD }}
+          MAS_INSTALLER_LINK: ${{ secrets.MAS_INSTALLER_LINK }}
+          MAS_INSTALLER_KEY_PASSWORD: ${{ secrets.MAS_INSTALLER_KEY_PASSWORD }}
+        run: node scripts/prepare-mas-keychain.mjs
+      - name: Build signed MAS packages (not Developer ID DMGs)
+        run: npx electron-builder --config electron-builder.config.cjs --mac mas --x64 --arm64 --publish never
       - name: Verify app signatures and sandbox
         run: python3 scripts/verify-store-mas.py
       - uses: actions/upload-artifact@v4
@@ -198,3 +198,9 @@ jobs:
             release-mac-app-store/mas*/*.pkg
             release-mac-app-store/verification.json
           if-no-files-found: error
+      - name: Remove the ephemeral signing keychain
+        if: always()
+        run: |
+          if [ -f "$RUNNER_TEMP/inklura-mas.keychain-db" ]; then
+            security delete-keychain "$RUNNER_TEMP/inklura-mas.keychain-db"
+          fi
