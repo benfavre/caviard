@@ -69,8 +69,10 @@ https://appstoreconnect.apple.com/apps/6828817692/distribution/info
 https://demarche.numerique.gouv.fr/dossiers/35079529/brouillon
 Accès invité Ben fonctionnel. Champs techniques renseignés et deux brochures
 jointes (commerciale : 1 page ; technique : 4 pages), contrôle visuel effectué.
-Renseignements publics BEO PLUS préremplis ; contacts, qualité du fabricant,
-date de mise sur le marché, justificatifs et attestation à valider par Bruno.
+Bruno a complété les contacts, déclaré BEO PLUS fabricant et renseigné le
+01/11/2026 comme lancement prévu. Brochures révision 2 jointes, date explicitement
+prévisionnelle sous réserve des validations. Attestation signée encore absente ;
+Kbis récent et présentation société requis si première déclaration de BEO PLUS.
 Le portail réserve le dépôt final au titulaire.
 
 Diagnostic macOS 41089292464

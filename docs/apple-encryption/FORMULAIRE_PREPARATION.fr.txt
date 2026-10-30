@@ -28,9 +28,10 @@ Marque de distribution : Inklura.
 Dénomination : Inklura PDF.
 Version : 1.4.0 (build Mac App Store 1.4.56).
 Référence commerciale : inklura-pdf-macos ; com.benfavre.caviard ; Apple 6828817692.
-Date de mise sur le marché Mac : non arrêtée, publication Apple en préparation.
-Bénéficiaire fabricant : à confirmer contractuellement ; ne pas confondre le
-compte de distribution BEO PLUS avec l'identité du fabricant/développeur.
+Date de mise sur le marché Mac : 01/11/2026 renseignée par Bruno.
+Date prévisionnelle, sous réserve des validations ANSSI et Apple.
+Bénéficiaire fabricant : Oui, confirmé par Bruno dans le brouillon et
+le commentaire 6533114444. BEO PLUS est le fabricant déclaré.
 Catégorie : logiciel.
 
 DESCRIPTION GÉNÉRALE PROPOSÉE
@@ -79,3 +80,11 @@ BROUILLON PARTAGÉ RENSEIGNÉ
 https://demarche.numerique.gouv.fr/dossiers/35079529/brouillon
 Les deux brochures sont jointes. La partie technique est renseignée ;
 le dépôt final est réservé au titulaire Bruno par le portail.
+
+MISE À JOUR APRÈS RÉPONSE 6533114444
+Le titulaire a complété les données administratives et le portail ne signale
+plus qu'une pièce obligatoire manquante : l'attestation signée. Les justificatifs
+conditionnels (Kbis récent et présentation société si première déclaration
+ANSSI de BEO PLUS) restent absents. La validation automatique ne remplace pas
+cette exigence. Les brochures v2-20261030 remplacent les précédentes versions
+qui restent présentes dans le brouillon ; aucun dépôt effectué.

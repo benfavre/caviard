@@ -503,3 +503,10 @@ signature and package hash remain intact. Results include TLS 1.2/1.3, AES-128-G
 X25519 and hybrid X25519MLKEM768, EC P-256 and RSA-2048 server keys. This is runtime
 inventory, not installed MAS sandbox/StoreKit acceptance. Evidence and updated,
 visually reviewed brochures are in `docs/apple-encryption/`.
+
+Bruno's comment 6533114444 confirms manufacturer BEO PLUS and a proposed market
+date of 1 November 2026; both are persisted in the draft. Updated revision-2
+brochures explicitly qualify that date as provisional, subject to ANSSI and
+Apple validations. They supersede the earlier attachments without deleting them.
+The portal now reports only the signed attestation as a missing mandatory field;
+conditional first-declaration company documents remain absent. No filing yet.
