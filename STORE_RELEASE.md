@@ -5,7 +5,7 @@ existing direct downloads. Microsoft submission `1152921505702276768` was sent
 for certification on 30 October 2026; Partner Center shows preprocessing in
 progress and automatic publication after certification. It is not live yet.
 The public version remains 1.4.0. Do not submit the current MAS build: Apple
-native StoreKit acceptance, encryption compliance and review completion below are still outstanding. The corrected package was uploaded successfully on 30 October at 15:46 UTC; processing and TestFlight availability remain to verify.
+native StoreKit acceptance, encryption compliance and review completion below are still outstanding. The corrected package was uploaded successfully on 30 October at 15:46 UTC; Apple processing is complete/VALID. TestFlight is blocked by missing encryption compliance documentation.
 
 ## Distribution and updates
 
@@ -441,9 +441,12 @@ App Review or prove processing.
 completed successfully at 15:46 UTC with delivery UUID
 `52cfce15-0e75-4ede-b243-2ee78eda80bd`. Apple accepted the 270,780,306-byte transfer
 without errors. Processing and TestFlight availability are separate; the builds
-API still returned no builds at 15:50 UTC. The upload-status API confirms
-`PROCESSING` for version 1.4.0 / build 1.4.56, with no errors or warnings. Do not
-send a duplicate upload while Apple processes this delivery.
+API still returned no builds at 15:50 UTC. The upload-status API now confirms
+`COMPLETE` and the builds API reports `VALID` for version 1.4.0 / build 1.4.56,
+with no errors or warnings. macOS 13.0 is the minimum. TestFlight shows missing
+compliance information; standard embedded encryption plus France leads to an
+explicit requirement to upload documents and obtain Apple approval. Do not
+send a duplicate upload.
 
 The internal group “Validation interne — Bruno” is created with automatic
 build distribution disabled; no testers or builds have been added yet. French
@@ -470,3 +473,16 @@ or key in logs; the fixed read uses a 120-second individual-key JWT. The existin
 minute-based Bruno ticket watcher remains independent and active indefinitely.
 Bruno was asked whether BEO PLUS already has a declaration covering this product
 in [comment 6527045892](https://github.com/webdesign29/activ/issues/1410#issuecomment-6527045892).
+
+Bruno confirmed no existing Inklura PDF declaration in comment 6527070713.
+Draft commercial/technical brochures and field-by-field preparation are in
+`docs/apple-encryption/`. The official March 2026 ANSSI guide requires the
+declarant’s signed attestation; no declaration or signed attestation has been
+submitted. Comment 6527142897 asks Bruno to open and share an ANSSI draft so the
+technical fields can be completed by Ben. Company data, signatory/manufacturer
+identity and native MAS TLS inventory remain to verify before signing.
+
+The TestFlight build questionnaire was inspected on 30 October at 16:01 UTC.
+It explicitly requires approved encryption documents for the actual standard
+embedded algorithms and France distribution; it does not offer a testing bypass.
+The questionnaire was not submitted. No tester invitation has been sent.

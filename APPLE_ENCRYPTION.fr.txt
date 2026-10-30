@@ -39,9 +39,10 @@ relative à un moyen de cryptologie. Aucun document n'a été chargé ; le
 questionnaire a été annulé. Aucune exemption n'est attestée dans Info.plist.
 
 Éléments restant à réunir avant tout dépôt
-Vérifier si BEO PLUS détient déjà une déclaration couvrant exactement ce produit
-et ses versions. À défaut, faire confirmer la qualification et préparer le
-formulaire avec le représentant de l'éditeur. Ne pas remplacer cette étape par
+Bruno a confirmé le 30 octobre (commentaire 6527070713) qu’aucune déclaration
+existante ne couvre Inklura PDF. Faire confirmer la qualification et préparer
+le formulaire avec le représentant de l’éditeur. Un accès au brouillon partagé
+a été demandé dans le commentaire 6527142897. Ne pas remplacer cette étape par
 une déclaration d'absence de chiffrement. Les renseignements d'entreprise,
 le signataire et les justificatifs doivent provenir de BEO PLUS.
 Le portail ANSSI indique notamment une présentation de la société, un Kbis
@@ -63,3 +64,8 @@ https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000646995
 
 Écran Apple concerné :
 https://appstoreconnect.apple.com/apps/6828817692/distribution/info
+
+Pièces préparées et formulaire à compléter : docs/apple-encryption/.
+Deux brochures PDF ont été générées et leurs quatre pages contrôlées visuellement.
+Le relevé TLS de référence provient d’Electron Linux 44.4.5 ; les paramètres
+réseau du binaire MAS installé restent à compléter avant toute attestation.
