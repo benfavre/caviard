@@ -19,5 +19,5 @@ async function handshake(host, version) {
 (async () => {
   const result = {platform:process.platform,arch:process.arch,versions:process.versions,defaultMin:tls.DEFAULT_MIN_VERSION,defaultMax:tls.DEFAULT_MAX_VERSION,defaultCiphers:tls.DEFAULT_CIPHERS,enabledCipherSuites:tls.getCiphers(),defaultGroups:tls.DEFAULT_ECDH_CURVE,handshakes:[]};
   for(const host of targets) for(const version of ['TLSv1.2','TLSv1.3']) result.handshakes.push(await handshake(host,version));
-  console.log('INKLURA_CRYPTO_REPORT='+JSON.stringify(result));
+  console.log('INKLURA_CRYPTO_REPORT='+JSON.stringify(result, (_key, value) => typeof value === 'bigint' ? value.toString() : value));
 })();
