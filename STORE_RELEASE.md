@@ -462,3 +462,11 @@ approved compliance code is established. No legal declaration was submitted.
 EU trader status is also still flagged by App Store Connect; Paid Applications
 agreement status must be verified by the account holder. The uploaded package
 has not been submitted to App Review, and no public availability is claimed.
+
+A separate local `inklura-apple-processing.timer` checks this exact delivery every
+2 minutes and queues the existing conversation once the status leaves PROCESSING,
+then stops itself. Its first live check succeeded at 15:52 UTC. It stores no token
+or key in logs; the fixed read uses a 120-second individual-key JWT. The existing
+minute-based Bruno ticket watcher remains independent and active indefinitely.
+Bruno was asked whether BEO PLUS already has a declaration covering this product
+in [comment 6527045892](https://github.com/webdesign29/activ/issues/1410#issuecomment-6527045892).
