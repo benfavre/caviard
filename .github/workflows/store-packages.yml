@@ -267,6 +267,15 @@ jobs:
           path: source-mas-package
       - name: Inspect exact package and Apple delivery tools (no credentials)
         run: node scripts/upload-store-mas.mjs inspect
+      - name: Inspect cryptography in the exact signed MAS runtime
+        if: inputs.channel == 'mac-app-store-inspect-upload'
+        run: python3 scripts/inspect-mas-crypto.py
+      - uses: actions/upload-artifact@v4
+        if: inputs.channel == 'mac-app-store-inspect-upload' && always()
+        with:
+          name: mas-crypto-inventory
+          path: mas-crypto-inventory.json
+          if-no-files-found: error
       - name: Validate or upload to Apple (does not submit App Review)
         if: inputs.channel != 'mac-app-store-inspect-upload'
         env:
