@@ -10,7 +10,7 @@ import { spawnSync } from 'node:child_process';
 const mode = process.argv[2] || 'inspect';
 if (!['inspect', 'verify', 'upload'].includes(mode)) throw new Error('Expected inspect, verify or upload');
 const root = resolve(process.argv[3] || 'source-mas-package');
-const expectedHash = '0a71ef96960ed0d0efbd96a43f0e60fbe4d1fa776edadb3e7b314c0eea157771';
+const expectedHash = '2955e874fe75fcb27ba37f56ec886eccfe16e979db85ff9d9eea28d9d470e023';
 const filename = 'Inklura-PDF-1.4.0-mac-app-store-universal.pkg';
 const pkg = resolve(root, 'mas-universal', filename);
 const report = JSON.parse(readFileSync(resolve(root, 'verification.json'), 'utf8'));

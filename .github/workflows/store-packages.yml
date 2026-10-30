@@ -258,11 +258,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      # Exact signed 33ba8a3 artifact; upload script independently pins SHA-256.
+      # Exact signed cb5cdb3 artifact; upload script independently pins SHA-256.
       - uses: actions/download-artifact@v4
         with:
           name: mac-app-store-internal-review
-          run-id: 41074259179
+          run-id: 41082263707
           github-token: ${{ github.token }}
           path: source-mas-package
       - name: Inspect exact package and Apple delivery tools (no credentials)
