@@ -262,6 +262,14 @@ jobs:
           run-id: 41074259179
           github-token: ${{ github.token }}
           path: source-mas-package
+      - name: Install Apple Transporter from its official distribution
+        run: |
+          curl --fail --show-error --silent --location --retry 3 \
+            'https://itunesconnect.apple.com/WebObjects/iTunesConnect.woa/ra/resources/download/public/Transporter__OSX/bin/' \
+            -o "$RUNNER_TEMP/Transporter.pkg"
+          pkgutil --check-signature "$RUNNER_TEMP/Transporter.pkg"
+          spctl --assess --type install --verbose "$RUNNER_TEMP/Transporter.pkg"
+          sudo installer -pkg "$RUNNER_TEMP/Transporter.pkg" -target /
       - name: Inspect exact package and Apple delivery tools (no credentials)
         run: node scripts/upload-store-mas.mjs inspect
       - name: Validate or upload to Apple (does not submit App Review)

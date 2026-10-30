@@ -43,7 +43,7 @@ if (mode === 'inspect') {
 }
 const keyId = process.env.MAS_ASC_KEY_ID;
 const pem = process.env.MAS_ASC_PRIVATE_KEY;
-if (!/^[A-Z0-9]{10}$/.test(keyId || '') || !pem) throw new Error('Missing upload API credentials');
+if (!/^[A-Z0-9]{10,20}$/.test(keyId || '') || !pem) throw new Error('Missing upload API credentials');
 const key = createPrivateKey(pem);
 if (key.asymmetricKeyType !== 'ec' || key.asymmetricKeyDetails?.namedCurve !== 'prime256v1') throw new Error('Expected Apple P-256 key');
 const now = Math.floor(Date.now() / 1000);
