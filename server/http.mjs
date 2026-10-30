@@ -1,7 +1,13 @@
 import { createServer } from 'node:http';
+import { readFileSync } from 'node:fs';
 import { BillingError } from './ledger.mjs';
 import { INKLURA_ISSUER } from './auth.mjs';
 import { BUYER_FIELDS, promoCode, webBuyer } from './france-billing.mjs';
+const privacyText = readFileSync(new URL('./privacy.fr.txt', import.meta.url), 'utf8');
+const escapeHtml = text => text.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
+const privacyHtml = '<!doctype html><html lang="fr"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Confidentialité · Inklura PDF</title><main>' +
+  privacyText.trim().split('\n\n').map((paragraph, index) => index === 0 ? '<h1>Inklura PDF — confidentialité</h1><p>Édition Mac App Store · 30 octobre 2026</p>' :
+    '<' + (paragraph.length < 100 ? 'h2' : 'p') + '>' + escapeHtml(paragraph) + '</' + (paragraph.length < 100 ? 'h2' : 'p') + '>').join('') + '</main></html>';
 export function createApi({ webPurchases, applePurchases, accountDeletion, ledger, payments, authenticate, clientId, publicUrl, now = () => Date.now() }) {
   // Promotion code lookups: pdf.inklura.fr/api/panier/promo relays them (the
   // site limits each visitor); a global ceiling here bounds Stripe calls.
@@ -24,6 +30,7 @@ export function createApi({ webPurchases, applePurchases, accountDeletion, ledge
       const prefix = new URL(publicUrl).pathname.replace(/\/$/, '');
       const path = prefix && pathname.startsWith(prefix + '/') ? pathname.slice(prefix.length) : pathname;
       if (req.method === 'GET' && path === '/health') return send(res, 200, { ok: true });
+      if (req.method === 'GET' && path === '/privacy') return send(res, 200, privacyHtml, 'text/html; charset=utf-8');
       if (req.method === 'GET' && path === '/web/resume') {
         const receipt = /(?:^|; )__Host-pdf-purchase=([a-f0-9]{64})(?:;|$)/.exec(req.headers.cookie || '')?.[1];
         res.writeHead(303, { location: receipt ? 'https://manage.inklura.fr/pdf/billing?claim=' + receipt : 'https://manage.inklura.fr/pdf/billing', 'cache-control': 'no-store', 'referrer-policy': 'no-referrer' });
