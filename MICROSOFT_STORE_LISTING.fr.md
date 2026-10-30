@@ -14,7 +14,7 @@ du paquet installé reste à réaliser.
 
 **Langue :** français (France)
 
-**Catégorie proposée :** Productivité
+**Catégorie enregistrée :** Productivité
 
 **Description courte :** Caviardez vos PDF sur votre ordinateur avant de les partager.
 
@@ -58,14 +58,17 @@ ses mises à jour par le Microsoft Store, selon vos paramètres de mise à jour.
 
 **Contact intégré à l’application :** contact@inklura.fr
 
-**Support web à vérifier :** le site produit renvoie vers ACTIV communication.
-Vérifier la destination exacte et son adéquation au support de cette application
-dans Partner Center.
+**Support enregistré :** coordonnées du compte éditeur BEO PLUS,
+contact@activ-communication.com et https://www.activ-communication.com/.
 
-**Politique de confidentialité :** URL dédiée encore à vérifier/fournir. La
-section marketing sur le traitement local ne remplace pas une politique couvrant
-aussi le compte, les crédits, le paiement, la conservation et les droits des
-utilisateurs. Ne pas inventer une URL ni soumettre ce champ vide.
+**Politique de confidentialité enregistrée :** texte `STORE_PRIVACY.fr.txt`,
+fourni directement dans Partner Center. Il décrit le traitement local, les
+projets, la connexion, les crédits, le paiement, les téléchargements de modèles
+et renvoie aux règles générales de conservation et aux droits chez BEO PLUS :
+https://www.activ-communication.com/politique-de-confidentialite/.
+
+**Disponibilité enregistrée :** France, téléchargement gratuit, futurs marchés
+désactivés. La publication reste manuelle. Aucun prix de crédit n'a été modifié.
 
 ## Notes destinées à la certification
 
@@ -97,9 +100,8 @@ de certification ; ne jamais les conserver dans ce dépôt.
 - Captures réelles du paquet final avec des PDF synthétiques : édition manuelle,
   suggestions de l’assistant et relecture avant export. La capture historique
   de la version 1.2.0 ne constitue pas une capture de ce paquet.
-- Politique de confidentialité publique et lien de support vérifiés.
-- Questionnaire d’âge, droits sur les contenus et territoires dans le portail.
-  Vérifier que les territoires retenus correspondent au périmètre commercial.
+- Acceptation IARC et enregistrement de la classification : aperçu PEGI 3 avec
+  achats intégrés préparé, validation contractuelle en attente de confirmation.
 - Compte de certification testé, informations de connexion et crédits.
 - Tarifs et conditions actuels vérifiés dans le service déployé : le site public
   affiche maintenant une facturation annuelle pour les abonnements, alors que

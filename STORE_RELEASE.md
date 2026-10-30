@@ -191,10 +191,45 @@ The portal warns that `runFullTrust` requires approval during certification.
 Its technical justification is saved in the draft submission options, with
 manual publication selected. The options section is complete; this does not
 constitute capability approval or submission for certification.
-The French description, short description and first feature are saved. The
-listing remains incomplete pending screenshots; availability, properties, age
-rating, privacy/support links, reviewer access and installed acceptance remain
-to be completed before certification.
+The French description, short description and first feature are saved. Properties
+and pricing/availability now report **Complete** in Partner Center: Productivity,
+8 GB recommended RAM, external purchases and generative-AI functionality declared,
+OneDrive automatic app-data backup disabled, existing BEO PLUS support contacts,
+and the product-specific text in `STORE_PRIVACY.fr.txt`. This text supplements the
+existing BEO PLUS privacy policy linked by the product website; it is stored
+directly in the draft, not published as a new website page. The draft offers a
+free download in France only, with future markets disabled. Paid export credits
+remain managed by the existing service; no live billing changes were made.
+The age questionnaire preview gives PEGI 3 / in-app purchases. Its IARC terms
+acceptance and final save await explicit publisher authorization. The app offers
+no media catalog or user-to-user sharing; user-imported documents are excluded
+from the online-content answer according to the questionnaire's own help text.
+Actual Windows screenshots, reviewer access, installed acceptance and the final
+age-rating save remain outstanding before certification.
+
+### Windows test handoff
+
+Ben identified Bruno's Windows PC for native acceptance. Workflow dispatch
+`microsoft-store-test` downloads the exact verified artifact from run
+`41039014119`, requires its pinned SHA-256, and signs a copy using a non-exportable
+14-day test certificate on an ephemeral Windows runner. No private key is
+exported; the job deletes it after verifying the signature and unchanged payload.
+The public certificate, AppX, certificate thumbprint, verification report and
+French instructions are packaged as `Inklura-PDF-Windows-TEST-ONLY`.
+
+[Test-kit run 41042030216](https://github.com/benfavre/caviard/actions/runs/41042030216)
+passed signing and payload verification. Only signature metadata and the Windows
+code-integrity catalog are added. The original upload is untouched. This is
+not an installation test or a public release. The PC owner explicitly installs
+the public leaf certificate into Trusted People (never Trusted Root), installs
+the AppX, and reports launch success/error in Microsoft ticket #1411. The
+instructions include certificate removal and warn about local data when
+uninstalling the temporary test package. See `WINDOWS_TEST.fr.txt`.
+
+After installed acceptance, obtain real screenshots and run WACK. A separate
+Store-delivered first version and subsequent version are required to validate
+actual Store updates; sideloading this kit cannot prove that behavior. Test
+artifacts expire after 14 days and must not be offered as customer downloads.
 
 ## Primary references (checked 29 October 2026)
 
