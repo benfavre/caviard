@@ -1,7 +1,10 @@
 # Microsoft Store — fiche française en préparation
 
 Brouillon pour le compte éditeur BEO PLUS, au 30 octobre 2026. Aucun de ces
-champs n’a encore été enregistré dans Partner Center. Les caractéristiques
+champs n’a encore été enregistré dans Partner Center. L’accès BEO PLUS est
+confirmé ; le nom est disponible mais la réservation par le compte invité a
+échoué sur une autorisation Entra. La réservation est demandée à Bruno dans le
+ticket privé Microsoft. Les caractéristiques
 ci-dessous proviennent du code et du README de cette branche ; la validation
 du paquet installé reste à réaliser.
 

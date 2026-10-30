@@ -29,12 +29,17 @@ Microsoft Partner Center status, the neighbour's OS and the Apple offer decision
 Track the private publisher-access tickets (Microsoft #1411, Apple #1410); do not copy credentials or
 identity documents here. Azure identity validation alone is not a Store account.
 
-As of 30 October, the BEO PLUS Microsoft tenant association is complete and Ben
-reports accepting the Developer invitation. Access in the packaging operator's
-browser still needs an authenticated check. No product identity has been reserved
-or copied. The temporary tenant-administrator role used for association has been
-removed. Apple membership is confirmed and the team variable is configured;
-App Store Connect access and signing assets remain to be verified.
+As of 30 October, authenticated Developer access to BEO PLUS is verified through
+its associated Entra tenant. The publisher profile reports an active company
+account and EU Digital Services Act compliance. The name `Inklura PDF` is
+available, but reservation fails for the invited Microsoft account with an Entra
+application-registration permission error. No product identity has been reserved
+or copied. Bruno has been asked in the private Microsoft ticket to reserve the
+MSIX/PWA application using his native tenant account. Do not broaden guest or
+tenant permissions to work around this error. The temporary tenant-administrator
+role used for association has been removed. Apple membership is confirmed and
+the team variable is configured; App Store Connect access and signing assets
+remain to be verified.
 
 ### Microsoft Store
 
