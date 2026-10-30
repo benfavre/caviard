@@ -15,8 +15,10 @@ le brouillon ; cette invitation ne vaut pas signature de l'attestation.
 BÉNÉFICIAIRE
 Nature : personne morale.
 Dénomination connue du compte éditeur : BEO PLUS.
-SIRET, forme juridique, nationalité, adresse et téléphone : à reprendre du
-justificatif de l'entreprise et à confirmer par son représentant.
+Prérempli : SIRET 79001688500028, nationalité France, siège 18 rue Jim Sévellec,
+35740 Pacé. Le portail confirme BEO PLUS SARL au capital de 5 000 euros via SIRET.
+Source publique adresse : https://entreprises.lefigaro.fr/beo-plus-35/entreprise-790016885
+Téléphone et relecture des données : à confirmer par son représentant.
 Responsable administratif et signataire : à confirmer par BEO PLUS.
 Responsable technique : Benjamin Favre proposé ; coordonnées et rôle à valider
 avant leur transmission à l'ANSSI.
@@ -48,9 +50,9 @@ FONCTIONS CRYPTOGRAPHIQUES
 Confidentialité, authentification et intégrité : déchiffrement des PDF protégés,
 transport HTTPS/TLS, contrôle des certificats et des empreintes de modèles.
 Protocoles : SSL/TLS ; protection PDF Standard Security Handler pour les fichiers.
-Algorithmes : voir le tableau de la brochure technique. Le relevé des paramètres
-réseau du binaire MAS reste à compléter avant signature ; les observations du
-runtime Linux sont explicitement distinguées des essais MAS.
+Algorithmes : voir les tableaux et le relevé macOS 41089292464 de la brochure
+technique. Copie temporaire ad hoc du runtime exact, huit connexions TLS vérifiées ;
+ce diagnostic ne remplace pas les essais installés TestFlight et sandbox MAS.
 
 PIÈCES PRÉPARÉES
 - inklura-pdf-brochure-commerciale-projet.pdf : produit, offre, distribution.
@@ -72,3 +74,8 @@ Conserver séparément l'accusé de réception et l'attestation ANSSI délivrée
 acceptation ; le brouillon ou les brochures ne remplacent pas ces documents.
 Charger le document demandé dans App Store Connect, puis attendre sa validation
 Apple avant de renseigner un code de conformité ou de prétendre l'app approuvée.
+
+BROUILLON PARTAGÉ RENSEIGNÉ
+https://demarche.numerique.gouv.fr/dossiers/35079529/brouillon
+Les deux brochures sont jointes. La partie technique est renseignée ;
+le dépôt final est réservé au titulaire Bruno par le portail.

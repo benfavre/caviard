@@ -21,8 +21,8 @@ Fonctions cryptographiques constatées dans le code
   Références : src/main.jsx, loadingTask/onPassword ; src/PasswordDialog.jsx ;
   node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs.
 - Electron 44.4.5 : inclut Chromium et Node, utilisés pour les communications
-  HTTPS avec le compte et le téléchargement des modèles. L'inventaire exhaustif
-  des suites et tailles de clés TLS du binaire reste à établir si demandé.
+  HTTPS avec le compte et le téléchargement des modèles. Le relevé macOS
+  du runtime exact est joint dans docs/apple-encryption/ (exécution 41089292464).
 - Le code applicatif utilise aussi SHA-256 pour l'intégrité et randomUUID pour
   les identifiants ; ces usages ne sont pas assimilés à du chiffrement de PDF.
 - Les clés privées Apple de signature, d'envoi et de vérification des achats
@@ -65,7 +65,20 @@ https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000646995
 Écran Apple concerné :
 https://appstoreconnect.apple.com/apps/6828817692/distribution/info
 
-Pièces préparées et formulaire à compléter : docs/apple-encryption/.
-Deux brochures PDF ont été générées et leurs quatre pages contrôlées visuellement.
-Le relevé TLS de référence provient d’Electron Linux 44.4.5 ; les paramètres
-réseau du binaire MAS installé restent à compléter avant toute attestation.
+État du brouillon partagé
+https://demarche.numerique.gouv.fr/dossiers/35079529/brouillon
+Accès invité Ben fonctionnel. Champs techniques renseignés et deux brochures
+jointes (commerciale : 1 page ; technique : 4 pages), contrôle visuel effectué.
+Renseignements publics BEO PLUS préremplis ; contacts, qualité du fabricant,
+date de mise sur le marché, justificatifs et attestation à valider par Bruno.
+Le portail réserve le dépôt final au titulaire.
+
+Diagnostic macOS 41089292464
+Le paquet signé de distribution refuse le lancement direct hors Store (-9).
+Une copie temporaire ad hoc permet le relevé Node du runtime macOS arm64 exact.
+Paquet original intact, signature vérifiée avant/après ; aucun nouvel envoi Apple.
+TLS 1.2/1.3 ; huit connexions avec certificats vérifiés ; AES-128-GCM/SHA-256.
+X25519 partout en TLS 1.2 ; X25519MLKEM768 en TLS 1.3 sauf outils.inklura.fr.
+Certificats EC P-256 pour outils/auth ; RSA 2048 pour les deux hôtes de modèles.
+Le JSON distingue capacités annoncées et négociation effective. Ce diagnostic
+n'est pas une validation TestFlight, sandbox MAS ou de l'architecture Intel.

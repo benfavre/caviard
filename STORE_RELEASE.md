@@ -486,3 +486,20 @@ The TestFlight build questionnaire was inspected on 30 October at 16:01 UTC.
 It explicitly requires approved encryption documents for the actual standard
 embedded algorithms and France distribution; it does not offer a testing bypass.
 The questionnaire was not submitted. No tester invitation has been sent.
+
+### ANSSI shared draft and macOS crypto inventory (30 October)
+
+Draft 35079529 is accessible to Ben as an invited editor. Technical descriptions,
+11 algorithm rows and the commercial/technical brochures are saved. The portal's
+completeness check reports 11 remaining fields: business phone, administrative
+contact details, technical-contact designation, market date, manufacturer status
+and the signed attestation. Company presentation and a recent Kbis are additionally
+required if this is BEO PLUS's first ANSSI declaration. Only owner Bruno can submit.
+
+Run 41089292464 inspects the exact package from 41082263707 without uploading it.
+The distribution binary cannot run directly off-Store; an ad-hoc-signed temporary
+copy of its macOS arm64 runtime produced eight verified TLS handshakes. The original
+signature and package hash remain intact. Results include TLS 1.2/1.3, AES-128-GCM,
+X25519 and hybrid X25519MLKEM768, EC P-256 and RSA-2048 server keys. This is runtime
+inventory, not installed MAS sandbox/StoreKit acceptance. Evidence and updated,
+visually reviewed brochures are in `docs/apple-encryption/`.
