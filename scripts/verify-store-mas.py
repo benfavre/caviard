@@ -15,7 +15,10 @@ assert len(apps) == 2, "Expected Intel and Apple Silicon MAS apps"
 architectures = set()
 for app in apps:
     subprocess.run(["codesign", "--verify", "--deep", "--strict", str(app)], check=True)
-    details = subprocess.run(["codesign", "-dv", str(app)], check=True, capture_output=True, text=True).stderr
+    # Authority lines require a verbose display; keep the independent strict
+    # signature verification above and fail closed on a wrong signing identity.
+    details = subprocess.run(["codesign", "--display", "--verbose=4", str(app)], check=True, capture_output=True, text=True).stderr
+    print(details)
     assert f"TeamIdentifier={team}" in details
     assert "Authority=Apple Distribution:" in details or "Authority=3rd Party Mac Developer Application:" in details
     entitlement_bytes = subprocess.run(["codesign", "-d", "--entitlements", ":-", str(app)], check=True, capture_output=True).stdout
