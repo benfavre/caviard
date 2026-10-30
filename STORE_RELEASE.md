@@ -5,7 +5,7 @@ existing direct downloads. Microsoft submission `1152921505702276768` was sent
 for certification on 30 October 2026; Partner Center shows preprocessing in
 progress and automatic publication after certification. It is not live yet.
 The public version remains 1.4.0. Do not submit the current MAS build: Apple
-native StoreKit acceptance, upload authentication and review completion below are still outstanding.
+native StoreKit acceptance, encryption compliance and review completion below are still outstanding. The corrected package was uploaded successfully on 30 October at 15:46 UTC; processing and TestFlight availability remain to verify.
 
 ## Distribution and updates
 
@@ -40,7 +40,7 @@ as Store product `9PLQZNJTGPCW`, and submission `1152921505702276768` is in cert
 No guest or tenant permissions were broadened. The temporary tenant-administrator
 role used for association has been removed. Apple access is verified under **BEO PLUS / 8V54BYQURB**. The macOS record is
 **6828817692**, bundle ID `com.benfavre.caviard`, SKU `inklura-pdf-macos`.
-The draft is version 1.4.0; it has not been uploaded or submitted. Apple
+The draft is version 1.4.0; a signed package has been uploaded, but App Review has not been submitted. Apple
 Distribution, Mac Installer Distribution and Apple Development certificates
 were created with Ben's approval and configured in GitHub's `release` secrets.
 A matching distribution profile is configured; no development device/profile
@@ -307,7 +307,7 @@ it and the Issuer ID privately in Slack. Sandbox authentication is verified;
 production configuration is deployed; purchase acceptance remains pending (details below).
 The existing minute-based ticket watcher is active with no expiry; it watches
 GitHub tickets, not Slack. Native installation, StoreKit sandbox purchases/refunds,
-upload and submission remain. Privacy labels are published and reviewer
+build processing, encryption compliance and submission remain. Privacy labels are published and reviewer
 credentials are saved with Ben’s explicit authorization. PDF-only deletion is implemented and verified below.
 
 ### Apple listing progress — 30 October, afternoon
@@ -349,7 +349,7 @@ redaction/review, search, original document. App Store Connect shows 3 of 10.
 
 Reviewer workflow notes and explanations for `network.client` and
 `files.user-selected.read-write` are saved. Notes confirm the private reviewer credentials and retain the pending
-sandbox purchase tests and build upload. The account
+sandbox purchase tests; those notes must be refreshed before submission now that upload succeeded. The account
 creation identity is shared with other Inklura products; account deletion must
 not silently remove those products or global workspace membership. Ben approved
 deleting the PDF account while preserving the user's other Inklura products and
@@ -397,12 +397,20 @@ customer data. Live login, device confirmation/token exchange, reserve/release
 and Apple account-token binding passed at 14:35 UTC. Ben authorized disclosure to Apple; credentials are saved only in App Store
 Connect’s private review fields and protected storage, never in this repository.
 
-[Universal signed build 41074259179](https://github.com/benfavre/caviard/actions/runs/41074259179)
-passed on `33ba8a3`: one MAS installer containing arm64 and x86_64, strict code
+[Corrected universal signed build 41082263707](https://github.com/benfavre/caviard/actions/runs/41082263707)
+passed on `cb5cdb3`: one MAS installer containing arm64 and x86_64, strict code
 signatures, sandbox/profile and installer-signature checks. Package SHA-256:
-`0a71ef96960ed0d0efbd96a43f0e60fbe4d1fa776edadb3e7b314c0eea157771`.
-This package includes the in-app privacy-policy link and PDF-only deletion; use
-these verified bytes for upload, not the earlier packages.
+`2955e874fe75fcb27ba37f56ec886eccfe16e979db85ff9d9eea28d9d470e023`.
+The downloaded artifact independently matches that digest. This package includes
+StoreKit, privacy and PDF-only deletion. Apple online validation succeeded in
+[41082769616](https://github.com/benfavre/caviard/actions/runs/41082769616).
+The earlier package from 41074259179 was rejected by Apple with 90255 (root-only
+file permissions) and 90236 (missing 512pt @2x icon); do not use it. The public
+embedded provisioning profile is now readable, and the existing vector icon is
+rendered at 1024px for MAS. Verification rejects inaccessible bundle files and
+ICNS files without the `ic10` representation. No private key was made public.
+Full regression on delivery commit `785bc9f` passed in
+[41082779669](https://github.com/benfavre/caviard/actions/runs/41082779669).
 
 Both Apple notification URLs are saved as
 `https://outils.inklura.fr/api/inklura-pdf/v1/apple/notifications`. After sandbox metadata propagation, Apple’s
@@ -410,12 +418,47 @@ request-test-notification succeeded. At 14:57 UTC, the official API reported
 `sendAttemptResult: SUCCESS` for the test callback, confirming real Apple delivery
 and server acceptance. This does not validate a purchase, refund or credit grant.
 
-Build-upload access is outstanding: the current App Manager profile has no
-individual API-key permission. Bruno was asked for exactly this permission in
-[comment 6525806961](https://github.com/webdesign29/activ/issues/1410#issuecomment-6525806961)
-(the original personal-settings URL did not work for Bruno; the replacement
-links to Users and Access) and [Slack](https://activ-comm.slack.com/archives/D8G01PS3B/p1793371623882949).
+Bruno enabled individual API-key access, confirmed in
+[comment 6526245338](https://github.com/webdesign29/activ/issues/1410#issuecomment-6526245338).
+Ben explicitly authorized creation and protected local/GitHub release storage.
+The individual key is in protected local storage (0700 directory, 0600 files)
+and the GitHub release environment secret. Its source was moved out of Downloads.
+OpenSSL validation passed. A scoped read of app 6828817692 returned HTTP 200 with
+bundle `com.benfavre.caviard` at 15:27 UTC, confirming the correct Apple app.
+No private-key contents are committed or posted to the ticket.
+
+The explicit dispatch channels `mac-app-store-inspect-upload`,
+`mac-app-store-validate` and `mac-app-store-upload` download the exact artifact
+from run 41082263707. `scripts/upload-store-mas.mjs` checks its pinned SHA-256,
+verification report and installer signature. Inspection does not read secrets;
+verify/upload use `MAS_ASC_KEY_ID` and `MAS_ASC_PRIVATE_KEY` in the release
+environment. Current Xcode `altool` uses an individual-key authentication file
+inside a temporary 0700 directory; the 0600 file is removed in a finally block.
+The private key is excluded from the child environment; private-key/token output
+is redacted and raw logs are not uploaded as artifacts. Upload does not submit
+App Review or prove processing.
+[Upload 41083245301](https://github.com/benfavre/caviard/actions/runs/41083245301)
+completed successfully at 15:46 UTC with delivery UUID
+`52cfce15-0e75-4ede-b243-2ee78eda80bd`. Apple accepted the 270,780,306-byte transfer
+without errors. Processing and TestFlight availability are separate; the builds
+API still returned no builds at 15:50 UTC. The upload-status API confirms
+`PROCESSING` for version 1.4.0 / build 1.4.56, with no errors or warnings. Do not
+send a duplicate upload while Apple processes this delivery.
+
+The internal group “Validation interne — Bruno” is created with automatic
+build distribution disabled; no testers or builds have been added yet. French
+beta description, feedback address and privacy URL are saved. Native
+acceptance instructions are in [MAC_TEST.fr.txt](MAC_TEST.fr.txt). No invitation,
+installed acceptance, StoreKit payment or App Store update is claimed.
+
+The encryption-document questionnaire was inspected without saving a declaration.
+For standard encryption outside Apple's OS and distribution in France, it asks
+for the French cryptology declaration. PDF.js embeds AES/RC4 implementations and
+Electron includes its own network runtime; do not declare OS-only encryption.
+The technical preparation and primary sources are in
+[APPLE_ENCRYPTION.fr.txt](APPLE_ENCRYPTION.fr.txt). No exemption, ANSSI filing or
+approved compliance code is established. No legal declaration was submitted.
+
 EU trader status is also still flagged by App Store Connect; Paid Applications
-agreement status must be verified by the account holder. The Mac package is not
-uploaded, no TestFlight/native acceptance is claimed, and no Apple submission
-has been sent.
+agreement status must be verified by the account holder. The uploaded package
+has not been submitted to App Review, and no public availability is claimed.

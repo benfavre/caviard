@@ -1,0 +1,65 @@
+Inklura PDF — éléments techniques pour le dossier de chiffrement
+Préparation au 30 octobre 2026 — aucune déclaration déposée ou approuvée
+
+Éditeur Apple : BEO PLUS, équipe 8V54BYQURB
+App : 6828817692 ; bundle : com.benfavre.caviard ; version : 1.4.0
+Source du paquet : cb5cdb3f661bc0f75034178b76a8996862605db1
+SHA-256 : 2955e874fe75fcb27ba37f56ec886eccfe16e979db85ff9d9eea28d9d470e023
+Distribution prévue : Mac App Store, France.
+
+Fonction du produit
+Application de caviardage local : lecture, recherche, masquage et export de PDF.
+Les documents sont traités sur le Mac. Le compte et les crédits sont gérés par
+un service HTTPS ; les packs Mac sont achetés via StoreKit. L'application n'est
+pas un VPN ni un service de messagerie et ne propose pas de chiffrement des PDF
+exportés. Le caviardage n'est pas lui-même un algorithme de chiffrement.
+
+Fonctions cryptographiques constatées dans le code
+- PDF.js 6.3.289 : ouvre des PDF protégés avec le mot de passe fourni par
+  l'utilisateur. Le worker embarque ARCFourCipher, AES128Cipher et AES256Cipher.
+  Il s'agit d'implémentations embarquées, pas seulement des API Apple.
+  Références : src/main.jsx, loadingTask/onPassword ; src/PasswordDialog.jsx ;
+  node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs.
+- Electron 44.4.5 : inclut Chromium et Node, utilisés pour les communications
+  HTTPS avec le compte et le téléchargement des modèles. L'inventaire exhaustif
+  des suites et tailles de clés TLS du binaire reste à établir si demandé.
+- Le code applicatif utilise aussi SHA-256 pour l'intégrité et randomUUID pour
+  les identifiants ; ces usages ne sont pas assimilés à du chiffrement de PDF.
+- Les clés privées Apple de signature, d'envoi et de vérification des achats
+  restent dans les systèmes de compilation ou sur le serveur. Elles ne sont
+  jamais intégrées au paquet ni à ce dossier.
+
+Questionnaire Apple effectivement observé
+Informations sur l'app > Documents sur le chiffrement > Charger :
+1. Description de la fonction du produit.
+2. Algorithmes standard en complément du chiffrement fourni par le système Apple.
+3. Distribution en France : oui.
+Résultat : Apple demande le formulaire français de déclaration/demande
+relative à un moyen de cryptologie. Aucun document n'a été chargé ; le
+questionnaire a été annulé. Aucune exemption n'est attestée dans Info.plist.
+
+Éléments restant à réunir avant tout dépôt
+Vérifier si BEO PLUS détient déjà une déclaration couvrant exactement ce produit
+et ses versions. À défaut, faire confirmer la qualification et préparer le
+formulaire avec le représentant de l'éditeur. Ne pas remplacer cette étape par
+une déclaration d'absence de chiffrement. Les renseignements d'entreprise,
+le signataire et les justificatifs doivent provenir de BEO PLUS.
+Le portail ANSSI indique notamment une présentation de la société, un Kbis
+récent (ou équivalent), une brochure commerciale et une brochure technique.
+Ce fichier est un relevé technique préparatoire, pas un récépissé, une
+classification juridique définitive ou une autorisation de distribution.
+
+Sources primaires consultées le 30 octobre 2026
+Apple — tableau des pièces suivant les algorithmes et le territoire :
+https://developer.apple.com/help/app-store-connect/reference/app-information/export-compliance-documentation-for-encryption
+Apple — chiffrement des bibliothèques tierces et exemptions :
+https://developer.apple.com/documentation/Security/complying-with-encryption-export-regulations
+ANSSI — procédure et responsabilités du fournisseur/primo-importateur :
+https://cyber.gouv.fr/reglementation/reglementation-identite-confiance-numerique/controles-reglementaires-cryptographie/controle-moyen-de-cryptologie/
+Portail officiel de déclaration :
+https://demarche.numerique.gouv.fr/commencer/declaration-relative-a-un-moyen-de-cryptologie
+Décret et annexes des régimes applicables :
+https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000646995
+
+Écran Apple concerné :
+https://appstoreconnect.apple.com/apps/6828817692/distribution/info
