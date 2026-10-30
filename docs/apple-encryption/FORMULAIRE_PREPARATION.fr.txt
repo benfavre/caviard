@@ -101,3 +101,10 @@ MISE À JOUR APRÈS RÉPONSE 6533755405
 Dépôt effectué par Bruno à 22:23 Paris le 30/10/2026. Suivi accepté et message
 automatique d'acceptation Inklura PDF observés. PDF de l'attestation refusé
 à l'accès invité ; demandé au titulaire. Aucune transmission Apple effectuée.
+
+MISE À JOUR APRÈS RÉPONSE 6533855521
+Attestation officielle ANSSI reçue, lue et vérifiée. Document transmis à Apple
+le 30/10/2026 à 22:33 Paris : réception COMPLETE, déclaration IN_REVIEW.
+Déclaration Apple : 6d24792a-64dc-4aba-b4cb-eb022079728c.
+L'approbation Apple reste en attente ; suivi automatique actif toutes les deux
+minutes. Le build 1.4.56 déjà traité n'a pas été renvoyé.

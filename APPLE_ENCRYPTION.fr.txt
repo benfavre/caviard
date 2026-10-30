@@ -1,9 +1,12 @@
-MISE À JOUR : le titulaire a déposé le dossier 35079529 le 30 octobre 2026 à
-22:23 (Paris). Le suivi affiche accepté et la messagerie contient le message
-d'acceptation pour Inklura PDF. Le téléchargement de l'attestation est refusé
-à l'accès invité Ben ; PDF demandé au titulaire dans le ticket #1410.
-Aucune attestation encore lue ou envoyée à Apple ; ne pas confondre le statut
-du portail avec l'approbation Apple du document ou une publication de l'app.
+MISE À JOUR : dossier ANSSI 35079529 déposé par Bruno le 30 octobre 2026 à
+22:23 (Paris), accepté par le portail. Attestation officielle reçue dans le
+commentaire 6533855521, lue et vérifiée, puis transmise à Apple à 22:33 Paris.
+Document Apple reçu sans erreur (COMPLETE) ; déclaration IN_REVIEW.
+L'approbation Apple et l'ouverture de TestFlight restent en attente.
+Déclaration : 6d24792a-64dc-4aba-b4cb-eb022079728c
+Document : 69055125-8769-49ba-86a1-ae1d7f1c4e89
+Fichier : ANSSI-Inklura-PDF-35079529.pdf (71 930 octets)
+SHA-256 : d63fdc92c7d3e6670ac5448dcf836d992a531dcb8908ac5e1c08a6b85ac653d0
 
 Inklura PDF — éléments techniques pour le dossier de chiffrement
 État au 30 octobre 2026 — dossier déposé par Bruno et affiché accepté par le portail

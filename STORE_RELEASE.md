@@ -523,5 +523,29 @@ Bruno submitted dossier 35079529. The authenticated portal now shows accepted,
 and its automatic message confirms acceptance for Inklura PDF. The invited Ben
 account can read the dossier status/messages but the attestation download redirects
 to an explicit access-denied notice. The owner has been asked to supply the actual
-attestation PDF (not the deposit certificate). No attestation has been inspected
-or uploaded to Apple, and Apple export-compliance approval remains outstanding.
+attestation PDF (not the deposit certificate). Bruno subsequently supplied it in
+comment 6533855521; the completed upload is recorded below.
+
+
+### ANSSI attestation submitted to Apple (30 October, 22:33 Paris)
+
+The official one-page ANSSI attestation supplied by Bruno in comment 6533855521
+has been read and visually verified. It identifies Inklura PDF, declaration
+35079529 and 30 October 2026. It attests fulfilment of the declaration obligation;
+it is not an Apple approval or a quality certification. The original is retained
+in the protected local apple-encryption directory, outside the repository.
+
+- Apple declaration: `6d24792a-64dc-4aba-b4cb-eb022079728c`, state `IN_REVIEW`.
+- Apple document: `69055125-8769-49ba-86a1-ae1d7f1c4e89`, asset state `COMPLETE`,
+  no upload errors; `ANSSI-Inklura-PDF-35079529.pdf`, 71,930 bytes.
+- Document SHA-256: `d63fdc92c7d3e6670ac5448dcf836d992a531dcb8908ac5e1c08a6b85ac653d0`.
+- Standard third-party cryptography, no proprietary cryptography, France
+  distribution, non-exempt. No exemption or approval has been claimed.
+- Existing build 1.4.56 was not uploaded again. TestFlight remains pending
+  Apple's review and the subsequent build association.
+- Local `inklura-apple-encryption.timer` checks every two minutes and queues a
+  continuation in the existing conversation when Apple's state changes. The
+  separate `inklura-bruno-watch.timer` remains active without an end date.
+
+Next: re-read the declaration state, then associate the approved declaration and
+resume Bruno's TestFlight validation. App Store publication has not occurred.
