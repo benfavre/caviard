@@ -15,7 +15,7 @@ on:
         description: Internal package only; does not submit or publish
         required: true
         type: choice
-        options: [microsoft-store, microsoft-store-test, mac-app-store]
+        options: [microsoft-store, microsoft-store-test, microsoft-store-screenshots, mac-app-store]
 permissions:
   contents: read
 jobs:
@@ -111,6 +111,45 @@ jobs:
           path: release-windows-test/*
           if-no-files-found: error
           retention-days: 14
+  windows-store-screenshots:
+    if: github.event_name == 'workflow_dispatch' && inputs.channel == 'microsoft-store-screenshots'
+    runs-on: windows-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - uses: actions/download-artifact@v4
+        with:
+          name: microsoft-store-internal-review
+          run-id: 41039014119
+          github-token: ${{ github.token }}
+          path: source-store-package
+      - name: Unpack the exact submitted AppX with the Windows SDK
+        shell: pwsh
+        run: |
+          $package = @(Get-ChildItem 'source-store-package/*.appx')
+          if ($package.Count -ne 1) { throw 'Expected one package' }
+          if ((Get-FileHash $package[0].FullName -Algorithm SHA256).Hash.ToLowerInvariant() -ne 'd60a72e53bb3064ac3eb2605df9d3632b7800892e32af7a90ae40b58e70d8512') { throw 'Unexpected package bytes' }
+          $tool = Get-ChildItem "${env:ProgramFiles(x86)}/Windows Kits/10/bin/*/x64/makeappx.exe" | Sort-Object FullName -Descending | Select-Object -First 1
+          & $tool.FullName unpack /p $package[0].FullName /d unpacked-store /o
+          if ($LASTEXITCODE -ne 0) { throw 'AppX extraction failed' }
+          [xml]$manifest = Get-Content 'unpacked-store/AppxManifest.xml'
+          $exe = Join-Path (Resolve-Path 'unpacked-store') $manifest.Package.Applications.Application.Executable
+          "CAVIARD_EXECUTABLE=$exe" | Out-File $env:GITHUB_ENV -Append -Encoding utf8
+      - name: Capture actual Windows package UI using synthetic documents
+        run: node scripts/store-screenshots.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: microsoft-store-screenshots
+          path: output/store-screenshots/*
+          if-no-files-found: error
   mac-store:
     if: github.event_name == 'workflow_dispatch' && inputs.channel == 'mac-app-store'
     runs-on: macos-latest
