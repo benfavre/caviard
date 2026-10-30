@@ -174,7 +174,9 @@ jobs:
           import path from 'node:path';
           if (!process.env.MAS_PROFILE_BASE64) throw new Error('Missing MAS_PROFILE_BASE64');
           const file = path.join(process.env.RUNNER_TEMP, 'inklura-pdf.provisionprofile');
-          writeFileSync(file, Buffer.from(process.env.MAS_PROFILE_BASE64, 'base64'), { mode: 0o600 });
+          // Provisioning profiles contain public certificates, not private keys.
+          // electron-osx-sign preserves this mode in the installed app.
+          writeFileSync(file, Buffer.from(process.env.MAS_PROFILE_BASE64, 'base64'), { mode: 0o644 });
           appendFileSync(process.env.GITHUB_ENV, `INKLURA_MAS_PROVISIONING_PROFILE=${file}\n`);
           NODE
       - run: node -e "require('./electron-builder.config.cjs')"
@@ -187,6 +189,7 @@ jobs:
           MAS_INSTALLER_LINK: ${{ secrets.MAS_INSTALLER_LINK }}
           MAS_INSTALLER_KEY_PASSWORD: ${{ secrets.MAS_INSTALLER_KEY_PASSWORD }}
         run: node scripts/prepare-mas-keychain.mjs
+      - run: node scripts/mas-icon.mjs
       - name: Build one signed universal MAS package for Intel and Apple Silicon
         run: npx electron-builder --config electron-builder.config.cjs --mac mas --universal --config.buildVersion=1.4.${{ github.run_number }} --publish never
       - name: Verify app signatures and sandbox

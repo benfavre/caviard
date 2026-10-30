@@ -48,6 +48,7 @@ function applyStoreOptions(base, env) {
   const development = env.INKLURA_MAS_DEVELOPMENT === "true";
   const target = development ? "mas-dev" : "mas";
   const mas = {
+    icon: "build/icon-mas.png",
     type: development ? "development" : "distribution",
     // MAS uses Apple Distribution + Mac Installer Distribution; Developer ID
     // and notarization are used only for the separate direct-download channel.

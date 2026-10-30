@@ -6,6 +6,8 @@ from pathlib import Path
 import plistlib
 import re
 import subprocess
+import stat
+import struct
 
 root = Path("release-mac-app-store")
 team = os.environ["INKLURA_APPLE_TEAM_ID"]
@@ -14,6 +16,29 @@ apps = list(root.glob("mas*/Inklura PDF.app"))
 assert len(apps) == 1, "Expected one universal MAS app"
 architectures = set()
 for app in apps:
+    # Installer files are owned by root. Every user must be able to read signed
+    # resources and traverse directories, including the embedded public profile.
+    for item in [app, *app.rglob("*")]:
+        if item.is_symlink():
+            continue
+        mode = item.stat().st_mode
+        assert mode & stat.S_IROTH, f"Not readable by installed user: {item}"
+        if item.is_dir():
+            assert mode & stat.S_IXOTH, f"Directory not traversable: {item}"
+    info = plistlib.loads((app / "Contents/Info.plist").read_bytes())
+    icon_name = info["CFBundleIconFile"]
+    if not icon_name.endswith(".icns"):
+        icon_name += ".icns"
+    icon = (app / "Contents/Resources" / icon_name).read_bytes()
+    assert icon[:4] == b"icns"
+    offset = 8
+    icon_types = set()
+    while offset < len(icon):
+        kind, size = struct.unpack_from(">4sI", icon, offset)
+        assert size >= 8 and offset + size <= len(icon), "Invalid ICNS chunk"
+        icon_types.add(kind)
+        offset += size
+    assert b"ic10" in icon_types, "Missing 512pt @2x (1024px) Mac icon"
     subprocess.run(["codesign", "--verify", "--deep", "--strict", str(app)], check=True)
     # Authority lines require a verbose display; keep the independent strict
     # signature verification above and fail closed on a wrong signing identity.
