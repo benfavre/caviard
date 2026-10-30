@@ -26,6 +26,7 @@ for app in apps:
     assert entitlements["com.apple.security.app-sandbox"] is True
     assert entitlements["com.apple.security.network.client"] is True
     assert entitlements["com.apple.security.files.user-selected.read-write"] is True
+    assert entitlements["com.apple.security.files.bookmarks.app-scope"] is True
     profile = subprocess.run(["security", "cms", "-D", "-i", str(app / "Contents/embedded.provisionprofile")], check=True, capture_output=True).stdout
     profile_data = plistlib.loads(profile)
     assert team in profile_data["TeamIdentifier"]

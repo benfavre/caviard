@@ -29,6 +29,8 @@ import {
   pdfBuffer,
 } from "./security.mjs";
 import { distributionChannel, createUpdateController } from "./distribution.mjs";
+import electron from "electron";
+import { AppleStore } from "./apple-purchases.mjs";
 const here = path.dirname(fileURLToPath(import.meta.url));
 const dist = path.join(here, "../dist");
 app.setName("Inklura PDF");
@@ -52,10 +54,24 @@ let window,
   closingPrompt = false;
 let documentState = { dirty: false, busy: false };
 let initialized = false;
+// Attach the StoreKit observer before app readiness so interrupted purchases
+// delivered at launch are retained even before the user signs in.
+const appleStore = process.mas ? new AppleStore({ storeKit: electron.inAppPurchase,
+  account: () => accountController, directory: path.join(app.getPath("userData"), "apple-purchases") }) : null;
+appleStore?.on("state", () => accountController?.publish());
 const imports = new DocumentImports(() => {
   if (window && !window.isDestroyed()) window.webContents.send("documents:available");
-});
+}, openBookmark);
 const batchExports = new BatchExports();
+function openBookmark(bookmark) {
+  if (!process.mas) return () => {};
+  if (typeof bookmark !== 'string' || !bookmark) throw new Error('Sélectionnez à nouveau le dossier pour autoriser son accès.');
+  return app.startAccessingSecurityScopedResource(bookmark);
+}
+async function withBookmark(bookmark, action) {
+  const stop = openBookmark(bookmark);
+  try { return await action(); } finally { stop(); }
+}
 function receivePaths(paths) {
   if (paths.length) void imports.enqueue(paths).catch(() => {});
   if (window && !window.isDestroyed()) {
@@ -240,9 +256,10 @@ if (primary) app
       apiUrl: (!app.isPackaged && process.env.INKLURA_PDF_ACCOUNT_API) || metadata.accountApi,
       development: !app.isPackaged,
       openExternal: (url) => shell.openExternal(url),
-      onSignedIn: () => accountExports.reconcile(),
+      onSignedIn: async () => { await accountExports.reconcile(); await appleStore?.reconcile(); await appleStore?.refreshProducts(); },
     });
-    accountExports = new AccountExports({ directory: path.join(app.getPath("userData"), "account-exports"), account: accountController });
+    accountController.appleStore = appleStore;
+    accountExports = new AccountExports({ directory: path.join(app.getPath("userData"), "account-exports"), account: accountController, openAccess: openBookmark });
     accountController.on("state", (state) => {
       if (window && !window.isDestroyed()) window.webContents.send("account:state", state);
     });
@@ -252,13 +269,21 @@ if (primary) app
     ipcMain.handle("account:sign-out", (event) => {
       trusted(event);
       if (documentState.busy) throw new Error("Attendez la fin de l’export pour vous déconnecter.");
+      if (appleStore?.requested) throw new Error("Terminez ou annulez votre achat dans la fenêtre Apple avant de changer de compte.");
       return accountController.logout();
     });
     ipcMain.handle("account:refresh", async (event) => {
       trusted(event);
       await accountController.refresh();
       await accountExports.reconcile();
+      await appleStore?.reconcile();
+      await appleStore?.refreshProducts();
       return accountController.refresh();
+    });
+    ipcMain.handle("account:apple-purchase", (event, productId) => {
+      trusted(event);
+      if (!appleStore) throw new Error("Les achats Apple sont réservés à l’édition Mac App Store.");
+      return appleStore.purchase(productId);
     });
     ipcMain.handle("account:checkout", (event, planId, billing) => { trusted(event); return accountController.checkout(planId, billing); });
     ipcMain.handle("account:portal", (event) => { trusted(event); return accountController.portal(); });
@@ -305,12 +330,16 @@ if (primary) app
       documentState = { dirty: !!state?.dirty, busy: !!state?.busy };
     });
     async function pickDocuments(folder = false) {
-      const { canceled, filePaths } = await dialog.showOpenDialog(window, {
+      const { canceled, filePaths, bookmarks } = await dialog.showOpenDialog(window, {
         title: folder ? "Importer un dossier de PDF" : "Ouvrir des PDF",
         properties: folder ? ["openDirectory"] : ["openFile", "multiSelections"],
+        securityScopedBookmarks: !!process.mas,
         ...(folder ? {} : { filters: [{ name: "Documents PDF", extensions: ["pdf"] }] }),
       });
-      if (!canceled) await imports.enqueue(filePaths);
+      if (!canceled) {
+        if (process.mas && filePaths.some((_, i) => !bookmarks?.[i])) throw new Error('Autorisation de lecture indisponible. Sélectionnez à nouveau vos PDF.');
+        await imports.enqueue(filePaths, bookmarks);
+      }
     }
     ipcMain.handle("documents:choose", async (event, folder) => {
       trusted(event);
@@ -329,20 +358,21 @@ if (primary) app
     });
     ipcMain.handle("documents:begin-export", async (event, documents) => {
       trusted(event);
-      const { canceled, filePaths } = await dialog.showOpenDialog(window, {
+      const { canceled, filePaths, bookmarks } = await dialog.showOpenDialog(window, {
         title: "Choisir le dossier de destination",
         properties: ["openDirectory", "createDirectory"],
+        securityScopedBookmarks: !!process.mas,
       });
       if (canceled || !filePaths[0]) return null;
-      return batchExports.begin(filePaths[0], documents);
+      return withBookmark(bookmarks?.[0], () => batchExports.begin(filePaths[0], documents, bookmarks?.[0]));
     });
     ipcMain.handle("documents:end-export", (event, id) => {
       trusted(event);
       batchExports.finish(id);
     });
-    async function saveBytes(filePath, bytes) {
+    async function saveBytes(filePath, bytes, bookmark) {
       if (accountController.apiUrl) {
-        try { return await accountExports.save(filePath, bytes); }
+        try { return await accountExports.save(filePath, bytes, bookmark); }
         catch (error) { return { saved: false, error: error.message || "Le compte Inklura est temporairement indisponible." }; }
       }
       const temporary = path.join(
@@ -361,10 +391,35 @@ if (primary) app
       trusted(event);
       const bytes = pdfBuffer(data);
       if (batch) {
-        const filePath = await batchExports.destination(batch.id, batch.documentId);
-        return saveBytes(filePath, bytes);
+        const bookmark = batchExports.bookmark(batch.id);
+        return withBookmark(bookmark, async () => {
+          const filePath = await batchExports.destination(batch.id, batch.documentId);
+          return saveBytes(filePath, bytes, bookmark);
+        });
       }
       const name = safePdfName(filename);
+      if (process.mas) {
+        // Atomic export needs access to the sibling temporary file and recovery
+        // after relaunch. A selected directory supplies both; a save-panel file
+        // bookmark alone does not authorize its parent directory.
+        const result = await dialog.showOpenDialog(window, {
+          title: `Enregistrer ${name}`, message: `Le PDF sera enregistré sous le nom « ${name} » dans ce dossier.`,
+          buttonLabel: 'Enregistrer ici', defaultPath: app.getPath('downloads'),
+          properties: ['openDirectory', 'createDirectory'], securityScopedBookmarks: true,
+        });
+        if (result.canceled || !result.filePaths[0]) return { saved: false };
+        const bookmark = result.bookmarks?.[0];
+        return withBookmark(bookmark, async () => {
+          const target = path.join(result.filePaths[0], name);
+          if (existsSync(target)) {
+            const confirmation = await dialog.showMessageBox(window, { type: 'warning',
+              message: `Remplacer « ${name} » ?`, detail: 'Un fichier portant ce nom existe déjà dans le dossier choisi.',
+              buttons: ['Annuler', 'Remplacer'], defaultId: 0, cancelId: 0 });
+            if (confirmation.response !== 1) return { saved: false };
+          }
+          return saveBytes(target, bytes, bookmark);
+        });
+      }
       const { canceled, filePath } = await dialog.showSaveDialog(window, {
         title: "Enregistrer le PDF caviardé",
         defaultPath: path.join(app.getPath("downloads"), name),
@@ -479,4 +534,4 @@ if (primary) app
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") app.quit();
 });
-app.on("will-quit", () => { controller?.dispose(); accountController?.dispose(); });
+app.on("will-quit", () => { controller?.dispose(); accountController?.dispose(); appleStore?.dispose(); });

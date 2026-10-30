@@ -2,7 +2,7 @@ import { createServer } from 'node:http';
 import { BillingError } from './ledger.mjs';
 import { INKLURA_ISSUER } from './auth.mjs';
 import { BUYER_FIELDS, promoCode, webBuyer } from './france-billing.mjs';
-export function createApi({ webPurchases, ledger, payments, authenticate, clientId, publicUrl, now = () => Date.now() }) {
+export function createApi({ webPurchases, applePurchases, ledger, payments, authenticate, clientId, publicUrl, now = () => Date.now() }) {
   // Promotion code lookups: pdf.inklura.fr/api/panier/promo relays them (the
   // site limits each visitor); a global ceiling here bounds Stripe calls.
   let lookups = [];
@@ -97,6 +97,7 @@ export function createApi({ webPurchases, ledger, payments, authenticate, client
         enabled: !!clientId, issuer: INKLURA_ISSUER, clientId: clientId || null,
         deviceEndpoint: INKLURA_ISSUER + '/oauth2/device', tokenEndpoint: INKLURA_ISSUER + '/oauth2/token',
         plans: payments.catalog(), paymentsEnabled: payments.enabled, webPurchasesEnabled: !!webPurchases?.enabled,
+        applePurchasesEnabled: !!applePurchases?.enabled, appleProducts: applePurchases?.catalog() || [],
       });
       if (req.method === 'GET' && ['/billing/success', '/billing/cancel'].includes(path)) {
         const success = path.endsWith('success');
@@ -106,17 +107,31 @@ export function createApi({ webPurchases, ledger, payments, authenticate, client
         const raw = await readBody(req, 1024 * 1024);
         return send(res, 200, await payments.webhook(raw, req.headers['stripe-signature']));
       }
-      const allowed = new Set(['GET /v1/account', 'POST /v1/exports/reserve', 'POST /v1/exports/commit', 'POST /v1/exports/release', 'POST /v1/checkout', 'POST /v1/portal']);
+      if (req.method === 'POST' && path === '/v1/apple/notifications') {
+        if (!applePurchases?.enabled) throw new BillingError('apple_purchases_unavailable', 503);
+        if (!(req.headers['content-type'] || '').startsWith('application/json')) throw new BillingError('json_required', 415);
+        let data;
+        try { data = JSON.parse((await readBody(req, 130 * 1024)).toString()); }
+        catch (error) { if (error instanceof BillingError) throw error; throw new BillingError('invalid_json'); }
+        if (!data || typeof data !== 'object' || Array.isArray(data) || Object.keys(data).some(k => k !== 'signedPayload')) throw new BillingError('invalid_request');
+        return send(res, 200, await applePurchases.notification(data.signedPayload));
+      }
+      const allowed = new Set(['GET /v1/account', 'POST /v1/exports/reserve', 'POST /v1/exports/commit', 'POST /v1/exports/release', 'POST /v1/checkout', 'POST /v1/portal', 'POST /v1/apple/prepare', 'POST /v1/apple/claim']);
       if (!allowed.has(req.method + ' ' + path)) throw new BillingError('not_found', 404);
       const identity = await authenticate(req.headers.authorization);
       const account = ledger.account(identity.issuer, identity.subject);
-      if (path === '/v1/account') return send(res, 200, { ...ledger.balance(account.id), plans: payments.catalog(), paymentsEnabled: payments.enabled });
+      if (path === '/v1/account') return send(res, 200, { ...ledger.balance(account.id), plans: payments.catalog(), paymentsEnabled: payments.enabled,
+        applePurchasesEnabled: !!applePurchases?.enabled, appleProducts: applePurchases?.catalog() || [] });
       if (!(req.headers['content-type'] || '').startsWith('application/json')) throw new BillingError('json_required', 415);
       let data;
       try { data = JSON.parse((await readBody(req, 4096)).toString()); } catch (error) { if (error instanceof BillingError) throw error; throw new BillingError('invalid_json'); }
       if (!data || typeof data !== 'object' || Array.isArray(data)) throw new BillingError('invalid_request');
-      const keys = path === '/v1/checkout' ? ['planId', 'operation', 'billing'] : path === '/v1/portal' ? [] : ['operation'];
+      const keys = path === '/v1/apple/prepare' ? ['productId'] : path === '/v1/apple/claim' ? ['transactionId'] : path === '/v1/checkout' ? ['planId', 'operation', 'billing'] : path === '/v1/portal' ? [] : ['operation'];
       if (Object.keys(data).some(key => !keys.includes(key))) throw new BillingError('unexpected_fields');
+      if (path.startsWith('/v1/apple/')) {
+        if (!applePurchases?.enabled) throw new BillingError('apple_purchases_unavailable', 503);
+        return send(res, 200, path.endsWith('/prepare') ? applePurchases.prepare(account.id, data.productId) : await applePurchases.claim(account.id, data.transactionId));
+      }
       if (path === '/v1/checkout') return send(res, 200, await payments.checkout(account.id, data.planId, data.operation, data.billing));
       if (path === '/v1/portal') return send(res, 200, await payments.portal(account.id));
       const action = path.split('/').at(-1);

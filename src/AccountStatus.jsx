@@ -36,16 +36,29 @@ export default function AccountStatus({ busy }) {
       <span aria-live="polite">{state.phase === 'signed-in' ? `${state.account?.remaining ?? 0} PDF disponibles` : state.phase === 'waiting' ? `Confirmez le code ${state.userCode} dans votre navigateur` : '20 PDF d’essai avec votre compte Inklura'}</span>
       {state.phase === 'signed-in' ? <>
         <button disabled={working || busy} onClick={() => run(() => desktop.refreshAccount())}>Actualiser</button>
-        {state.externalPurchases !== false && <button disabled={working || busy} onClick={() => setOffers(!offers)} aria-expanded={offers}>Offres et crédits</button>}
+        {(state.externalPurchases !== false || state.apple) && <button disabled={working || busy} onClick={() => setOffers(!offers)} aria-expanded={offers}>Offres et crédits</button>}
         {state.externalPurchases !== false && <button disabled={working || busy || !state.paymentsEnabled} onClick={() => run(() => desktop.billingPortal())}>Facturation</button>}
         <button disabled={working || busy} onClick={() => run(() => desktop.signOut())}>Se déconnecter</button>
       </> : state.phase === 'waiting' ? <button disabled={working} onClick={() => run(() => desktop.cancelSignIn())}>Annuler la connexion</button> : <button className="primary" disabled={working || state.phase === 'connecting' || state.phase === 'loading'} onClick={() => run(() => desktop.signIn())}>{working ? 'Connexion…' : 'Se connecter à Inklura'}</button>}
     </div>
     {(error || state.message) && <p role="alert">{error || state.message}</p>}
+    {state.apple?.message && <p role="status">{state.apple.message}</p>}
+    {state.apple?.pending && <p role="status">Votre achat Apple est en attente. Les crédits apparaîtront après validation ; cliquez sur Actualiser si la connexion a été interrompue.</p>}
     {state.purchasePending && <p role="status">Terminez le paiement dans votre navigateur. Vos crédits se mettent à jour automatiquement après confirmation de Stripe. Un paiement annulé n’ajoute aucun crédit.</p>}
-    {state.account?.remaining === 0 && <p>Vous n’avez plus de crédits disponibles. {state.externalPurchases !== false && 'Choisissez « Offres et crédits » pour en ajouter ; '}votre travail reste ouvert.</p>}
+    {state.account?.remaining === 0 && <p>Vous n’avez plus de crédits disponibles. {(state.externalPurchases !== false || state.apple) && 'Choisissez « Offres et crédits » pour en ajouter ; '}votre travail reste ouvert.</p>}
     {state.account?.blocked && <p role="alert">La facturation de votre compte nécessite une vérification. Vos documents restent ouverts.</p>}
     {!!state.account?.reserved && <p>{state.account.reserved} export(s) en attente de synchronisation. Cliquez sur Actualiser après reconnexion.</p>}
+    {state.phase === 'signed-in' && state.apple && <dialog ref={offersDialog} className="account-dialog" aria-labelledby="apple-offers-title" onCancel={() => setOffers(false)} onClose={() => setOffers(false)}>
+      <div className="dialog-title"><h2 id="apple-offers-title">Crédits PDF · App Store</h2><button aria-label="Fermer les offres" onClick={() => setOffers(false)}>✕</button></div>
+      <div className="account-offers">
+        {error && <p role="alert">{error}</p>}
+        <p>Un crédit par export réussi. Les crédits achetés sur l’App Store n’expirent pas et restent associés à votre compte Inklura. Importer, analyser ou annuler avant l’enregistrement ne consomme pas de crédit.</p>
+        {!state.apple.enabled || !state.apple.products.length ? <p>Les achats Apple sont momentanément indisponibles. Vous pouvez utiliser vos crédits existants et actualiser les offres.</p> : null}
+        <div>{state.apple.products.map(product => <article key={product.id}><strong>{product.label}</strong><span>Sans expiration</span><span>{product.formattedPrice}</span><button disabled={working || busy || state.apple.pending || !state.apple.enabled || state.account?.blocked} onClick={() => run(() => desktop.purchaseAppleCredits(product.id))}>Acheter avec l’App Store</button></article>)}</div>
+        <button disabled={working || busy} onClick={() => run(() => desktop.refreshAccount())}>Actualiser les achats et les crédits</button>
+        <small>Confirmez le montant dans la fenêtre de paiement Apple. Pour retrouver les crédits sur un autre Mac, connectez-vous au même compte Inklura. Vos PDF restent sur votre ordinateur.</small>
+      </div>
+    </dialog>}
     {state.phase === 'signed-in' && state.externalPurchases !== false && <dialog ref={offersDialog} className="account-dialog" aria-labelledby="account-offers-title" onCancel={() => setOffers(false)} onClose={() => setOffers(false)}>
       <div className="dialog-title"><h2 id="account-offers-title">Offres et crédits</h2><button aria-label="Fermer les offres" onClick={() => setOffers(false)}>✕</button></div>
       <div className="account-offers">

@@ -39,6 +39,10 @@ export class Ledger {
         plan TEXT NOT NULL, owner TEXT REFERENCES accounts(id), created INTEGER NOT NULL);
       CREATE INDEX IF NOT EXISTS web_purchases_owner ON web_purchases(owner);
       CREATE TABLE IF NOT EXISTS events(id TEXT PRIMARY KEY, created INTEGER NOT NULL);
+      CREATE TABLE IF NOT EXISTS apple_accounts(account TEXT PRIMARY KEY REFERENCES accounts(id), token TEXT NOT NULL UNIQUE);
+      CREATE TABLE IF NOT EXISTS apple_transactions(id TEXT PRIMARY KEY REFERENCES grants(id),
+        account TEXT NOT NULL REFERENCES accounts(id), product TEXT NOT NULL, units INTEGER NOT NULL,
+        purchased INTEGER NOT NULL, signed_at INTEGER NOT NULL, revoked INTEGER NOT NULL DEFAULT 0);
       CREATE TABLE IF NOT EXISTS purchase_buyers(account TEXT PRIMARY KEY REFERENCES accounts(id), buyer TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS sales(seq INTEGER PRIMARY KEY AUTOINCREMENT, id TEXT NOT NULL UNIQUE, kind TEXT NOT NULL,
         account TEXT NOT NULL REFERENCES accounts(id), operation TEXT, plan TEXT NOT NULL, channel TEXT NOT NULL,
@@ -101,13 +105,15 @@ export class Ledger {
   }
   isBlocked(account) {
     const owner = this.db.prepare('SELECT owner FROM web_purchases WHERE account=?').get(account)?.owner || account;
-    return this.sources(owner).some(id => this.getAccount(id).blocked);
+    return this.sources(owner).some(id => this.getAccount(id).blocked || !!this.db.prepare(
+      'SELECT 1 FROM apple_transactions a JOIN grants g ON g.id=a.id WHERE a.account=? AND a.revoked=1 AND g.used+g.reserved>0 LIMIT 1'
+    ).get(id));
   }
   balance(account) {
     const sources = this.sources(account), now = this.now();
     const grants = this.db.prepare(`SELECT kind,total,used,reserved,starts,ends FROM grants WHERE account IN (${sources.map(() => '?').join(',')}) AND starts<=? AND ends>? ORDER BY ends`).all(...sources, now, now);
     return { accountId: account, blocked: this.isBlocked(account), remaining: grants.reduce((n, g) => n + g.total - g.used - g.reserved, 0),
-      reserved: grants.reduce((n, g) => n + g.reserved, 0), grants: grants.map(g => ({ ...g, expiresAt: g.kind === 'trial' ? null : new Date(g.ends).toISOString() })) };
+      reserved: grants.reduce((n, g) => n + g.reserved, 0), grants: grants.map(g => ({ ...g, expiresAt: ['trial', 'apple'].includes(g.kind) ? null : new Date(g.ends).toISOString() })) };
   }
   reserve(account, operation) {
     operationId(operation);

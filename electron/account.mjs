@@ -35,6 +35,7 @@ export class AccountController extends EventEmitter {
     return { phase: this.phase, enabled: !!this.apiUrl && !!this.config?.enabled, message: this.message,
       account: this.account, purchasePending: this.purchasePending, userCode: this.flow?.userCode || null,
       externalPurchases: this.externalPurchases,
+      apple: this.appleStore?.snapshot() || null,
       plans: this.externalPurchases ? this.account?.plans || this.config?.plans || [] : [], paymentsEnabled: this.externalPurchases && !!this.account?.paymentsEnabled };
   }
   publish() { this.emit('state', this.snapshot()); return this.snapshot(); }

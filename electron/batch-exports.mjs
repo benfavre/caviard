@@ -11,7 +11,7 @@ function folderName(value) {
 
 export class BatchExports {
   constructor() { this.batches = new Map(); }
-  async begin(parent, documents) {
+  async begin(parent, documents, bookmark) {
     if (!Array.isArray(documents) || !documents.length || documents.length > 250)
       throw new Error("Invalid export batch");
     const ids = new Set(), names = new Set();
@@ -34,10 +34,11 @@ export class BatchExports {
     // A fresh output tree prevents overwriting originals or previous exports.
     const directory = await mkdtemp(path.join(parent, "Inklura-caviardages-"));
     const id = randomUUID();
-    this.batches.set(id, { directory, files: new Map(entries.map((entry) =>
+    this.batches.set(id, { directory, bookmark, files: new Map(entries.map((entry) =>
       [entry.id, path.join(directory, ...entry.parts)])) });
     return { id, name: path.basename(directory) };
   }
+  bookmark(id) { return this.batches.get(id)?.bookmark; }
   async destination(batchId, documentId) {
     const batch = this.batches.get(batchId);
     const destination = batch?.files.get(documentId);
