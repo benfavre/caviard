@@ -49,7 +49,8 @@ try {
                 } finally { $a.Dispose(); $b.Dispose() }
             }
             foreach ($entry in $after.Entries) {
-                if ($null -eq $before.GetEntry($entry.FullName) -and $entry.FullName -ne 'AppxSignature.p7x') {
+                # SignTool also generates the Windows code-integrity catalog.
+                if ($null -eq $before.GetEntry($entry.FullName) -and $entry.FullName -notin @('AppxSignature.p7x', 'AppxMetadata/CodeIntegrity.cat')) {
                     throw "Unexpected added entry: $($entry.FullName)"
                 }
             }
