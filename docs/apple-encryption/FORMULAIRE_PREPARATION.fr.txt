@@ -88,3 +88,11 @@ conditionnels (Kbis récent et présentation société si première déclaration
 ANSSI de BEO PLUS) restent absents. La validation automatique ne remplace pas
 cette exigence. Les brochures v2-20261030 remplacent les précédentes versions
 qui restent présentes dans le brouillon ; aucun dépôt effectué.
+
+MISE À JOUR APRÈS RÉPONSE 6533489853
+Kbis joint par Bruno, à jour au 02/10/2026. Présentation générale de société
+préparée à partir des renseignements publics du Kbis et jointe au brouillon.
+Reste l'attestation officielle à relire, compléter, signer et joindre par Bruno.
+Modèle direct :
+https://demarche.numerique.gouv.fr/champs/35079529/5607937/piece_justificative/template
+Aucun dépôt ni signature effectués par l'agent.

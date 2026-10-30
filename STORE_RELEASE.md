@@ -510,3 +510,9 @@ brochures explicitly qualify that date as provisional, subject to ANSSI and
 Apple validations. They supersede the earlier attachments without deleting them.
 The portal now reports only the signed attestation as a missing mandatory field;
 conditional first-declaration company documents remain absent. No filing yet.
+
+After comment 6533489853, the Kbis supplied by Bruno is attached to draft 35079529
+and is dated 2 October 2026 (within three months). A one-page company presentation
+using only its public company details has been prepared, visually reviewed and
+attached. The original Kbis remains outside the repository. The signed official
+attestation is still missing; Bruno must review, sign and attach it before filing.
