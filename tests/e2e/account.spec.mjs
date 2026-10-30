@@ -57,3 +57,32 @@ test('purchase displays TTC and requires metropolitan French billing before open
  await form.getByLabel('Code postal').fill('35000');await form.getByRole('button',{name:/Continuer vers Stripe/}).click();
  await expect(form).toHaveCount(0);expect(await page.evaluate(()=>window.checkoutRequest)).toEqual({planId:'volume-100',billing:{name:'Entreprise Exemple',line1:'1 rue Exemple',city:'Rennes',postalCode:'35000',country:'FR'}});
 });
+
+test('Mac App Store offers use Apple prices and never show the Stripe billing form', async ({ page }) => {
+  await page.addInitScript(() => {
+    const state = { phase: 'signed-in', enabled: true, externalPurchases: false, plans: [],
+      account: { accountId: 'synthetic-apple', remaining: 20, reserved: 0 },
+      apple: { enabled: true, pending: false, message: '', products: [100, 500, 1000].map((n, i) => ({
+        id: 'com.benfavre.caviard.credits' + n, documents: n, label: n + ' exports PDF',
+        formattedPrice: ['34,90 €', '118,99 €', '178,99 €'][i],
+      })) } };
+    window.caviardDesktop = {
+      info: async () => ({ version: 'test', distributionChannel: 'mac-app-store' }),
+      updateState: async () => ({ phase: 'store' }), onUpdate: () => () => {}, setDocumentState: () => {},
+      accountState: async () => state, onAccount: () => () => {}, refreshAccount: async () => state,
+      purchaseAppleCredits: async productId => { window.applePurchase = productId; return { queued: true }; },
+    };
+  });
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Offres et crédits' }).click();
+  const dialog = page.getByRole('dialog', { name: 'Crédits PDF · App Store' });
+  await expect(dialog).toBeVisible();
+  await expect(dialog.locator('article')).toHaveCount(3);
+  await expect(dialog).toContainText('34,90 €');
+  await expect(dialog).toContainText('n’expirent pas');
+  await expect(page.getByRole('button', { name: 'Facturation', exact: true })).toHaveCount(0);
+  await expect(dialog.locator('.account-billing')).toHaveCount(0);
+  await dialog.getByRole('button', { name: 'Acheter avec l’App Store' }).first().click();
+  expect(await page.evaluate(() => window.applePurchase)).toBe('com.benfavre.caviard.credits100');
+  await expect(page.getByText('20 PDF disponibles')).toBeVisible(); // queued does not invent credits
+});

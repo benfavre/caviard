@@ -89,3 +89,49 @@ xvfb-run -a npm run test:desktop
 ```
 
 Tests du service : identité signée, isolation des comptes, 20 exports, refus au 21e, concurrence entre connexions SQLite, expiration, idempotence, authenticité des webhooks, prix et compte Stripe, abonnement et remboursement. Tests Electron unitaires : reprise après panne, écriture échouée, confidentialité des jetons et absence de données PDF dans les requêtes. Tests navigateur : affichage, connexion, achats fermés/ouverts, formulaire français/TTC, travail conservé à quota épuisé et redimensionnement de l’espace de travail.
+
+## Achats Mac App Store (préparation du 30 octobre 2026)
+
+L’intégration est désactivée par défaut et n’a pas été déployée. Les packs
+`com.benfavre.caviard.credits100`, `credits500` et `credits1000` n’expirent pas.
+Les tarifs Apple sont affichés par StoreKit. Les offres Stripe restent inchangées.
+
+- `POST /v1/apple/prepare {productId}` exige l’identité OAuth et retourne un UUID
+  de compte Apple opaque, conservé dans `apple_accounts`. Electron transmet cet
+  UUID comme `applicationUsername` à StoreKit.
+- `POST /v1/apple/claim {transactionId}` relit la transaction auprès d’Apple et
+  vérifie sa signature avec `@apple/app-store-server-library`, la racine Apple G3,
+  les contrôles de révocation en ligne, l’app, le produit, le compte et le type.
+  L’événement client seul n’accorde jamais de crédits. L’ajout au registre et le
+  crédit sont dans la même transaction SQLite, avec une clé unique par
+  environnement/transaction Apple.
+- `POST /v1/apple/notifications {signedPayload}` reçoit les notifications V2
+  signées. Il relit l’état actuel auprès d’Apple pour éviter qu’un ancien événement
+  annule un remboursement plus récent. Les crédits remboursés inutilisés sont
+  retirés ; s’ils ont été consommés/réservés, les nouveaux exports sont bloqués
+  pour revue. La libération d’une réservation remboursée ne recrée aucun crédit.
+  Les blocages existants ne sont pas levés par un remboursement annulé.
+
+Pour activer : fournir `INKLURA_APPLE_IAP_KEY_FILE` (clé In-App Purchase `.p8`,
+mode 600, serveur seulement), `INKLURA_APPLE_IAP_KEY_ID`,
+`INKLURA_APPLE_ISSUER_ID`, puis `INKLURA_APPLE_PURCHASES_ENABLED=true`.
+Configurer les notifications production et sandbox sur
+`https://outils.inklura.fr/api/inklura-pdf/v1/apple/notifications` et vérifier une
+notification TEST. Cette URL n’est pas encore configurée dans App Store Connect.
+`INKLURA_APPLE_SANDBOX_ACCOUNTS` contient uniquement les UUID de comptes synthétiques
+dédiés ; un client ne peut pas demander l’environnement sandbox. Ne jamais
+transformer ces comptes en comptes clients ou partager les accès de certification
+Microsoft avec Apple sans autorisation explicite.
+
+La racine publique `certificates/AppleRootCA-G3.cer` vient de
+https://www.apple.com/certificateauthority/AppleRootCA-G3.cer ; son empreinte SHA-256
+est `63343ABFB89A6A03EBB57E9B3F5FA7BE7C4F5C756F3017B3A8C488C3653E9179`.
+Les notifications et transactions non signées sont refusées. Aucun contournement
+local de signature n’est activable par variable d’environnement.
+
+Avant le déploiement, reprendre les sauvegardes et contrôles existants, comparer
+à nouveau la release en production, puis installer une release atomique en
+conservant la base et les secrets existants. Les tables Apple sont additives.
+Valider les achats/annulations, interruptions, doublons, mauvais compte,
+remboursements et reprise après fermeture avec de vrais achats sandbox sur Mac.
+Ne pas activer les achats clients tant que cette recette n’a pas réussi.

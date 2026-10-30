@@ -38,9 +38,13 @@ invited Microsoft account, but subsequently succeeded using Bruno's native
 tenant account in a separate browser profile. **Inklura PDF** is now reserved
 as Store product `9PLQZNJTGPCW`, and submission `1152921505702276768` is in certification.
 No guest or tenant permissions were broadened. The temporary tenant-administrator
-role used for association has been removed. Apple membership is confirmed and
-the team variable is configured; App Store Connect access and signing assets
-remain to be verified.
+role used for association has been removed. Apple access is verified under **BEO PLUS / 8V54BYQURB**. The macOS record is
+**6828817692**, bundle ID `com.benfavre.caviard`, SKU `inklura-pdf-macos`.
+The draft is version 1.4.0; it has not been uploaded or submitted. Apple
+Distribution, Mac Installer Distribution and Apple Development certificates
+were created with Ben's approval and configured in GitHub's `release` secrets.
+A matching distribution profile is configured; no development device/profile
+has been registered yet.
 
 The verified Microsoft identity is configured in the GitHub `release` environment:
 
@@ -104,28 +108,42 @@ Only its verification report is retained, not a customer installer.
    Silicon packages. This does not upload or submit them. Verification checks
    certificate team/type, sandbox entitlements, embedded distribution profile,
    architectures and installer signatures. It does not claim native acceptance.
-4. Complete **Apple commerce before submission**. The current MAS preparation
-   preserves login/credits but removes Stripe purchase/portal controls and
-   rejects their IPC calls. This is an interim safeguard, **not a complete
-   commercial App Store implementation or an exemption from in-app purchase**.
-   Implement StoreKit products, Apple-side transaction validation, account-bound
-   idempotent credit grants, interrupted purchase recovery, refunds/revocations
-   and sandbox purchase tests. Never credit an account solely from a client
-   success event. Reconcile the currently deployed credit service with source
-   before changing it; the working checkout has additional unmerged web billing
-   changes. Existing Stripe customers and grants must retain their balances.
-5. Confirm Apple offers and prices with the publisher. Proposed consumable packs
-   are 100 / 500 / 1,000 PDFs **without expiration**; this has not been approved.
-   Apple guideline 3.1.1 prohibits expiration of purchased credits. Review
-   existing subscription entitlements under 3.1.3(b); packs alone are not proof
-   that all cross-platform subscriptions qualify. Do not change live web prices
-   or apply the web ledger's 12-month expiration to Apple purchases.
-6. Test the real MAS development build on both architectures, including native
-   open/save dialogs, Finder imports, recursive folder access, atomic export,
-   cancel, crash recovery, OCR/WASM and model downloads. In particular, pending
-   export reconciliation reads paths after relaunch: add/verify security-scoped
-   bookmarks (and lifetime cleanup) where App Sandbox requires them. The Linux
-   metadata tests do not exercise Apple's filesystem sandbox.
+4. **Apple commerce is implemented but not enabled or natively accepted yet.**
+   The MAS UI uses StoreKit prices, purchases one pack with a server-issued UUID
+   account token and journals successful transactions until server confirmation.
+   Apple-signed transaction information is fetched and verified by Apple's
+   official server library, with online certificate checks. Credit grants are
+   account-bound/idempotent; refunds revoke remaining credits and hold accounts
+   for review when refunded credits were used. Sandbox crediting is restricted
+   to configured synthetic accounts. Stripe checkout/portal remains blocked in
+   MAS. Configure a dedicated In-App Purchase key, server notifications and a
+   separate Apple reviewer account before activating the service. No Apple key
+   exists in the app or repository. No server deployment occurred in this turn.
+   The service source was reconciled against the deployed
+   `20260928T114238Z-1105-receipt` release before these additive changes, preserving
+   web checkout, receipt claims, annual quotas, promotions and invoicing.
+5. Ben approved three consumable packs **without expiration**, available in
+   France only. App Store Connect references and French localizations are saved:
+
+   | PDF exports | Product ID suffix | Apple ID | French TTC price |
+   | --- | --- | --- | --- |
+   | 100 | `credits100` | `6828820002` | €34.90 |
+   | 500 | `credits500` | `6828822382` | €118.99 |
+   | 1,000 | `credits1000` | `6828823455` | €178.99 |
+
+   IDs begin with `com.benfavre.caviard.`. These are the closest available Apple
+   tiers to €34.80 / €118.80 / €178.80. StoreKit supplies the displayed price;
+   none is hard-coded as a charge amount. Existing web offers are unchanged.
+   IAP review screenshots and real sandbox acceptance remain outstanding. Review
+   cross-platform subscription entitlements under guideline 3.1.3(b) as well.
+6. Native MAS acceptance remains required on Bruno's Mac. Selected file/folder
+   bookmarks now cover deferred imports, atomic exports and pending-credit
+   reconciliation after relaunch, with balanced access cleanup. Single MAS
+   export selects a directory to authorize both the target and sibling temporary
+   file; overwrite requires confirmation. Missing/revoked recovery access retains
+   the hold instead of assuming that no file was saved. Test real open/save,
+   Finder imports, recursive folders, cancellation, recovery, OCR/WASM and model
+   downloads on Intel and Apple Silicon. Linux tests do not exercise App Sandbox.
 7. Verify in-app account deletion, privacy disclosures, sign-in/account web pages
    without inappropriate purchase links, store-compliant local model handling,
    screenshots, reviewer account, content rights and export compliance. Upload
@@ -260,3 +278,30 @@ artifacts expire after 14 days and must not be offered as customer downloads.
 - [Accepted Microsoft Store package formats](https://learn.microsoft.com/en-us/windows/apps/publish/publish-your-app/msi/app-package-requirements)
 - Installed electron-builder 26 option types and manifest generator are verified
   against the repository lockfile; no dependency upgrade is part of this change.
+
+## Apple signing and purchase evidence (30 October 2026)
+
+[Signed MAS pipeline](https://github.com/benfavre/caviard/actions/runs/41049587354)
+passed on `5de9e5c`: strict code signatures, distribution identity/team, sandbox,
+embedded profile, both architectures and installer signatures. These artifacts
+predate the StoreKit and bookmark changes and **must not be submitted**.
+The [signed implementation build](https://github.com/benfavre/caviard/actions/runs/41051397229)
+passed on `5757c6d`, including the app-scoped bookmark entitlement. This proves
+packaging/signatures, not native installed acceptance or payment functionality.
+The dedicated ephemeral signing keychain avoids electron-builder 26.15.3's wrong
+password during certificate import; keys are removed with the runner keychain.
+
+Local checks for the Apple implementation: 71 account-service tests, 68 desktop
+unit tests, five account/commerce browser tests, production UI build and two
+real Electron Store UI/IPC isolation checks. Provider/native adapters are simulated in payment fault tests; no real
+Apple payment or credit grant is claimed. Server purchases remain disabled.
+
+Bruno confirmed the updated Developer agreement was signed for BEO PLUS in
+[Apple ticket #1410](https://github.com/webdesign29/activ/issues/1410#issuecomment-6521850408).
+EU trader-status setup and the Paid Applications agreement remain to verify.
+Benjamin is an App Manager; In-App Purchase key creation requires Admin/Account
+Holder access. [The next action](https://github.com/webdesign29/activ/issues/1410#issuecomment-6522193322)
+asks Bruno to generate/download an Inklura PDF In-App Purchase key and confirm it
+is ready, without attaching secrets to the ticket. Private transfer remains to
+arrange. The existing minute-based ticket watcher is active with no expiry. Native installation, StoreKit sandbox purchases/refunds, account deletion,
+privacy labels, screenshots, reviewer credentials, upload and submission remain.
