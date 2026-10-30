@@ -1,12 +1,12 @@
 # Microsoft Store — fiche française en préparation
 
-Brouillon pour le compte éditeur BEO PLUS, au 30 octobre 2026. La description,
-la description courte et une fonctionnalité sont enregistrées dans Partner
-Center ; la fiche reste incomplète sans captures d’écran. L’accès
-BEO PLUS est confirmé et le nom a été réservé depuis le compte natif de Bruno :
-produit `9PLQZNJTGPCW`, soumission `1152921505702276768` en brouillon. Les caractéristiques
-ci-dessous proviennent du code et du README de cette branche ; la validation
-du paquet installé reste à réaliser.
+Soumission BEO PLUS envoyée en certification le 30 octobre 2026 : produit
+`9PLQZNJTGPCW`, soumission `1152921505702276768`, AppX x64 `1.4.0.0`.
+Partner Center affiche « En cours de certification » et le prétraitement en cours.
+La publication démarrera automatiquement après certification. L’application
+n’est pas encore confirmée disponible dans le Store. Toutes les sections sont
+complètes, avec trois captures réelles Windows, légendes et mots-clés français.
+L’installation native, WACK et la mise à jour via le Store restent à valider.
 
 ## Champs de la fiche
 
@@ -52,7 +52,7 @@ facultatif représente environ 1,18 Go ; l’analyse fonctionne ensuite localeme
 8 Go de mémoire vive sont recommandés pour l’assistant. Cette édition reçoit
 ses mises à jour par le Microsoft Store, selon vos paramètres de mise à jour.
 
-**Mots-clés proposés :** PDF ; caviardage ; confidentialité ; OCR ; documents
+**Mots-clés enregistrés :** PDF ; caviardage ; confidentialité ; OCR ; documents
 
 **Site produit :** https://pdf.inklura.fr/
 
@@ -68,11 +68,11 @@ et renvoie aux règles générales de conservation et aux droits chez BEO PLUS :
 https://www.activ-communication.com/politique-de-confidentialite/.
 
 **Disponibilité enregistrée :** France, téléchargement gratuit, futurs marchés
-désactivés. La publication reste manuelle. Aucun prix de crédit n'a été modifié.
+désactivés. Publication automatique après certification. Aucun prix de crédit n’a été modifié.
 
 ## Notes destinées à la certification
 
-À adapter au paquet final et à fournir dans les champs privés de certification :
+Résumé des notes enregistrées dans les champs privés de certification :
 
 > Inklura PDF is an Electron desktop productivity application. The runFullTrust
 > capability is needed for its desktop process, native file dialogs, PDF and
@@ -87,27 +87,26 @@ désactivés. La publication reste manuelle. Aucun prix de crédit n'a été mod
 > Internet access and account credits. Import and analysis do not consume credits.
 > The optional model download is not required for manual redaction.
 
-Fournir un compte de revue dédié avec des crédits suffisants, utilisable par
-Microsoft sans intervention humaine ni paiement réel. Vérifier tout le parcours
-de connexion avant d’inscrire les identifiants uniquement dans les notes privées
-de certification ; ne jamais les conserver dans ce dépôt.
+Un compte de revue dédié avec 20 exports, sans données clients ni administration,
+a été testé : connexion par mot de passe, appairage par code, jeton appareil,
+solde et réservation/libération de crédit. Ben a autorisé l’envoi des identifiants
+à Microsoft ; ils sont enregistrés dans la section privée de certification et
+ne figurent pas dans ce dépôt. Ce contrôle du service n’est pas un export PDF réel.
 
-## Éléments nécessaires avant envoi
+## Éléments fournis et limites restantes
 
-- Validation du paquet correspondant à l’identité réelle BEO PLUS dans le portail.
-- Installation Windows et Windows App Certification Kit, puis test d’une mise
-  à jour Store en conservant projets, modèles et crédits.
-- Captures réelles du paquet final avec des PDF synthétiques : édition manuelle,
-  suggestions de l’assistant et relecture avant export. La capture historique
-  de la version 1.2.0 ne constitue pas une capture de ce paquet.
-- Acceptation IARC et enregistrement de la classification : aperçu PEGI 3 avec
-  achats intégrés préparé, validation contractuelle en attente de confirmation.
-- Compte de certification testé, informations de connexion et crédits.
-- Tarifs et conditions actuels vérifiés dans le service déployé : le site public
-  affiche maintenant une facturation annuelle pour les abonnements, alors que
-  les documents commerciaux de cette branche décrivent une facturation mensuelle.
-  Ne pas recopier ces anciens montants ou cadences dans le Store.
+- Identité réelle BEO PLUS et paquet marqué « Validated » dans Partner Center.
+- Classification enregistrée après acceptation IARC par l’éditeur.
+- Trois captures du véritable exécutable Windows extrait du paquet soumis,
+  avec un document synthétique : document importé, recherche, relecture des
+  trois zones masquées. Aucun montage de l’interface.
+- Compte et instructions de certification enregistrés dans les champs privés.
+- Tarifs du service déployé vérifiés ; aucun ancien montant ou abonnement mensuel
+  des documents de cette branche n’a été recopié dans le Store.
+- Installation Windows sur le PC de Bruno, WACK et mise à jour Store conservant
+  projets, modèles et crédits : encore non vérifiés. Ces limites sont indiquées
+  dans les notes privées ; la soumission ne constitue pas leur validation.
 
 Référence produit consultée : [site Inklura PDF](https://pdf.inklura.fr/),
-30 octobre 2026. Les déclarations de fonctionnement doivent être confirmées par
-les tests du paquet installé avant de publier la fiche.
+30 octobre 2026. Le suivi de certification se trouve dans
+[Partner Center](https://partner.microsoft.com/fr-fr/dashboard/products/9PLQZNJTGPCW/overview).

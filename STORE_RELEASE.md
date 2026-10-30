@@ -1,7 +1,9 @@
 # Inklura PDF store release preparation
 
 This prepares **Mac App Store** and **Microsoft Store** packages alongside the
-existing direct downloads. No submission for certification or signed release has been made.
+existing direct downloads. Microsoft submission `1152921505702276768` was sent
+for certification on 30 October 2026; Partner Center shows preprocessing in
+progress and automatic publication after certification. It is not live yet.
 The public version remains 1.4.0. Do not submit the current MAS build: Apple
 commerce and native sandbox acceptance below are still outstanding.
 
@@ -34,7 +36,7 @@ its associated Entra tenant. The publisher profile reports an active company
 account and EU Digital Services Act compliance. Reservation failed with the
 invited Microsoft account, but subsequently succeeded using Bruno's native
 tenant account in a separate browser profile. **Inklura PDF** is now reserved
-as Store product `9PLQZNJTGPCW`, and submission `1152921505702276768` is a draft.
+as Store product `9PLQZNJTGPCW`, and submission `1152921505702276768` is in certification.
 No guest or tenant permissions were broadened. The temporary tenant-administrator
 role used for association has been removed. Apple membership is confirmed and
 the team variable is configured; App Store Connect access and signing assets
@@ -72,11 +74,13 @@ mean the application has been published.
    direct installs. Ordinary NSIS registry context menus are not part of AppX.
 4. Complete the listing, screenshots, privacy/support links, age rating,
    territories, reviewer access and the `runFullTrust` explanation. The app runs
-   local PDF/OCR processing and uses user-selected files. Submit only after
-   installed acceptance and a verified package identity.
+   local PDF/OCR processing and uses user-selected files. The first submission
+   was sent at Ben’s request with a verified package identity and Windows
+   executable UI checks. Installed acceptance, WACK and a Store-delivered update
+   remain unverified; the reviewer notes explicitly disclose those limits.
 
 Use [the French listing and review draft](MICROSOFT_STORE_LISTING.fr.md) for the
-submission fields. Its unresolved items must be completed before submission.
+submission fields, submitted status and remaining acceptance checks.
 
 Pull requests build an unsigned **QA identity** on a Windows runner to validate
 packaging. It is not reserved in Partner Center and must never be submitted.
@@ -182,15 +186,14 @@ passed on `a94ff0fa9703c4324df97c3d0a755fd3bed1d1cc`. Its AppX is version
 `1.4.0.0`, x64, with the publisher identity above. The downloaded artifact's
 SHA-256 was independently checked against the workflow report:
 `d60a72e53bb3064ac3eb2605df9d3632b7800892e32af7a90ae40b58e70d8512`.
-This is still an internal review build, not evidence of installed Windows
-acceptance, certification or a published Store release.
+This is the submitted build, not evidence of installed Windows acceptance,
+Microsoft certification approval or a published Store release.
 It has been uploaded and saved in submission `1152921505702276768`: Partner
 Center reports **Validated** and the Packages section is complete. Windows
 Desktop is selected; other current/future device families are not enabled.
 The portal warns that `runFullTrust` requires approval during certification.
-Its technical justification is saved in the draft submission options, with
-manual publication selected. The options section is complete; this does not
-constitute capability approval or submission for certification.
+Its technical justification is saved in the submission options. Publication
+is set to start automatically after certification; capability approval is pending.
 The French description, short description and first feature are saved. Properties
 and pricing/availability now report **Complete** in Partner Center: Productivity,
 8 GB recommended RAM, external purchases and generative-AI functionality declared,
@@ -200,12 +203,29 @@ existing BEO PLUS privacy policy linked by the product website; it is stored
 directly in the draft, not published as a new website page. The draft offers a
 free download in France only, with future markets disabled. Paid export credits
 remain managed by the existing service; no live billing changes were made.
-The age questionnaire preview gives PEGI 3 / in-app purchases. Its IARC terms
-acceptance and final save await explicit publisher authorization. The app offers
-no media catalog or user-to-user sharing; user-imported documents are excluded
-from the online-content answer according to the questionnaire's own help text.
-Actual Windows screenshots, reviewer access, installed acceptance and the final
-age-rating save remain outstanding before certification.
+The publisher completed IARC acceptance; Age rating is complete (PEGI 3 /
+in-app purchases). The app offers no media catalog or user-to-user sharing.
+Three real 1600×1000 Windows screenshots, French captions and keywords are saved.
+[Capture run 41046267285](https://github.com/benfavre/caviard/actions/runs/41046267285)
+launches the unchanged executable extracted from the pinned submitted AppX,
+imports a synthetic PDF, searches contact values and verifies three redactions.
+It does not install the package or simulate Store delivery.
+
+A dedicated synthetic certification account has 20 export credits, no customer
+data and no administration rights. Password login, device confirmation/token
+exchange, account balance and credit reserve/release passed against the deployed
+service. No actual PDF export or payment was performed by this service test.
+Ben explicitly authorized transmitting its credentials to Microsoft; they are
+saved only in the private certification credentials section, not this repository.
+Detailed reviewer instructions and the test limitations are saved there too.
+
+On 30 October 2026 all six submission sections were complete. After submission,
+Partner Center showed **En cours de certification**, with Envoi complete,
+Prétraitement in progress and publication scheduled automatically after approval.
+No certification approval or live Store availability has yet been verified.
+[Full regression](https://github.com/benfavre/caviard/actions/runs/41046166785)
+and [Windows QA](https://github.com/benfavre/caviard/actions/runs/41046166793)
+pass on `f0552c8`; later documentation changes do not replace the submitted bytes.
 
 ### Windows test handoff
 
@@ -226,7 +246,8 @@ the AppX, and reports launch success/error in Microsoft ticket #1411. The
 instructions include certificate removal and warn about local data when
 uninstalling the temporary test package. See `WINDOWS_TEST.fr.txt`.
 
-After installed acceptance, obtain real screenshots and run WACK. A separate
+Real Windows executable screenshots are now supplied. Run WACK and complete
+installed acceptance on Bruno’s PC. A separate
 Store-delivered first version and subsequent version are required to validate
 actual Store updates; sideloading this kit cannot prove that behavior. Test
 artifacts expire after 14 days and must not be offered as customer downloads.
