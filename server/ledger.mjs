@@ -148,7 +148,11 @@ export class Ledger {
       // Only a reservation can be released. A completed export can never self-refund.
       if (item.state === 'committed') throw new BillingError('already_committed', 409);
       if (item.state === 'reserved') {
-        this.db.prepare('UPDATE grants SET reserved=reserved-1 WHERE id=?').run(item.grant_id);
+        // A refund may arrive while an export is reserved. Releasing that hold
+        // must not turn its revoked credit back into an available credit.
+        this.db.prepare(`UPDATE grants SET reserved=reserved-1,
+          total=total-CASE WHEN EXISTS(SELECT 1 FROM apple_transactions WHERE id=grants.id AND revoked=1) THEN 1 ELSE 0 END
+          WHERE id=?`).run(item.grant_id);
         this.db.prepare("UPDATE exports SET state='released' WHERE account=? AND operation=?").run(account, operation);
       }
       return { operation, state: 'released' };

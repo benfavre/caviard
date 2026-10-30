@@ -100,6 +100,21 @@ test('real Apple verifier rejects an unsigned/forged transaction and notificatio
   await assert.rejects(verifier.verifyAndDecodeNotification(forged));
   assert.equal(appleProvider({}), null);
 });
+test('releasing a held export after a refund cannot resurrect the refunded credit', async () => {
+  const f = fixture(); try {
+    await f.apple.claim(f.a.id, f.transaction.transactionId);
+    // In this fixture the purchase predates the trial, so its credit is selected.
+    f.ledger.reserve(f.a.id, 'refunded-held-operation');
+    f.transaction.revocationDate = f.transaction.signedDate + 1; f.transaction.signedDate += 1;
+    await f.apple.claim(f.a.id, f.transaction.transactionId);
+    f.ledger.transition(f.a.id, 'refunded-held-operation', 'release');
+    assert.equal(f.ledger.balance(f.a.id).remaining, 20);
+    assert.equal(f.ledger.balance(f.a.id).blocked, false);
+    const grant = f.ledger.db.prepare("SELECT * FROM grants WHERE kind='apple'").get();
+    assert.equal(grant.total, 0);
+    assert.equal(grant.reserved, 0);
+  } finally { f.ledger.close(); }
+});
 test('HTTP rejects client-selected account/environment/amount and disabled purchases', async () => {
   const f = fixture();
   const payments = { catalog: () => [], enabled: false };
