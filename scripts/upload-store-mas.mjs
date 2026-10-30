@@ -1,8 +1,9 @@
 // Upload only the reviewed universal package. Never rebuild or submit for review.
 // Apple docs: https://help.apple.com/itc/transporteruserguide/en.lproj/static.html
 // JWT: https://developer.apple.com/documentation/appstoreconnectapi/generating-tokens-for-api-requests
-import { createHash, createPrivateKey, sign } from 'node:crypto';
-import { readFileSync, existsSync, appendFileSync } from 'node:fs';
+import { createHash, createPrivateKey } from 'node:crypto';
+import { readFileSync, appendFileSync, mkdtempSync, writeFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
@@ -29,38 +30,40 @@ const signature = spawnSync('pkgutil', ['--check-signature', pkg], { encoding: '
 if (signature.status !== 0 || !signature.stdout.includes('8V54BYQURB')
   || !signature.stdout.includes('3rd Party Mac Developer Installer:')) throw new Error('Unexpected installer signature');
 console.log(signature.stdout);
-const xcode = spawnSync('xcode-select', ['-p'], { encoding: 'utf8' }).stdout?.trim();
-const transporter = [
-  '/usr/local/itms/bin/iTMSTransporter',
-  '/Applications/Transporter.app/Contents/itms/bin/iTMSTransporter',
-  xcode && `${xcode}/../SharedFrameworks/ContentDeliveryServices.framework/Versions/A/itms/bin/iTMSTransporter`,
-  xcode && `${xcode}/Applications/Application Loader.app/Contents/itms/bin/iTMSTransporter`,
-].find(p => p && existsSync(p));
-if (!transporter) throw new Error('Apple Transporter is not installed');
-if (mode === 'inspect') {
-  const result = spawnSync(transporter, ['-version'], { stdio: 'inherit' });
-  spawnSync('xcrun', ['altool', '--help'], { stdio: 'inherit' });
-  process.exit(result.status ?? 1);
-}
+const tool = spawnSync('xcrun', ['--find', 'altool'], { encoding: 'utf8' });
+if (tool.status !== 0) throw new Error('Xcode altool is not installed');
+console.log(`Xcode delivery tool: ${tool.stdout.trim()}`);
+if (mode === 'inspect') process.exit(0);
 const keyId = process.env.MAS_ASC_KEY_ID;
 const pem = process.env.MAS_ASC_PRIVATE_KEY;
 if (!/^[A-Z0-9]{10,20}$/.test(keyId || '') || !pem) throw new Error('Missing upload API credentials');
 const key = createPrivateKey(pem);
 if (key.asymmetricKeyType !== 'ec' || key.asymmetricKeyDetails?.namedCurve !== 'prime256v1') throw new Error('Expected Apple P-256 key');
-const now = Math.floor(Date.now() / 1000);
-const encode = value => Buffer.from(JSON.stringify(value)).toString('base64url');
-const unsigned = `${encode({ alg: 'ES256', kid: keyId, typ: 'JWT' })}.${encode({ sub: 'user', iat: now, exp: now + 1200, aud: 'appstoreconnect-v1' })}`;
-const token = `${unsigned}.${sign('sha256', Buffer.from(unsigned), { key, dsaEncoding: 'ieee-p1363' }).toString('base64url')}`;
-if (process.env.GITHUB_ACTIONS === 'true') console.log(`::add-mask::${token}`);
-// Remove the private key from the child environment; Transporter only needs JWT.
+// Individual keys use sub=user, not the team's issuer. Xcode's CLI still
+// requires the issuer argument; its individual-key mode ignores that placeholder.
+// This is also the current fastlane AltoolTransporterExecutor convention.
+const privateDir = mkdtempSync(resolve(tmpdir(), 'inklura-asc-'));
+const privateFile = resolve(privateDir, `ApiKey_${keyId}.p8`);
 const childEnv = { ...process.env };
 delete childEnv.MAS_ASC_PRIVATE_KEY;
-const result = spawnSync(transporter, ['-m', mode, '-assetFile', pkg, '-jwt', token, '-v', 'informational'], {
-  env: childEnv, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024, timeout: 18 * 60 * 1000,
-});
-// Do not persist raw logs or credentials in artifacts.
-for (const output of [result.stdout, result.stderr]) if (output) process.stdout.write(output.replaceAll(token, '[REDACTED]').replaceAll(pem, '[REDACTED]'));
-if (result.error) throw new Error(`Transporter failed (${result.error.code || 'process error'})`);
+let result;
+try {
+  writeFileSync(privateFile, pem, { mode: 0o600 });
+  result = spawnSync('xcrun', ['altool', mode === 'upload' ? '--upload-package' : '--validate-app', pkg,
+    '--api-key', keyId, '--api-issuer', keyId, '--api-key-subject', 'user',
+    '--p8-file-path', privateFile, '--output-format', 'json'], {
+    env: childEnv, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024, timeout: 18 * 60 * 1000,
+  });
+} finally {
+  rmSync(privateDir, { recursive: true, force: true });
+}
+// Never persist raw logs, PEM material or bearer tokens in artifacts.
+const keyBody = pem.split('\n').filter(line => !line.startsWith('-----')).join('').trim();
+for (const output of [result.stdout, result.stderr]) if (output) {
+  process.stdout.write(output.replaceAll(pem, '[REDACTED]').replaceAll(keyBody, '[REDACTED]')
+    .replace(/eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/g, '[REDACTED-JWT]'));
+}
+if (result.error) throw new Error(`Xcode delivery failed (${result.error.code || 'process error'})`);
 if (result.status !== 0) process.exit(result.status ?? 1);
 const summary = `${mode === 'upload' ? 'Upload' : 'Validation'} completed for package ${actualHash}. Apple processing and App Review are separate steps.\n`;
 console.log(summary);
