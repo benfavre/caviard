@@ -66,3 +66,26 @@ test('public checkout is a restricted POST redirect, keeps its recovery cookie a
   assert.equal((await fetch(base + '/web/account', { method: 'POST', headers: { origin: 'https://manage.inklura.fr' } })).status, 403);
  } finally { await new Promise(resolve => server.close(resolve)); ledger.close(); }
 });
+
+test('PDF deletion requires an authenticated explicit confirmation and cannot target another subject', async () => {
+ const { AccountDeletion } = await import('../account-deletion.mjs');
+ const ledger = new Ledger(), payments = new Payments({ ledger }), accountDeletion = new AccountDeletion({ ledger, payments });
+ const server = createApi({ ledger, payments, accountDeletion, clientId, publicUrl:'http://127.0.0.1', authenticate:createAuthenticator({clientId,keySet:publicKey}) });
+ server.listen(0,'127.0.0.1'); await once(server,'listening');
+ const base='http://127.0.0.1:'+server.address().port, headers={Authorization:'Bearer '+await token(),'Content-Type':'application/json'};
+ const post=(data,h=headers)=>fetch(base+'/v1/account/deletion',{method:'POST',headers:h,body:JSON.stringify(data)});
+ try {
+  await fetch(base+'/v1/account',{headers});
+  const other=ledger.account(INKLURA_ISSUER,'other-subject');
+  assert.equal((await post({confirmation:'SUPPRIMER MON COMPTE PDF'},{})).status,401);
+  assert.equal((await post({confirmation:'SUPPRIMER MON COMPTE PDF'},{...headers,Origin:'https://evil.test'})).status,403);
+  assert.equal((await post({confirmation:'SUPPRIMER MON COMPTE PDF',subject:'other-subject'})).status,400);
+  assert.equal((await post({confirmation:'yes'})).status,400);
+  assert.equal((await post({confirmation:'SUPPRIMER MON COMPTE PDF'})).status,202);
+  await accountDeletion.run();
+  assert.equal((await fetch(base+'/v1/account',{headers})).status,410);
+  assert.deepEqual(await (await fetch(base+'/v1/account/deletion',{headers})).json(),{state:'deleted'});
+  assert.equal((await post({confirmation:'SUPPRIMER MON COMPTE PDF'})).status,200);
+  assert.equal(ledger.balance(other.id).remaining,20);
+ } finally { await new Promise(resolve=>server.close(resolve)); await accountDeletion.running; ledger.close(); }
+});

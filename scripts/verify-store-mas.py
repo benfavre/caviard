@@ -1,4 +1,4 @@
-"""Verify both signed MAS architectures, independently of notarized DMGs."""
+"""Verify a signed universal MAS package, independently of notarized DMGs."""
 import hashlib
 import json
 import os
@@ -11,7 +11,7 @@ root = Path("release-mac-app-store")
 team = os.environ["INKLURA_APPLE_TEAM_ID"]
 assert re.fullmatch(r"[A-Z0-9]{10}", team)
 apps = list(root.glob("mas*/Inklura PDF.app"))
-assert len(apps) == 2, "Expected Intel and Apple Silicon MAS apps"
+assert len(apps) == 1, "Expected one universal MAS app"
 architectures = set()
 for app in apps:
     subprocess.run(["codesign", "--verify", "--deep", "--strict", str(app)], check=True)
@@ -31,15 +31,16 @@ for app in apps:
     profile_data = plistlib.loads(profile)
     assert team in profile_data["TeamIdentifier"]
     assert "ProvisionedDevices" not in profile_data, "Development profile cannot be submitted"
-    architecture = subprocess.check_output(["lipo", "-archs", str(app / "Contents/MacOS/Inklura PDF")], text=True).strip()
-    architectures.add(architecture)
+    architecture = subprocess.check_output(["lipo", "-archs", str(app / "Contents/MacOS/Inklura PDF")], text=True).split()
+    architectures.update(architecture)
 assert architectures == {"x86_64", "arm64"}
 packages = list(root.glob("mas*/*.pkg"))
-assert len(packages) == 2, "Expected two MAS installer packages"
+assert len(packages) == 1, "Expected one universal MAS installer package"
 for package in packages:
     result = subprocess.check_output(["pkgutil", "--check-signature", str(package)], text=True)
     assert f"({team})" in result and "3rd Party Mac Developer Installer" in result
 report = {"signature_and_sandbox_checks": "passed", "team": team,
+          "architectures": sorted(architectures),
           "packages": [{"file": p.name, "sha256": hashlib.sha256(p.read_bytes()).hexdigest()} for p in packages],
           "installed_acceptance": "not performed", "store_submission": "not performed"}
 (root / "verification.json").write_text(json.dumps(report, indent=2) + "\n")

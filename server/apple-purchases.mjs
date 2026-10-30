@@ -75,6 +75,7 @@ export class ApplePurchases {
     if (!owner || (expectedAccount && owner !== expectedAccount) || this.environment(owner) !== t.environment)
       throw new BillingError('apple_purchase_account_mismatch', 403);
     const id = `apple:${t.environment}:${t.transactionId}`, units = product.documents * t.quantity;
+    if (this.ledger.isClosing(owner)) return { transactionId: t.transactionId, state: 'account_deleted' };
     return this.ledger.transaction(() => {
       const previous = this.ledger.db.prepare('SELECT * FROM apple_transactions WHERE id=?').get(id);
       if (previous && (previous.account !== owner || previous.product !== t.productId || previous.units !== units || previous.purchased !== t.purchaseDate))

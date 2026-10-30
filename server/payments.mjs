@@ -5,11 +5,23 @@ export class Payments {
   constructor({ ledger, stripe, webhookSecret, priceIds = {}, enabled = false, publicUrl, live = false, allowLive = false, portalConfiguration, franceTaxRate }) {
     Object.assign(this, { ledger, stripe, webhookSecret, priceIds, publicUrl, live, portalConfiguration, franceTaxRate });
     this.enabled = enabled && !!stripe && !!webhookSecret && !!franceTaxRate && (!live || allowLive);
+    this.checkouts = new Map();
   }
   catalog() {
     return DOCUMENT_PLANS.map(plan => ({ ...plan, priceCentsTtc: Math.round(plan.priceCentsHt * 1.2), taxPercent: 20, salesRegion: 'FR-METRO', purchasable: !!(this.enabled && this.priceIds[plan.id]) }));
   }
   async checkout(account, planId, operation, billing, web = {}) {
+    this.ledger.assertActive(account);
+    const pending = this.checkoutActive(account, planId, operation, billing, web);
+    const active = this.checkouts.get(account) || new Set();
+    active.add(pending); this.checkouts.set(account, active);
+    try { return await pending; }
+    finally { active.delete(pending); if (!active.size) this.checkouts.delete(account); }
+  }
+  async drainCheckouts(account) {
+    await Promise.allSettled([...(this.checkouts.get(account) || [])]);
+  }
+  async checkoutActive(account, planId, operation, billing, web = {}) {
     if (!this.enabled) throw new BillingError('purchases_not_enabled', 503);
     operationId(operation);
     const plan = planById(planId), priceId = this.priceIds[planId];
@@ -34,6 +46,7 @@ export class Payments {
       const session = await this.stripe.checkout.sessions.retrieve(order.checkout);
       if (session.status === 'expired') this.ledger.db.prepare("UPDATE orders SET state='expired' WHERE checkout=? AND state='pending'").run(session.id);
       if (session.status !== 'open' || !session.url) throw new BillingError('checkout_closed', 409);
+      this.ledger.assertActive(account);
       return { url: checkoutUrl(session.url) };
     }
     let customer = this.ledger.getAccount(account).customer;
@@ -59,6 +72,7 @@ export class Payments {
       ...(buyer ? {} : { customer_update: { address: 'auto', name: 'auto' } }), ...(promo ? { discounts: [{ promotion_code: promo.promotionCode }] } : { allow_promotion_codes: true }),
     }, { idempotencyKey: 'inklura-pdf:checkout:' + account + ':' + operation });
     this.ledger.db.prepare('UPDATE orders SET checkout=? WHERE account=? AND operation=?').run(session.id, account, operation);
+    this.ledger.assertActive(account);
     return { url: checkoutUrl(session.url) };
   }
   /** Checks a promotion code for an offer and returns the discounted totals (cents). */
@@ -91,6 +105,7 @@ export class Payments {
     };
   }
   async portal(account, website = false) {
+    this.ledger.assertActive(account);
     if (!this.enabled) throw new BillingError('purchases_not_enabled', 503);
     const customer = (website ? [account] : this.ledger.sources(account)).map(id => this.ledger.getAccount(id)).sort((a, b) => Number(!!b.subscription) - Number(!!a.subscription)).find(a => a.customer)?.customer;
     if (!customer) throw new BillingError('no_billing_account', 404);

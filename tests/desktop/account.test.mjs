@@ -117,3 +117,22 @@ test('closed checkout is recoverable with a fresh operation on retry',async()=>{
  await assert.rejects(()=>f.controller.checkout('volume-100',{}),{code:'checkout_closed'});await f.controller.checkout('volume-100',{});
  assert.notEqual(operations[0],operations[1]);assert.equal(f.opened.length,1);f.controller.dispose();
 });
+
+test('PDF deletion confirms the exact scope, clears tokens, and keeps the server receipt visible',async()=>{
+ const f=create((url,options)=>{
+  if(url.endsWith('/config'))return response({...config,accountDeletionEnabled:true});
+  if(url.endsWith('/account/deletion')){assert.deepEqual(JSON.parse(options.body),{confirmation:'SUPPRIMER MON COMPTE PDF'});return response({state:'pending'},202);}
+ });
+ await f.controller.initialize();f.controller.acceptTokens(tokens);await f.controller.refresh();
+ await assert.rejects(()=>f.controller.deletePdfAccount('yes'),/Saisissez exactement/);
+ assert.ok(!f.requests.some(r=>r.url.endsWith('/deletion')));
+ assert.deepEqual(await f.controller.deletePdfAccount('SUPPRIMER MON COMPTE PDF'),{state:'pending'});
+ assert.equal(f.controller.tokens,null);assert.equal(f.controller.account,null);assert.equal(f.controller.phase,'signed-out');
+ assert.match(f.controller.message,/autres produits Inklura/);f.controller.dispose();
+});
+test('a deleted PDF identity cannot remain signed in after an old token is used',async()=>{
+ const f=create(url=>url.endsWith('/account')?response({error:'account_deleted'},410):null);
+ await f.controller.initialize();f.controller.acceptTokens(tokens);
+ await assert.rejects(()=>f.controller.refresh(),{code:'account_deleted'});
+ assert.equal(f.controller.tokens,null);assert.equal(f.controller.phase,'signed-out');assert.match(f.controller.message,/supprimé/);f.controller.dispose();
+});

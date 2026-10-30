@@ -187,8 +187,8 @@ jobs:
           MAS_INSTALLER_LINK: ${{ secrets.MAS_INSTALLER_LINK }}
           MAS_INSTALLER_KEY_PASSWORD: ${{ secrets.MAS_INSTALLER_KEY_PASSWORD }}
         run: node scripts/prepare-mas-keychain.mjs
-      - name: Build signed MAS packages (not Developer ID DMGs)
-        run: npx electron-builder --config electron-builder.config.cjs --mac mas --x64 --arm64 --publish never
+      - name: Build one signed universal MAS package for Intel and Apple Silicon
+        run: npx electron-builder --config electron-builder.config.cjs --mac mas --universal --config.buildVersion=1.4.${{ github.run_number }} --publish never
       - name: Verify app signatures and sandbox
         run: python3 scripts/verify-store-mas.py
       - uses: actions/upload-artifact@v4

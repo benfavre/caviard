@@ -2,7 +2,7 @@ import { createServer } from 'node:http';
 import { BillingError } from './ledger.mjs';
 import { INKLURA_ISSUER } from './auth.mjs';
 import { BUYER_FIELDS, promoCode, webBuyer } from './france-billing.mjs';
-export function createApi({ webPurchases, applePurchases, ledger, payments, authenticate, clientId, publicUrl, now = () => Date.now() }) {
+export function createApi({ webPurchases, applePurchases, accountDeletion, ledger, payments, authenticate, clientId, publicUrl, now = () => Date.now() }) {
   // Promotion code lookups: pdf.inklura.fr/api/panier/promo relays them (the
   // site limits each visitor); a global ceiling here bounds Stripe calls.
   let lookups = [];
@@ -98,6 +98,7 @@ export function createApi({ webPurchases, applePurchases, ledger, payments, auth
         deviceEndpoint: INKLURA_ISSUER + '/oauth2/device', tokenEndpoint: INKLURA_ISSUER + '/oauth2/token',
         plans: payments.catalog(), paymentsEnabled: payments.enabled, webPurchasesEnabled: !!webPurchases?.enabled,
         applePurchasesEnabled: !!applePurchases?.enabled, appleProducts: applePurchases?.catalog() || [],
+        accountDeletionEnabled: !!accountDeletion,
       });
       if (req.method === 'GET' && ['/billing/success', '/billing/cancel'].includes(path)) {
         const success = path.endsWith('success');
@@ -116,9 +117,24 @@ export function createApi({ webPurchases, applePurchases, ledger, payments, auth
         if (!data || typeof data !== 'object' || Array.isArray(data) || Object.keys(data).some(k => k !== 'signedPayload')) throw new BillingError('invalid_request');
         return send(res, 200, await applePurchases.notification(data.signedPayload));
       }
-      const allowed = new Set(['GET /v1/account', 'POST /v1/exports/reserve', 'POST /v1/exports/commit', 'POST /v1/exports/release', 'POST /v1/checkout', 'POST /v1/portal', 'POST /v1/apple/prepare', 'POST /v1/apple/claim']);
+      const allowed = new Set(['GET /v1/account', 'POST /v1/account/deletion', 'GET /v1/account/deletion', 'POST /v1/exports/reserve', 'POST /v1/exports/commit', 'POST /v1/exports/release', 'POST /v1/checkout', 'POST /v1/portal', 'POST /v1/apple/prepare', 'POST /v1/apple/claim']);
       if (!allowed.has(req.method + ' ' + path)) throw new BillingError('not_found', 404);
       const identity = await authenticate(req.headers.authorization);
+      if (path === '/v1/account/deletion') {
+        if (!accountDeletion) throw new BillingError('deletion_unavailable', 503);
+        if (req.method === 'GET') {
+          const deletion = ledger.deletionForIdentity(identity.issuer, identity.subject);
+          return send(res, 200, { state: !deletion ? 'none' : deletion.completed !== null ? 'deleted' : 'pending' });
+        }
+        if (!(req.headers['content-type'] || '').startsWith('application/json')) throw new BillingError('json_required', 415);
+        let data;
+        try { data = JSON.parse((await readBody(req, 512)).toString()); }
+        catch (error) { if (error instanceof BillingError) throw error; throw new BillingError('invalid_json'); }
+        if (!data || typeof data !== 'object' || Array.isArray(data) || Object.keys(data).some(k => k !== 'confirmation')) throw new BillingError('invalid_request');
+        const result = accountDeletion.request(identity.issuer, identity.subject, data.confirmation);
+        void accountDeletion.run();
+        return send(res, result.state === 'deleted' ? 200 : 202, result);
+      }
       const account = ledger.account(identity.issuer, identity.subject);
       if (path === '/v1/account') return send(res, 200, { ...ledger.balance(account.id), plans: payments.catalog(), paymentsEnabled: payments.enabled,
         applePurchasesEnabled: !!applePurchases?.enabled, appleProducts: applePurchases?.catalog() || [] });

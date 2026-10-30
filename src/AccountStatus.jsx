@@ -1,9 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 export default function AccountStatus({ busy }) {
   const offersDialog = useRef(null);
+  const deletionDialog = useRef(null);
   const desktop = window.caviardDesktop;
   const [state, setState] = useState(null), [working, setWorking] = useState(false), [error, setError] = useState(''), [offers, setOffers] = useState(false);
   const [selected, setSelected] = useState(null), [billing, setBilling] = useState({ name: '', line1: '', postalCode: '', city: '', country: 'FR' });
+  const [deleting, setDeleting] = useState(false), [confirmation, setConfirmation] = useState('');
   const money = cents => (cents / 100).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' });
   useEffect(() => { setSelected(null); setBilling({ name: '', line1: '', postalCode: '', city: '', country: 'FR' }); }, [state?.account?.accountId]);
   useEffect(() => {
@@ -18,6 +20,10 @@ export default function AccountStatus({ busy }) {
     if (offers && state?.phase === 'signed-in') dialog?.showModal();
     else dialog?.close();
   }, [offers, state?.phase]);
+  useEffect(() => {
+    if (deleting && state?.phase === 'signed-in') deletionDialog.current?.showModal();
+    else deletionDialog.current?.close();
+  }, [deleting, state?.phase]);
   useEffect(() => {
     if (!desktop?.refreshAccount || state?.phase !== 'signed-in') return;
     const refresh = () => { desktop.refreshAccount().catch(() => {}); };
@@ -39,6 +45,7 @@ export default function AccountStatus({ busy }) {
         {(state.externalPurchases !== false || state.apple) && <button disabled={working || busy} onClick={() => setOffers(!offers)} aria-expanded={offers}>Offres et crédits</button>}
         {state.externalPurchases !== false && <button disabled={working || busy || !state.paymentsEnabled} onClick={() => run(() => desktop.billingPortal())}>Facturation</button>}
         <button disabled={working || busy} onClick={() => run(() => desktop.signOut())}>Se déconnecter</button>
+        {state.accountDeletionEnabled && <button disabled={working || busy} onClick={() => { setConfirmation(''); setError(''); setDeleting(true); }}>Supprimer mon compte PDF</button>}
       </> : state.phase === 'waiting' ? <button disabled={working} onClick={() => run(() => desktop.cancelSignIn())}>Annuler la connexion</button> : <button className="primary" disabled={working || state.phase === 'connecting' || state.phase === 'loading'} onClick={() => run(() => desktop.signIn())}>{working ? 'Connexion…' : 'Se connecter à Inklura'}</button>}
     </div>
     {(error || state.message) && <p role="alert">{error || state.message}</p>}
@@ -48,6 +55,18 @@ export default function AccountStatus({ busy }) {
     {state.account?.remaining === 0 && <p>Vous n’avez plus de crédits disponibles. {(state.externalPurchases !== false || state.apple) && 'Choisissez « Offres et crédits » pour en ajouter ; '}votre travail reste ouvert.</p>}
     {state.account?.blocked && <p role="alert">La facturation de votre compte nécessite une vérification. Vos documents restent ouverts.</p>}
     {!!state.account?.reserved && <p>{state.account.reserved} export(s) en attente de synchronisation. Cliquez sur Actualiser après reconnexion.</p>}
+    {state.phase === 'signed-in' && state.accountDeletionEnabled && <dialog ref={deletionDialog} className="account-dialog" aria-labelledby="delete-pdf-title" onCancel={() => setDeleting(false)} onClose={() => setDeleting(false)}>
+      <div className="dialog-title"><h2 id="delete-pdf-title">Supprimer mon compte PDF</h2></div>
+      <form className="account-offers" onSubmit={event => { event.preventDefault(); run(async () => { await desktop.deletePdfAccount(confirmation); setDeleting(false); }); }}>
+        <p>Cette suppression est définitive. Votre profil PDF, vos crédits restants et votre historique d’exports seront effacés. Les abonnements PDF souscrits sur le web seront résiliés sans nouveau prélèvement ; les achats ne sont pas automatiquement remboursés.</p>
+        <p>Votre identifiant partagé et vos autres produits Inklura restent accessibles. Vos PDF, projets et exports enregistrés sur votre appareil restent à leur emplacement.</p>
+        <p>Les pièces de facturation et les références de paiement nécessaires aux obligations comptables et aux remboursements sont conservées. La demande est enregistrée immédiatement ; si le prestataire de paiement ne répond pas, la suppression reprend automatiquement.</p>
+        <label>Pour confirmer, saisissez SUPPRIMER MON COMPTE PDF<input autoComplete="off" value={confirmation} onChange={event => setConfirmation(event.target.value)} /></label>
+        {error && <p role="alert">{error}</p>}
+        <button type="submit" disabled={working || busy || confirmation !== 'SUPPRIMER MON COMPTE PDF'}>Supprimer définitivement mon compte PDF</button>
+        <button type="button" disabled={working} onClick={() => setDeleting(false)}>Conserver mon compte</button>
+      </form>
+    </dialog>}
     {state.phase === 'signed-in' && state.apple && <dialog ref={offersDialog} className="account-dialog" aria-labelledby="apple-offers-title" onCancel={() => setOffers(false)} onClose={() => setOffers(false)}>
       <div className="dialog-title"><h2 id="apple-offers-title">Crédits PDF · App Store</h2><button aria-label="Fermer les offres" onClick={() => setOffers(false)}>✕</button></div>
       <div className="account-offers">

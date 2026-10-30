@@ -86,3 +86,26 @@ test('Mac App Store offers use Apple prices and never show the Stripe billing fo
   expect(await page.evaluate(() => window.applePurchase)).toBe('com.benfavre.caviard.credits100');
   await expect(page.getByText('20 PDF disponibles')).toBeVisible(); // queued does not invent credits
 });
+
+test('PDF account deletion explains shared-identity scope and requires exact confirmation', async ({ page }) => {
+  await page.addInitScript(() => {
+    let notify = () => {};
+    const state = { phase:'signed-in', accountDeletionEnabled:true, account:{accountId:'deletion-fixture',remaining:20}, externalPurchases:false, plans:[] };
+    window.caviardDesktop = {
+      info:async()=>({version:'test'}), updateState:async()=>({phase:'disabled'}), onUpdate:()=>()=>{}, setDocumentState:()=>{},
+      accountState:async()=>state, onAccount:fn=>{notify=fn;return()=>{};}, refreshAccount:async()=>state,
+      deletePdfAccount:async confirmation=>{window.deletionConfirmation=confirmation;notify({...state,phase:'signed-out',account:null,message:'La suppression de votre compte PDF est enregistrée.'});return{state:'pending'};}
+    };
+  });
+  await page.goto('/');
+  await page.getByRole('button',{name:'Supprimer mon compte PDF',exact:true}).click();
+  const dialog=page.getByRole('dialog',{name:'Supprimer mon compte PDF'});
+  await expect(dialog).toContainText('autres produits Inklura restent accessibles');
+  const button=dialog.getByRole('button',{name:'Supprimer définitivement mon compte PDF'});
+  await expect(button).toBeDisabled();
+  await dialog.getByLabel(/Pour confirmer/).fill('SUPPRIMER MON COMPTE PDF');
+  await expect(button).toBeEnabled();await button.click();
+  await expect(dialog).toHaveCount(0);
+  expect(await page.evaluate(()=>window.deletionConfirmation)).toBe('SUPPRIMER MON COMPTE PDF');
+  await expect(page.getByRole('alert')).toContainText('suppression');
+});

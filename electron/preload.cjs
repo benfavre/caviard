@@ -17,6 +17,7 @@ contextBridge.exposeInMainWorld("caviardDesktop", {
   signIn: () => ipcRenderer.invoke("account:sign-in"),
   cancelSignIn: () => ipcRenderer.invoke("account:cancel"),
   signOut: () => ipcRenderer.invoke("account:sign-out"),
+  deletePdfAccount: (confirmation) => ipcRenderer.invoke("account:delete", confirmation),
   refreshAccount: () => ipcRenderer.invoke("account:refresh"),
   checkout: (planId, billing) => ipcRenderer.invoke("account:checkout", planId, billing),
   billingPortal: () => ipcRenderer.invoke("account:portal"),

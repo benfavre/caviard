@@ -60,6 +60,7 @@ export class WebPurchases {
     return { sales: this.ledger.db.prepare('SELECT * FROM sales WHERE seq>? ORDER BY seq LIMIT ?').all(after, limit).map(row => ({ ...row, address: JSON.parse(row.address || 'null'), buyer: JSON.parse(row.buyer || 'null') })) };
   }
   claim(account, receipt) {
+    this.ledger.assertActive(account);
     if (!receiptPattern.test(receipt || '')) throw new BillingError('invalid_receipt', 404);
     return this.ledger.transaction(() => {
       const purchase = this.ledger.db.prepare('SELECT w.*,o.state FROM web_purchases w LEFT JOIN orders o ON o.account=w.account AND o.operation=w.operation WHERE w.receipt_hash=?').get(hash(receipt));

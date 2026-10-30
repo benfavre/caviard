@@ -280,6 +280,20 @@ if (primary) app
       await appleStore?.refreshProducts();
       return accountController.refresh();
     });
+    ipcMain.handle("account:delete", async (event, confirmation) => {
+      trusted(event);
+      if (documentState.busy) throw new Error("Attendez la fin de l’export avant de supprimer votre compte PDF.");
+      if (appleStore?.snapshot().pending) throw new Error("Terminez ou annulez l’achat Apple puis actualisez les crédits avant de supprimer votre compte PDF.");
+      return accountExports.exclusive(async () => {
+        const owner = accountController.account?.accountId;
+        const result = await accountController.deletePdfAccount(confirmation);
+        // Forget only this account's local export journal. Saved files and
+        // projects are user documents and are never deleted by account erasure.
+        const pending = await accountExports.entries();
+        await accountExports.journal(pending.filter(item => item.owner !== owner));
+        return result;
+      });
+    });
     ipcMain.handle("account:apple-purchase", (event, productId) => {
       trusted(event);
       if (!appleStore) throw new Error("Les achats Apple sont réservés à l’édition Mac App Store.");
