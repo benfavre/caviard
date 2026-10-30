@@ -5,7 +5,7 @@ existing direct downloads. Microsoft submission `1152921505702276768` was sent
 for certification on 30 October 2026; Partner Center shows preprocessing in
 progress and automatic publication after certification. It is not live yet.
 The public version remains 1.4.0. Do not submit the current MAS build: Apple
-commerce and native sandbox acceptance below are still outstanding.
+native StoreKit acceptance, upload authentication and review completion below are still outstanding.
 
 ## Distribution and updates
 
@@ -104,11 +104,11 @@ Only its verification report is retained, not a customer installer.
 3. Configure variable `INKLURA_APPLE_TEAM_ID` and secrets `MAS_CSC_LINK`,
    `MAS_CSC_KEY_PASSWORD`, `MAS_INSTALLER_LINK`, `MAS_INSTALLER_KEY_PASSWORD`,
    `MAS_PROFILE_BASE64`. The workflow decodes the profile only on its ephemeral
-   runner. Run **Store package preparation → mac-app-store** for Intel and Apple
-   Silicon packages. This does not upload or submit them. Verification checks
+   runner. Run **Store package preparation → mac-app-store** for one universal
+   package supporting Intel and Apple Silicon. This does not upload or submit it. Verification checks
    certificate team/type, sandbox entitlements, embedded distribution profile,
    architectures and installer signatures. It does not claim native acceptance.
-4. **Apple commerce is implemented but not enabled or natively accepted yet.**
+4. **Apple commerce is deployed and enabled; native StoreKit acceptance remains.**
    The MAS UI uses StoreKit prices, purchases one pack with a server-issued UUID
    account token and journals successful transactions until server confirmation.
    Apple-signed transaction information is fetched and verified by Apple's
@@ -116,9 +116,10 @@ Only its verification report is retained, not a customer installer.
    account-bound/idempotent; refunds revoke remaining credits and hold accounts
    for review when refunded credits were used. Sandbox crediting is restricted
    to configured synthetic accounts. Stripe checkout/portal remains blocked in
-   MAS. Configure a dedicated In-App Purchase key, server notifications and a
-   separate Apple reviewer account before activating the service. No Apple key
-   exists in the app or repository. No server deployment occurred in this turn.
+   MAS. The dedicated In-App Purchase key is configured on the account server;
+   production/sandbox notification URLs and an isolated Apple review account are
+   configured. No Apple key exists in the app or repository. Delivery and real
+   purchase acceptance are tracked below.
    The service source was reconciled against the deployed
    `20260928T114238Z-1105-receipt` release before these additive changes, preserving
    web checkout, receipt claims, annual quotas, promotions and invoicing.
@@ -173,7 +174,7 @@ Mac, after setting the team, certificate variables and an absolute
 
 ```sh
 # Set INKLURA_DISTRIBUTION_CHANNEL=mac-app-store in the shell.
-npx electron-builder --config electron-builder.config.cjs --mac mas --x64 --arm64 --publish never
+npx electron-builder --config electron-builder.config.cjs --mac mas --universal --publish never
 python3 scripts/verify-store-mas.py
 ```
 
@@ -291,21 +292,23 @@ packaging/signatures, not native installed acceptance or payment functionality.
 The dedicated ephemeral signing keychain avoids electron-builder 26.15.3's wrong
 password during certificate import; keys are removed with the runner keychain.
 
-Local checks for the Apple implementation: 71 account-service tests, 68 desktop
-unit tests, five account/commerce browser tests, production UI build and two
-real Electron Store UI/IPC isolation checks. Provider/native adapters are simulated in payment fault tests; no real
-Apple payment or credit grant is claimed. Server purchases remain disabled.
+Current local checks: 76 account-service tests, 70 desktop unit tests and six
+account/commerce browser tests pass. Full regression on `33ba8a3` passed in
+[41074273817](https://github.com/benfavre/caviard/actions/runs/41074273817).
+Provider/native adapters are simulated in payment fault tests; no real Apple
+payment or credit grant is claimed. Server purchases are enabled with sandbox
+credits restricted to the isolated Apple test account.
 
 Bruno confirmed the updated Developer agreement was signed for BEO PLUS in
 [Apple ticket #1410](https://github.com/webdesign29/activ/issues/1410#issuecomment-6521850408).
 EU trader-status setup and the Paid Applications agreement remain to verify.
 Benjamin is an App Manager; Bruno created the In-App Purchase key and supplied
 it and the Issuer ID privately in Slack. Sandbox authentication is verified;
-production configuration and purchase acceptance remain pending (details below).
+production configuration is deployed; purchase acceptance remains pending (details below).
 The existing minute-based ticket watcher is active with no expiry; it watches
 GitHub tickets, not Slack. Native installation, StoreKit sandbox purchases/refunds,
-account deletion, published privacy labels, reviewer credentials, upload and
-submission remain.
+upload and submission remain. Privacy labels are published and reviewer
+credentials are saved with Ben’s explicit authorization. PDF-only deletion is implemented and verified below.
 
 ### Apple listing progress — 30 October, afternoon
 
@@ -314,14 +317,18 @@ The macOS download is configured at **€0**, base country France. Availability 
 automatically enabled. Consumable packs remain separate. This does not mean the
 app is submitted or live.
 
-App Privacy now has a **saved, unpublished draft** for name, email, user ID,
-purchase history and product interaction (account-bound export accounting).
-All five are declared linked to the account, for app functionality, without
-advertising tracking. No document-content collection is declared because PDF
-contents/paths never enter the account API. The existing BEO PLUS policy URL is
-saved. `APPLE_STORE_PRIVACY.fr.txt` is a product-specific draft, not a published
-policy: retention/logging, third-party disclosures and account-deletion implementation
-still need completion before publishing the label and notice.
+App Privacy is **published with Ben’s explicit authorization** for name, email, user ID,
+purchase history, product interaction and other diagnostics (technical server
+logs). All six are declared linked to the user, for app functionality, without
+advertising tracking. Raw IP addresses are not claimed anonymous. No document
+content is declared: PDF contents/paths never enter the account API. The
+[product-specific notice](https://outils.inklura.fr/api/inklura-pdf/privacy) is
+published from `server/privacy.fr.txt` and saved as the policy URL in App Store
+Connect. It covers PDF-only deletion, shared identity, 30-day rolling backups,
+21 daily rotated access-log archives, financial retention and service providers.
+Ben explicitly authorized Apple's accuracy/legal attestation and the separate
+review-account credential disclosure on 30 October. Publication is confirmed
+by App Store Connect; the private reviewer credentials persist after reload.
 
 Do not use `https://www.inklura.fr/privacy` as the definitive publisher notice
 without correction: the live page names “Inklura SAS”, a Paris address and an
@@ -341,13 +348,19 @@ app. The three screenshots are uploaded to the French version draft, in order:
 redaction/review, search, original document. App Store Connect shows 3 of 10.
 
 Reviewer workflow notes and explanations for `network.client` and
-`files.user-selected.read-write` are saved. Notes explicitly retain the pending
-reviewer credentials, sandbox purchase tests and build upload. The account
+`files.user-selected.read-write` are saved. Notes confirm the private reviewer credentials and retain the pending
+sandbox purchase tests and build upload. The account
 creation identity is shared with other Inklura products; account deletion must
 not silently remove those products or global workspace membership. Ben approved
 deleting the PDF account while preserving the user's other Inklura products and
-shared identity. Implementation and acceptance remain pending; no customer
-account has been deleted.
+shared identity. The implementation is deployed: erasure is queued durably,
+freezes new use immediately, drains in-flight checkouts, expires PDF checkouts,
+cancels only verified PDF subscriptions, removes export/profile data and retains
+financial records. A digest prevents stale JWTs or the web bridge recreating
+the account. Failed provider operations retry every minute and on restart.
+A disposable synthetic account passed live password login/device pairing,
+reserve/release, deletion, stale-JWT refusal and preserved shared-identity login
+on 30 October at 14:37 UTC. No customer account was deleted.
 
 Bruno confirmed **“clé prête”** in
 [Apple comment 6522739655](https://github.com/webdesign29/activ/issues/1410#issuecomment-6522739655).
@@ -362,6 +375,47 @@ or test notification was created by this check.
 
 [Receipt was acknowledged in Slack](https://activ-comm.slack.com/archives/D8G01PS3B/p1793363473572799).
 No further key handoff is required from Bruno. No key content is posted to GitHub,
-bundled in the app or deployed to the server. Production service configuration,
-notifications and sandbox purchase acceptance remain pending. This In-App Purchase
-key does not provide build-upload authentication.
+bundled in the app. The key is deployed root-owned and service-group-readable
+(0640) under `/etc/inklura-pdf/apple-iap/`, inside directories 0750. The plaintext
+staging copy was removed. This key does not provide build-upload authentication.
+
+
+### Deployed service and universal package — 30 October
+
+The live release is `/opt/inklura-pdf/releases/20261030-ca01a7f-privacy` on activ-2.
+The previous production source hashes matched the reconciled billing baseline.
+Dependency installation reported no vulnerabilities; all 76 server tests passed
+on the target host. Verified SQLite backups ran before and after activation.
+Only `inklura-pdf.service` was restarted; existing web/Stripe payments remain
+active. Environment rollback copies are root-only under
+`/var/backups/inklura-pdf-deploy/20261030-058c15d`. **Do not restore the pre-deletion
+code after an erasure request:** it cannot enforce the new identity tombstones.
+The privacy-only change can roll back to `20261030-058c15d-apple` safely.
+
+The isolated Apple review account has 20 trial exports and no admin grants or
+customer data. Live login, device confirmation/token exchange, reserve/release
+and Apple account-token binding passed at 14:35 UTC. Ben authorized disclosure to Apple; credentials are saved only in App Store
+Connect’s private review fields and protected storage, never in this repository.
+
+[Universal signed build 41074259179](https://github.com/benfavre/caviard/actions/runs/41074259179)
+passed on `33ba8a3`: one MAS installer containing arm64 and x86_64, strict code
+signatures, sandbox/profile and installer-signature checks. Package SHA-256:
+`0a71ef96960ed0d0efbd96a43f0e60fbe4d1fa776edadb3e7b314c0eea157771`.
+This package includes the in-app privacy-policy link and PDF-only deletion; use
+these verified bytes for upload, not the earlier packages.
+
+Both Apple notification URLs are saved as
+`https://outils.inklura.fr/api/inklura-pdf/v1/apple/notifications`. After sandbox metadata propagation, Apple’s
+request-test-notification succeeded. At 14:57 UTC, the official API reported
+`sendAttemptResult: SUCCESS` for the test callback, confirming real Apple delivery
+and server acceptance. This does not validate a purchase, refund or credit grant.
+
+Build-upload access is outstanding: the current App Manager profile has no
+individual API-key permission. Bruno was asked for exactly this permission in
+[comment 6525806961](https://github.com/webdesign29/activ/issues/1410#issuecomment-6525806961)
+(the original personal-settings URL did not work for Bruno; the replacement
+links to Users and Access) and [Slack](https://activ-comm.slack.com/archives/D8G01PS3B/p1793371623882949).
+EU trader status is also still flagged by App Store Connect; Paid Applications
+agreement status must be verified by the account holder. The Mac package is not
+uploaded, no TestFlight/native acceptance is claimed, and no Apple submission
+has been sent.
