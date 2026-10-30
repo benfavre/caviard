@@ -40,3 +40,29 @@ test('HTTP account/export flow rejects uploads, forged identity, cross-origin an
   assert.equal((await fetch(base+'/v1/config')).headers.get('cache-control'),'no-store');
  }finally{await new Promise(resolve=>server.close(resolve));ledger.close();}
 });
+
+test('public checkout is a restricted POST redirect, keeps its recovery cookie and isolates server bridge routes', async () => {
+ const ledger = new Ledger(), payments = new Payments({ ledger });
+ const receipts = [], secret = 'a'.repeat(64);
+ const webPurchases = { checkout: async (plan, previous, issued, buyer) => { receipts.push({plan,previous}); if (buyer !== null) throw new Error('unexpected buyer'); issued(secret); return { url: 'https://checkout.stripe.com/c/pay/fixture' }; }, authenticate: () => { throw new Error('not signed'); } };
+ const server = createApi({ ledger, payments, webPurchases, clientId, publicUrl: 'http://127.0.0.1/api/inklura-pdf', authenticate: createAuthenticator({clientId,keySet:publicKey}) });
+ server.listen(0, '127.0.0.1'); await once(server, 'listening');
+ const base = 'http://127.0.0.1:' + server.address().port + '/api/inklura-pdf';
+ const send = (body, origin = 'https://pdf.inklura.fr') => fetch(base + '/web/checkout', { method: 'POST', redirect: 'manual', headers: { origin, 'content-type': 'application/x-www-form-urlencoded', cookie: '__Host-pdf-purchase=' + secret }, body });
+ try {
+  assert.equal((await send('planId=volume-100', 'https://evil.test')).status, 403);
+  assert.equal((await send('planId=volume-100&amount=1')).status, 400);
+  assert.equal((await send('planId=volume-100&planId=business-20')).status, 400);
+  assert.equal((await send('planId=volume-100&email=a@b.fr&email=c@d.fr')).status, 400);
+  assert.equal((await send('planId=volume-100&email=bad&line1=x')).status, 303, 'invalid prefill never blocks the payment');
+  receipts.length = 0;
+  const result = await send('planId=volume-100');
+  assert.equal(result.status, 303); assert.equal(result.headers.get('location'), 'https://checkout.stripe.com/c/pay/fixture');
+  assert.match(result.headers.get('set-cookie'), /HttpOnly; SameSite=Lax/);
+  assert.deepEqual(receipts, [{ plan: 'volume-100', previous: secret }]);
+  const resume = await fetch(base + '/web/resume', { redirect: 'manual', headers: { cookie: '__Host-pdf-purchase=' + secret } });
+  assert.equal(resume.headers.get('location'), 'https://manage.inklura.fr/pdf/billing?claim=' + secret);
+  assert.equal(resume.headers.get('referrer-policy'), 'no-referrer');
+  assert.equal((await fetch(base + '/web/account', { method: 'POST', headers: { origin: 'https://manage.inklura.fr' } })).status, 403);
+ } finally { await new Promise(resolve => server.close(resolve)); ledger.close(); }
+});

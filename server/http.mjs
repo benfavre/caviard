@@ -1,7 +1,18 @@
 import { createServer } from 'node:http';
 import { BillingError } from './ledger.mjs';
 import { INKLURA_ISSUER } from './auth.mjs';
-export function createApi({ ledger, payments, authenticate, clientId, publicUrl }) {
+import { BUYER_FIELDS, promoCode, webBuyer } from './france-billing.mjs';
+export function createApi({ webPurchases, ledger, payments, authenticate, clientId, publicUrl, now = () => Date.now() }) {
+  // Promotion code lookups: pdf.inklura.fr/api/panier/promo relays them (the
+  // site limits each visitor); a global ceiling here bounds Stripe calls.
+  let lookups = [];
+  const allowLookup = () => {
+    const t = now();
+    lookups = lookups.filter(at => at > t - 10 * 60000);
+    if (lookups.length >= 300) return false;
+    lookups.push(t);
+    return true;
+  };
   const send = (res, status, data, type = 'application/json; charset=utf-8') => {
     res.writeHead(status, { 'content-type': type, 'cache-control': 'no-store', 'x-content-type-options': 'nosniff',
       'referrer-policy': 'no-referrer', 'content-security-policy': "default-src 'none'; frame-ancestors 'none'; base-uri 'none'" });
@@ -13,11 +24,79 @@ export function createApi({ ledger, payments, authenticate, clientId, publicUrl 
       const prefix = new URL(publicUrl).pathname.replace(/\/$/, '');
       const path = prefix && pathname.startsWith(prefix + '/') ? pathname.slice(prefix.length) : pathname;
       if (req.method === 'GET' && path === '/health') return send(res, 200, { ok: true });
+      if (req.method === 'GET' && path === '/web/resume') {
+        const receipt = /(?:^|; )__Host-pdf-purchase=([a-f0-9]{64})(?:;|$)/.exec(req.headers.cookie || '')?.[1];
+        res.writeHead(303, { location: receipt ? 'https://manage.inklura.fr/pdf/billing?claim=' + receipt : 'https://manage.inklura.fr/pdf/billing', 'cache-control': 'no-store', 'referrer-policy': 'no-referrer' });
+        return res.end();
+      }
+      if (req.method === 'POST' && path === '/web/checkout') {
+        if (!webPurchases) throw new BillingError('purchases_not_enabled', 503);
+        if (!['https://pdf.inklura.fr', new URL(publicUrl).origin].includes(req.headers.origin)) throw new BillingError('origin_not_allowed', 403);
+        if (!(req.headers['content-type'] || '').startsWith('application/x-www-form-urlencoded')) throw new BillingError('form_required', 415);
+        const form = new URLSearchParams((await readBody(req, 2048)).toString());
+        if ([...form.keys()].some(k => k !== 'planId' && k !== 'promoCode' && !BUYER_FIELDS.includes(k)) || [...new Set(form.keys())].some(k => form.getAll(k).length !== 1) || form.getAll('planId').length !== 1) throw new BillingError('invalid_request');
+        // Prefill only: invalid buyer details never block the payment.
+        let buyer = null, promo = null;
+        try { buyer = webBuyer(form); } catch {}
+        try { promo = promoCode(form.get('promoCode')); } catch {}
+        const receipt = /(?:^|; )__Host-pdf-purchase=([a-f0-9]{64})(?:;|$)/.exec(req.headers.cookie || '')?.[1];
+        try {
+          const result = await webPurchases.checkout(form.get('planId'), receipt, value => res.setHeader('set-cookie', '__Host-pdf-purchase=' + value + '; Path=/; Secure; HttpOnly; SameSite=Lax; Max-Age=86400'), buyer, promo);
+          res.writeHead(303, { location: result.url, 'cache-control': 'no-store', 'referrer-policy': 'no-referrer' });
+          return res.end();
+        } catch (error) {
+          if (error.code === 'checkout_closed') res.setHeader('set-cookie', '__Host-pdf-purchase=; Path=/; Secure; HttpOnly; SameSite=Lax; Max-Age=0');
+          return send(res, error instanceof BillingError ? error.status : 503, '<!doctype html><html lang="fr"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Paiement Inklura PDF</title><h1>Le paiement n’a pas pu être ouvert</h1><p>' + (String(error.code || '').startsWith('promo_') ? 'Le code promo n’est plus valable pour cette offre. Revenez à votre commande pour le retirer ou en saisir un autre.' : 'Réessayez dans un instant. Une session fermée ne peut pas être réutilisée.') + '</p><a href="https://pdf.inklura.fr/tarifs">Revenir aux offres</a></html>', 'text/html; charset=utf-8');
+        }
+      }
+      if (path === '/web/promo') {
+        // Server to server (the site relays /panier): browsers are refused.
+        if (req.headers.origin) throw new BillingError('origin_not_allowed', 403);
+        if (req.method !== 'POST') throw new BillingError('not_found', 404);
+        if (!webPurchases) throw new BillingError('purchases_not_enabled', 503);
+        if (!(req.headers['content-type'] || '').startsWith('application/x-www-form-urlencoded')) throw new BillingError('form_required', 415);
+        const form = new URLSearchParams((await readBody(req, 512)).toString());
+        if ([...form.keys()].some(k => !['planId', 'promoCode'].includes(k))) throw new BillingError('invalid_request');
+        if (!allowLookup()) throw new BillingError('too_many_requests', 429);
+        return send(res, 200, await webPurchases.promotion(form.get('planId'), form.get('promoCode')));
+      }
+      if (req.method === 'POST' && path === '/web/sales') {
+        // Invoicing worker (tools/sync-pdf-sales.mjs): same signed bridge, no subject.
+        if (!webPurchases) throw new BillingError('website_not_configured', 503);
+        if (req.headers.origin) throw new BillingError('origin_not_allowed', 403);
+        const raw = (await readBody(req, 1024)).toString();
+        const data = webPurchases.verify(path, raw, req.headers.authorization);
+        if (!data || typeof data !== 'object' || Object.keys(data).some(key => !['after', 'limit'].includes(key))) throw new BillingError('unexpected_fields');
+        return send(res, 200, webPurchases.sales(data.after ?? 0, data.limit ?? 50));
+      }
+      if (req.method === 'POST' && path === '/web/receipt') {
+        // Account page after payment (activ #1105): the order's e-mail prefills
+        // account creation. Holding the receipt is the capability; no subject.
+        if (!webPurchases) throw new BillingError('website_not_configured', 503);
+        if (req.headers.origin) throw new BillingError('origin_not_allowed', 403);
+        const raw = (await readBody(req, 1024)).toString();
+        const data = webPurchases.verify(path, raw, req.headers.authorization);
+        if (!data || typeof data !== 'object' || Object.keys(data).some(key => key !== 'receipt')) throw new BillingError('unexpected_fields');
+        return send(res, 200, webPurchases.receipt(data.receipt));
+      }
+      if (req.method === 'POST' && ['/web/account', '/web/claim', '/web/portal'].includes(path)) {
+        if (!webPurchases) throw new BillingError('website_not_configured', 503);
+        // Only the signed Manage server bridge may use these routes. Browser
+        // cookies, query subjects and desktop access tokens are not credentials here.
+        if (req.headers.origin) throw new BillingError('origin_not_allowed', 403);
+        const raw = (await readBody(req, 4096)).toString();
+        const { data, account } = webPurchases.authenticate(path, raw, req.headers.authorization);
+        const allowed = path === '/web/claim' ? ['subject', 'receipt'] : path === '/web/portal' ? ['subject', 'source'] : ['subject'];
+        if (Object.keys(data).some(key => !allowed.includes(key))) throw new BillingError('unexpected_fields');
+        if (path === '/web/claim') return send(res, 200, webPurchases.claim(account.id, data.receipt));
+        if (path === '/web/portal') return send(res, 200, await webPurchases.portal(account.id, data.source));
+        return send(res, 200, webPurchases.account(account.id));
+      }
       if (req.headers.origin && req.headers.origin !== new URL(publicUrl).origin) throw new BillingError('origin_not_allowed', 403);
       if (req.method === 'GET' && path === '/v1/config') return send(res, 200, {
         enabled: !!clientId, issuer: INKLURA_ISSUER, clientId: clientId || null,
         deviceEndpoint: INKLURA_ISSUER + '/oauth2/device', tokenEndpoint: INKLURA_ISSUER + '/oauth2/token',
-        plans: payments.catalog(), paymentsEnabled: payments.enabled,
+        plans: payments.catalog(), paymentsEnabled: payments.enabled, webPurchasesEnabled: !!webPurchases?.enabled,
       });
       if (req.method === 'GET' && ['/billing/success', '/billing/cancel'].includes(path)) {
         const success = path.endsWith('success');
