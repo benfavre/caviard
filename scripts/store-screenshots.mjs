@@ -61,15 +61,14 @@ try {
   await page.getByRole('button', { name: /Ajouter 1 résultat/ }).click();
   await expect(page.locator('.redaction:not(.draft)')).toHaveCount(1);
   await expect(page.getByRole('dialog', { name: 'Rechercher et caviarder' })).toBeHidden();
-  const layer = page.locator('.drawing-layer');
-  await layer.scrollIntoViewIfNeeded();
-  const b = await layer.boundingBox();
-  // Mask the name and address on the synthetic document using real drag gestures.
-  for (const [left, top, right, bottom] of [[.17,.21,.49,.231],[.18,.24,.89,.26]]) {
-    await page.mouse.move(b.x + b.width * left, b.y + b.height * top);
-    await page.mouse.down();
-    await page.mouse.move(b.x + b.width * right, b.y + b.height * bottom, { steps: 12 });
-    await page.mouse.up();
+  // Use the real search workflow so every displayed demo coordinate is covered.
+  for (const text of ['Camille Exemple', '12 rue de la Demonstration, 75000 Paris']) {
+    await page.getByRole('button', { name: 'Rechercher et profils' }).click();
+    await page.getByLabel('Texte à masquer', { exact: true }).fill(text);
+    await page.getByRole('button', { name: 'Lancer la recherche' }).click();
+    await expect(page.locator('.search-results li')).toHaveCount(1);
+    await page.getByRole('button', { name: /Ajouter 1 résultat/ }).click();
+    await expect(page.getByRole('dialog', { name: 'Rechercher et caviarder' })).toBeHidden();
   }
   await expect(page.locator('.redaction:not(.draft)')).toHaveCount(3);
   await page.getByLabel('Page relue', { exact: true }).check();
