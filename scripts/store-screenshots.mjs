@@ -50,20 +50,20 @@ try {
   await expect(page.getByLabel('Version et mises à jour')).toContainText('gérées par Microsoft Store');
   await page.locator('input[type=file]:not([webkitdirectory])').setInputFiles(pdf);
   await expect(page.locator('.drawing-layer')).toBeVisible();
+  await page.getByRole('button', { name: 'Réduire le zoom', exact: true }).click();
+  await page.getByRole('button', { name: 'Réduire le zoom', exact: true }).click();
   await page.screenshot({ path: path.join(output, '01-document.png') });
   await page.getByRole('button', { name: 'Rechercher et profils' }).click();
   await page.getByLabel('Texte à masquer', { exact: true }).fill('camille.exemple@example.com');
   await page.getByRole('button', { name: 'Lancer la recherche' }).click();
   await expect(page.locator('.search-results li')).toHaveCount(1);
+  await page.screenshot({ path: path.join(output, '02-recherche.png') });
   await page.getByRole('button', { name: /Ajouter 1 résultat/ }).click();
   await expect(page.locator('.redaction:not(.draft)')).toHaveCount(1);
-  await page.screenshot({ path: path.join(output, '02-recherche.png') });
-  await page.getByRole('button', { name: 'Rechercher et profils' }).click();
+  await expect(page.getByRole('dialog', { name: 'Rechercher et caviarder' })).toBeHidden();
   const layer = page.locator('.drawing-layer');
   await layer.scrollIntoViewIfNeeded();
-  await page.screenshot({ path: path.join(output, 'before-manual.png') });
   const b = await layer.boundingBox();
-  console.log('Drawing layer bounds', b);
   // Mask the name and address on the synthetic document using real drag gestures.
   for (const [left, top, right, bottom] of [[.17,.21,.49,.231],[.18,.24,.89,.26]]) {
     await page.mouse.move(b.x + b.width * left, b.y + b.height * top);
@@ -74,7 +74,6 @@ try {
   await expect(page.locator('.redaction:not(.draft)')).toHaveCount(3);
   await page.getByLabel('Page relue', { exact: true }).check();
   await page.screenshot({ path: path.join(output, '03-relecture.png') });
-  await rm(path.join(output, 'before-manual.png'));
   expect(errors).toEqual([]);
   await writeFile(path.join(output, 'provenance.json'), JSON.stringify({
     sourceRun: 41039014119, sourceSha256: 'd60a72e53bb3064ac3eb2605df9d3632b7800892e32af7a90ae40b58e70d8512',
