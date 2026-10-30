@@ -39,6 +39,7 @@ const transporter = [
 if (!transporter) throw new Error('Apple Transporter is not installed');
 if (mode === 'inspect') {
   const result = spawnSync(transporter, ['-version'], { stdio: 'inherit' });
+  spawnSync('xcrun', ['altool', '--help'], { stdio: 'inherit' });
   process.exit(result.status ?? 1);
 }
 const keyId = process.env.MAS_ASC_KEY_ID;
