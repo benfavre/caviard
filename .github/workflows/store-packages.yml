@@ -15,7 +15,7 @@ on:
         description: Internal package only; does not submit or publish
         required: true
         type: choice
-        options: [microsoft-store, microsoft-store-test, microsoft-store-screenshots, mac-app-store]
+        options: [microsoft-store, microsoft-store-test, microsoft-store-screenshots, mac-app-store, mac-app-store-screenshots]
 permissions:
   contents: read
 jobs:
@@ -204,3 +204,37 @@ jobs:
           if [ -f "$RUNNER_TEMP/inklura-mas.keychain-db" ]; then
             security delete-keychain "$RUNNER_TEMP/inklura-mas.keychain-db"
           fi
+
+  mac-store-screenshots:
+    if: github.event_name == 'workflow_dispatch' && inputs.channel == 'mac-app-store-screenshots'
+    runs-on: macos-latest
+    timeout-minutes: 20
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      INKLURA_CAPTURE_UI_ONLY: 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      # Standard Electron/ad-hoc signing is intentional. This validates native
+      # visible UI without pretending to exercise StoreKit or App Sandbox.
+      # Only screenshots/provenance are retained; the app is never distributed.
+      - name: Package native Mac UI (NOT a MAS submission build)
+        run: npx electron-builder --config electron-builder.config.cjs --mac --dir --config.extraMetadata.distributionChannel=mac-app-store --publish never
+      - name: Capture the actual Mac UI with a synthetic document
+        shell: bash
+        run: |
+          executable=$(find release -path '*/Inklura PDF.app/Contents/MacOS/Inklura PDF' -type f)
+          test -n "$executable"
+          test "$(printf '%s\n' "$executable" | wc -l | tr -d ' ')" = 1
+          CAVIARD_EXECUTABLE="$PWD/$executable" node scripts/store-screenshots.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mac-app-store-UI-ONLY-screenshots
+          path: output/store-screenshots/*
+          if-no-files-found: error

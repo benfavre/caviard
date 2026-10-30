@@ -1,4 +1,5 @@
-// Capture the unmodified Windows application extracted from the submitted AppX.
+// Capture real packaged UI. Windows uses the exact submitted AppX.
+// macOS uses a separately labelled, ad-hoc UI-only build; never a submission artifact.
 // No mocked account, synthetic UI, DOM rewriting or marketing overlays.
 import { _electron as electron, expect } from '@playwright/test';
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
@@ -6,7 +7,9 @@ import { mkdir, mkdtemp, writeFile, rm } from 'node:fs/promises';
 import { tmpdir, release } from 'node:os';
 import path from 'node:path';
 
-if (process.platform !== 'win32' || !process.env.CAVIARD_EXECUTABLE) throw Error('Requires the unpacked Windows Store executable');
+const mac = process.platform === 'darwin';
+if ((!mac && process.platform !== 'win32') || !process.env.CAVIARD_EXECUTABLE) throw Error('Requires a native packaged executable');
+if (mac && process.env.INKLURA_CAPTURE_UI_ONLY !== 'true') throw Error('macOS capture must explicitly acknowledge UI-only provenance');
 const output = path.resolve('output/store-screenshots');
 await mkdir(output, { recursive: true });
 const profile = await mkdtemp(path.join(tmpdir(), 'inklura-store-capture-'));
@@ -41,13 +44,13 @@ try {
   app = await electron.launch({ executablePath: process.env.CAVIARD_EXECUTABLE, args: [`--user-data-dir=${profile}`], timeout: 60000 });
   const page = await app.firstWindow();
   page.on('pageerror', error => errors.push(error.message));
-  await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].setContentSize(1600, 1000));
+  await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].setContentSize(...(process.platform === 'darwin' ? [1440, 900] : [1600, 1000])));
   await expect(page.getByRole('button', { name: 'Choisir des fichiers', exact: true })).toBeEnabled();
   const info = await page.evaluate(() => window.caviardDesktop.info());
-  expect(info.distributionChannel).toBe('microsoft-store');
-  expect(info.platform).toBe('win32');
+  expect(info.distributionChannel).toBe(mac ? 'mac-app-store' : 'microsoft-store');
+  expect(info.platform).toBe(process.platform);
   expect(info.version).toBe('1.4.0');
-  await expect(page.getByLabel('Version et mises à jour')).toContainText('gérées par Microsoft Store');
+  await expect(page.getByLabel('Version et mises à jour')).toContainText(mac ? 'gérées par App Store' : 'gérées par Microsoft Store');
   await page.locator('input[type=file]:not([webkitdirectory])').setInputFiles(pdf);
   await expect(page.locator('.drawing-layer')).toBeVisible();
   await page.getByRole('button', { name: 'Réduire le zoom', exact: true }).click();
@@ -75,11 +78,11 @@ try {
   await page.screenshot({ path: path.join(output, '03-relecture.png') });
   expect(errors).toEqual([]);
   await writeFile(path.join(output, 'provenance.json'), JSON.stringify({
-    sourceRun: 41039014119, sourceSha256: 'd60a72e53bb3064ac3eb2605df9d3632b7800892e32af7a90ae40b58e70d8512',
-    capture: 'Unmodified packaged UI extracted from AppX; synthetic document; no account/authentication mocks',
-    platform: process.platform, windowsVersion: release(), info,
+    ...(mac ? { sourceCommit: process.env.GITHUB_SHA, sourceRun: process.env.GITHUB_RUN_ID } : { sourceRun: 41039014119, sourceSha256: 'd60a72e53bb3064ac3eb2605df9d3632b7800892e32af7a90ae40b58e70d8512' }),
+    capture: mac ? 'Native macOS packaged UI, ad-hoc signature, App Store channel metadata; synthetic document; no account/authentication mocks' : 'Unmodified packaged UI extracted from AppX; synthetic document; no account/authentication mocks',
+    platform: process.platform, osVersion: release(), info,
     checks: ['packaged launch', 'local PDF import', 'text search', 'three redactions', 'page review'],
-    limitations: 'Windows CI host, not Store-installed Windows 10/11 acceptance, live export, WACK or Store update validation',
+    limitations: mac ? 'UI-only macOS CI build. Standard Electron, not MAS runtime: does not validate App Sandbox, StoreKit, provisioning, installed acceptance, export or App Store updates. Not for submission or distribution.' : 'Windows CI host, not Store-installed Windows 10/11 acceptance, live export, WACK or Store update validation',
   }, null, 2) + '\n');
 } finally {
   if (app) {
