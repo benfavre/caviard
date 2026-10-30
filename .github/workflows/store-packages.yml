@@ -15,7 +15,7 @@ on:
         description: Internal package only; does not submit or publish
         required: true
         type: choice
-        options: [microsoft-store, mac-app-store]
+        options: [microsoft-store, microsoft-store-test, mac-app-store]
 permissions:
   contents: read
 jobs:
@@ -86,6 +86,31 @@ jobs:
             release-microsoft-store/*.appx
             release-microsoft-store/verification.json
           if-no-files-found: error
+  windows-test-kit:
+    if: github.event_name == 'workflow_dispatch' && inputs.channel == 'microsoft-store-test'
+    runs-on: windows-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+      # Test the exact bytes already validated in Partner Center, not a rebuild.
+      - uses: actions/download-artifact@v4
+        with:
+          name: microsoft-store-internal-review
+          run-id: 41039014119
+          github-token: ${{ github.token }}
+          path: source-store-package
+      - name: Prepare an ephemeral test signature and public certificate
+        shell: pwsh
+        run: ./scripts/sign-store-test.ps1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Inklura-PDF-Windows-TEST-ONLY
+          path: release-windows-test/*
+          if-no-files-found: error
+          retention-days: 14
   mac-store:
     if: github.event_name == 'workflow_dispatch' && inputs.channel == 'mac-app-store'
     runs-on: macos-latest
