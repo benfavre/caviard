@@ -146,6 +146,7 @@ jobs:
       - name: Capture actual Windows package UI using synthetic documents
         run: node scripts/store-screenshots.mjs
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: microsoft-store-screenshots
           path: output/store-screenshots/*
