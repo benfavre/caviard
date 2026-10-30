@@ -516,3 +516,12 @@ and is dated 2 October 2026 (within three months). A one-page company presentati
 using only its public company details has been prepared, visually reviewed and
 attached. The original Kbis remains outside the repository. The signed official
 attestation is still missing; Bruno must review, sign and attach it before filing.
+
+### ANSSI filing accepted in the portal (30 October, 22:23 Paris)
+
+Bruno submitted dossier 35079529. The authenticated portal now shows accepted,
+and its automatic message confirms acceptance for Inklura PDF. The invited Ben
+account can read the dossier status/messages but the attestation download redirects
+to an explicit access-denied notice. The owner has been asked to supply the actual
+attestation PDF (not the deposit certificate). No attestation has been inspected
+or uploaded to Apple, and Apple export-compliance approval remains outstanding.

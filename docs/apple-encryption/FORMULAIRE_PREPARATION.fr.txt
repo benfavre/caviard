@@ -96,3 +96,8 @@ Reste l'attestation officielle à relire, compléter, signer et joindre par Brun
 Modèle direct :
 https://demarche.numerique.gouv.fr/champs/35079529/5607937/piece_justificative/template
 Aucun dépôt ni signature effectués par l'agent.
+
+MISE À JOUR APRÈS RÉPONSE 6533755405
+Dépôt effectué par Bruno à 22:23 Paris le 30/10/2026. Suivi accepté et message
+automatique d'acceptation Inklura PDF observés. PDF de l'attestation refusé
+à l'accès invité ; demandé au titulaire. Aucune transmission Apple effectuée.

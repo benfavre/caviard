@@ -1,5 +1,12 @@
+MISE À JOUR : le titulaire a déposé le dossier 35079529 le 30 octobre 2026 à
+22:23 (Paris). Le suivi affiche accepté et la messagerie contient le message
+d'acceptation pour Inklura PDF. Le téléchargement de l'attestation est refusé
+à l'accès invité Ben ; PDF demandé au titulaire dans le ticket #1410.
+Aucune attestation encore lue ou envoyée à Apple ; ne pas confondre le statut
+du portail avec l'approbation Apple du document ou une publication de l'app.
+
 Inklura PDF — éléments techniques pour le dossier de chiffrement
-Préparation au 30 octobre 2026 — aucune déclaration déposée ou approuvée
+État au 30 octobre 2026 — dossier déposé par Bruno et affiché accepté par le portail
 
 Éditeur Apple : BEO PLUS, équipe 8V54BYQURB
 App : 6828817692 ; bundle : com.benfavre.caviard ; version : 1.4.0
