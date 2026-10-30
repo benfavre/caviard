@@ -45,6 +45,12 @@ try {
   const page = await app.firstWindow();
   page.on('pageerror', error => errors.push(error.message));
   await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].setContentSize(...(process.platform === 'darwin' ? [1440, 900] : [1600, 1000])));
+  // Hosted Mac runners have a 1024px display and constrain native windows.
+  // Render the real app at Apple's accepted dimensions, without resizing pixels.
+  if (mac) {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    expect(await page.evaluate(() => [innerWidth, innerHeight])).toEqual([1440, 900]);
+  }
   await expect(page.getByRole('button', { name: 'Choisir des fichiers', exact: true })).toBeEnabled();
   const info = await page.evaluate(() => window.caviardDesktop.info());
   expect(info.distributionChannel).toBe(mac ? 'mac-app-store' : 'microsoft-store');
@@ -81,6 +87,7 @@ try {
     ...(mac ? { sourceCommit: process.env.GITHUB_SHA, sourceRun: process.env.GITHUB_RUN_ID } : { sourceRun: 41039014119, sourceSha256: 'd60a72e53bb3064ac3eb2605df9d3632b7800892e32af7a90ae40b58e70d8512' }),
     capture: mac ? 'Native macOS packaged UI, ad-hoc signature, App Store channel metadata; synthetic document; no account/authentication mocks' : 'Unmodified packaged UI extracted from AppX; synthetic document; no account/authentication mocks',
     platform: process.platform, osVersion: release(), info,
+    ...(mac ? { viewport: { width: 1440, height: 900 }, viewportEmulation: 'Real UI rendered at 1440x900 because the CI desktop constrains native window size; no bitmap scaling' } : {}),
     checks: ['packaged launch', 'local PDF import', 'text search', 'three redactions', 'page review'],
     limitations: mac ? 'UI-only macOS CI build. Standard Electron, not MAS runtime: does not validate App Sandbox, StoreKit, provisioning, installed acceptance, export or App Store updates. Not for submission or distribution.' : 'Windows CI host, not Store-installed Windows 10/11 acceptance, live export, WACK or Store update validation',
   }, null, 2) + '\n');
