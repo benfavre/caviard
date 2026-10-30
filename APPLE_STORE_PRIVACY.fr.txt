@@ -1,0 +1,2 @@
+La notice de confidentialité de l’édition Mac App Store est maintenue dans server/privacy.fr.txt.
+URL publique : https://outils.inklura.fr/api/inklura-pdf/privacy

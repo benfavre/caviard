@@ -1,0 +1,290 @@
+name: Store package preparation
+on:
+  pull_request:
+    paths:
+      - 'build/**'
+      - 'electron/**'
+      - 'src/**'
+      - 'scripts/*store*'
+      - 'electron-builder.config.cjs'
+      - 'package*.json'
+      - '.github/workflows/store-packages.yml'
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: Prepare/test packages, or explicitly validate/upload the reviewed MAS package
+        required: true
+        type: choice
+        options: [microsoft-store, microsoft-store-test, microsoft-store-screenshots, mac-app-store, mac-app-store-screenshots, mac-app-store-inspect-upload, mac-app-store-validate, mac-app-store-upload]
+permissions:
+  contents: read
+jobs:
+  windows-qa:
+    if: github.event_name == 'pull_request'
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: npm ci
+      - run: npm run test:desktop:unit
+      - run: npm run build
+      - run: node scripts/store-assets.mjs
+      - name: Build and inspect non-submittable QA package
+        env:
+          INKLURA_DISTRIBUTION_CHANNEL: microsoft-store
+          INKLURA_WINDOWS_IDENTITY_NAME: InkluraPDF.QA
+          INKLURA_WINDOWS_PUBLISHER: CN=00000000-0000-0000-0000-000000000000
+          INKLURA_WINDOWS_PUBLISHER_DISPLAY_NAME: Inklura PDF QA - NOT FOR SUBMISSION
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+        run: |
+          npx electron-builder --config electron-builder.config.cjs --win appx --x64 --publish never
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python scripts/verify-store-appx.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-store-QA-NOT-FOR-SUBMISSION
+          path: release-microsoft-store/verification.json
+          if-no-files-found: error
+  windows-store:
+    if: github.event_name == 'workflow_dispatch' && inputs.channel == 'microsoft-store'
+    runs-on: windows-latest
+    timeout-minutes: 20
+    environment: release
+    env:
+      INKLURA_DISTRIBUTION_CHANNEL: microsoft-store
+      INKLURA_WINDOWS_IDENTITY_NAME: ${{ vars.INKLURA_WINDOWS_IDENTITY_NAME }}
+      INKLURA_WINDOWS_PUBLISHER: ${{ vars.INKLURA_WINDOWS_PUBLISHER }}
+      INKLURA_WINDOWS_PUBLISHER_DISPLAY_NAME: ${{ vars.INKLURA_WINDOWS_PUBLISHER_DISPLAY_NAME }}
+      CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: node -e "require('./electron-builder.config.cjs')"
+      - run: npm ci
+      - run: npm run build
+      - run: node scripts/store-assets.mjs
+      - run: npx electron-builder --config electron-builder.config.cjs --win appx --x64 --publish never
+      - run: python scripts/verify-store-appx.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: microsoft-store-internal-review
+          path: |
+            release-microsoft-store/*.appx
+            release-microsoft-store/verification.json
+          if-no-files-found: error
+  windows-test-kit:
+    if: github.event_name == 'workflow_dispatch' && inputs.channel == 'microsoft-store-test'
+    runs-on: windows-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+      # Test the exact bytes already validated in Partner Center, not a rebuild.
+      - uses: actions/download-artifact@v4
+        with:
+          name: microsoft-store-internal-review
+          run-id: 41039014119
+          github-token: ${{ github.token }}
+          path: source-store-package
+      - name: Prepare an ephemeral test signature and public certificate
+        shell: pwsh
+        run: ./scripts/sign-store-test.ps1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Inklura-PDF-Windows-TEST-ONLY
+          path: release-windows-test/*
+          if-no-files-found: error
+          retention-days: 14
+  windows-store-screenshots:
+    if: github.event_name == 'workflow_dispatch' && inputs.channel == 'microsoft-store-screenshots'
+    runs-on: windows-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - uses: actions/download-artifact@v4
+        with:
+          name: microsoft-store-internal-review
+          run-id: 41039014119
+          github-token: ${{ github.token }}
+          path: source-store-package
+      - name: Unpack the exact submitted AppX with the Windows SDK
+        shell: pwsh
+        run: |
+          $package = @(Get-ChildItem 'source-store-package/*.appx')
+          if ($package.Count -ne 1) { throw 'Expected one package' }
+          if ((Get-FileHash $package[0].FullName -Algorithm SHA256).Hash.ToLowerInvariant() -ne 'd60a72e53bb3064ac3eb2605df9d3632b7800892e32af7a90ae40b58e70d8512') { throw 'Unexpected package bytes' }
+          $tool = Get-ChildItem "${env:ProgramFiles(x86)}/Windows Kits/10/bin/*/x64/makeappx.exe" | Sort-Object FullName -Descending | Select-Object -First 1
+          & $tool.FullName unpack /p $package[0].FullName /d unpacked-store /o
+          if ($LASTEXITCODE -ne 0) { throw 'AppX extraction failed' }
+          [xml]$manifest = Get-Content 'unpacked-store/AppxManifest.xml'
+          $exe = Join-Path (Resolve-Path 'unpacked-store') $manifest.Package.Applications.Application.Executable
+          "CAVIARD_EXECUTABLE=$exe" | Out-File $env:GITHUB_ENV -Append -Encoding utf8
+      - name: Capture actual Windows package UI using synthetic documents
+        run: node scripts/store-screenshots.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: microsoft-store-screenshots
+          path: output/store-screenshots/*
+          if-no-files-found: error
+  mac-store:
+    if: github.event_name == 'workflow_dispatch' && inputs.channel == 'mac-app-store'
+    runs-on: macos-latest
+    timeout-minutes: 30
+    environment: release
+    env:
+      INKLURA_DISTRIBUTION_CHANNEL: mac-app-store
+      INKLURA_APPLE_TEAM_ID: ${{ vars.INKLURA_APPLE_TEAM_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Prepare the BEO PLUS provisioning profile
+        env:
+          MAS_PROFILE_BASE64: ${{ secrets.MAS_PROFILE_BASE64 }}
+        run: |
+          node --input-type=module <<'NODE'
+          import { writeFileSync, appendFileSync } from 'node:fs';
+          import path from 'node:path';
+          if (!process.env.MAS_PROFILE_BASE64) throw new Error('Missing MAS_PROFILE_BASE64');
+          const file = path.join(process.env.RUNNER_TEMP, 'inklura-pdf.provisionprofile');
+          // Provisioning profiles contain public certificates, not private keys.
+          // electron-osx-sign preserves this mode in the installed app.
+          writeFileSync(file, Buffer.from(process.env.MAS_PROFILE_BASE64, 'base64'), { mode: 0o644 });
+          appendFileSync(process.env.GITHUB_ENV, `INKLURA_MAS_PROVISIONING_PROFILE=${file}\n`);
+          NODE
+      - run: node -e "require('./electron-builder.config.cjs')"
+      - run: npm ci
+      - run: npm run build
+      - name: Import certificates into a dedicated ephemeral keychain
+        env:
+          MAS_CSC_LINK: ${{ secrets.MAS_CSC_LINK }}
+          MAS_CSC_KEY_PASSWORD: ${{ secrets.MAS_CSC_KEY_PASSWORD }}
+          MAS_INSTALLER_LINK: ${{ secrets.MAS_INSTALLER_LINK }}
+          MAS_INSTALLER_KEY_PASSWORD: ${{ secrets.MAS_INSTALLER_KEY_PASSWORD }}
+        run: node scripts/prepare-mas-keychain.mjs
+      - run: node scripts/mas-icon.mjs
+      - name: Build one signed universal MAS package for Intel and Apple Silicon
+        run: npx electron-builder --config electron-builder.config.cjs --mac mas --universal --config.buildVersion=1.4.${{ github.run_number }} --publish never
+      - name: Verify app signatures and sandbox
+        run: python3 scripts/verify-store-mas.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mac-app-store-internal-review
+          path: |
+            release-mac-app-store/mas*/*.pkg
+            release-mac-app-store/verification.json
+          if-no-files-found: error
+      - name: Remove the ephemeral signing keychain
+        if: always()
+        run: |
+          if [ -f "$RUNNER_TEMP/inklura-mas.keychain-db" ]; then
+            security delete-keychain "$RUNNER_TEMP/inklura-mas.keychain-db"
+          fi
+
+  mac-store-screenshots:
+    if: github.event_name == 'workflow_dispatch' && inputs.channel == 'mac-app-store-screenshots'
+    runs-on: macos-latest
+    timeout-minutes: 20
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      INKLURA_CAPTURE_UI_ONLY: 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      # Standard Electron/ad-hoc signing is intentional. This validates native
+      # visible UI without pretending to exercise StoreKit or App Sandbox.
+      # Only screenshots/provenance are retained; the app is never distributed.
+      - name: Package native Mac UI (NOT a MAS submission build)
+        run: npx electron-builder --config electron-builder.config.cjs --mac --dir --config.extraMetadata.distributionChannel=mac-app-store --publish never
+      - name: Capture the actual Mac UI with a synthetic document
+        shell: bash
+        run: |
+          executable=$(find release -path '*/Inklura PDF.app/Contents/MacOS/Inklura PDF' -type f)
+          test -n "$executable"
+          test "$(printf '%s\n' "$executable" | wc -l | tr -d ' ')" = 1
+          CAVIARD_EXECUTABLE="$PWD/$executable" node scripts/store-screenshots.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mac-app-store-UI-ONLY-screenshots
+          path: output/store-screenshots/*
+          if-no-files-found: error
+
+  mac-store-delivery:
+    if: github.event_name == 'workflow_dispatch' && contains(fromJSON('["mac-app-store-inspect-upload", "mac-app-store-validate", "mac-app-store-upload"]'), inputs.channel)
+    runs-on: macos-latest
+    timeout-minutes: 25
+    environment: release
+    concurrency:
+      group: inklura-mas-delivery
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      # Exact signed cb5cdb3 artifact; upload script independently pins SHA-256.
+      - uses: actions/download-artifact@v4
+        with:
+          name: mac-app-store-internal-review
+          run-id: 41082263707
+          github-token: ${{ github.token }}
+          path: source-mas-package
+      - name: Inspect exact package and Apple delivery tools (no credentials)
+        run: node scripts/upload-store-mas.mjs inspect
+      - name: Inspect cryptography in the exact signed MAS runtime
+        if: inputs.channel == 'mac-app-store-inspect-upload'
+        run: python3 scripts/inspect-mas-crypto.py
+      - uses: actions/upload-artifact@v4
+        if: inputs.channel == 'mac-app-store-inspect-upload' && always()
+        with:
+          name: mas-crypto-inventory
+          path: mas-crypto-inventory.json
+          if-no-files-found: error
+      - name: Validate or upload to Apple (does not submit App Review)
+        if: inputs.channel != 'mac-app-store-inspect-upload'
+        env:
+          MAS_ASC_KEY_ID: ${{ vars.MAS_ASC_KEY_ID }}
+          MAS_ASC_PRIVATE_KEY: ${{ secrets.MAS_ASC_PRIVATE_KEY }}
+          DELIVERY_CHANNEL: ${{ inputs.channel }}
+        run: |
+          case "$DELIVERY_CHANNEL" in
+            mac-app-store-validate) node scripts/upload-store-mas.mjs verify ;;
+            mac-app-store-upload) node scripts/upload-store-mas.mjs upload ;;
+            *) exit 1 ;;
+          esac

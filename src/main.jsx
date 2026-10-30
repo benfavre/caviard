@@ -1166,9 +1166,10 @@ function App() {
             texte du PDF exporté ne peut plus être sélectionné ni recherché.
           </p>
           <p>
-            La version ordinateur contacte GitHub pour rechercher et télécharger
-            les mises à jour de l’application. Vos documents ne sont jamais
-            inclus dans ces échanges.
+            Les éditions Microsoft Store et Mac App Store sont mises à jour par
+            leur boutique. La version téléchargée directement utilise GitHub
+            pour les mises à jour intégrées lorsqu’elles sont disponibles.
+            Vos documents ne sont jamais inclus dans ces échanges.
           </p>
           <p>
             Dans les versions avec compte Inklura, la connexion, le suivi des
@@ -1179,6 +1180,7 @@ function App() {
           <p>
             Vérifiez visuellement votre copie exportée avant de la partager.
           </p>
+          <p><a href="https://outils.inklura.fr/api/inklura-pdf/privacy" target="_blank" rel="noopener noreferrer">Notice de confidentialité de l’édition Mac App Store : compte, achats et suppression des données</a></p>
         </div>
       </dialog>
       <dialog

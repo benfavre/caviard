@@ -1,5 +1,5 @@
 import { DatabaseSync } from 'node:sqlite';
-import { randomUUID } from 'node:crypto';
+import { randomUUID, createHash } from 'node:crypto';
 import { TRIAL_DOCUMENTS } from '../electron/commerce-catalog.mjs';
 export class BillingError extends Error {
   constructor(code, status = 400) { super(code); this.code = code; this.status = status; }
@@ -20,7 +20,7 @@ export class Ledger {
   constructor(filename = ':memory:', { now = () => Date.now() } = {}) {
     this.now = now;
     this.db = new DatabaseSync(filename);
-    this.db.exec(`PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON; PRAGMA busy_timeout=5000;
+    this.db.exec(`PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON; PRAGMA busy_timeout=5000; PRAGMA secure_delete=ON;
       CREATE TABLE IF NOT EXISTS accounts(id TEXT PRIMARY KEY, issuer TEXT NOT NULL, subject TEXT NOT NULL,
         created INTEGER NOT NULL, blocked INTEGER NOT NULL DEFAULT 0, customer TEXT UNIQUE,
         subscription TEXT UNIQUE, UNIQUE(issuer,subject));
@@ -34,10 +34,47 @@ export class Ledger {
       CREATE TABLE IF NOT EXISTS orders(account TEXT NOT NULL REFERENCES accounts(id), operation TEXT NOT NULL,
         plan TEXT NOT NULL, checkout TEXT UNIQUE, payment_intent TEXT, state TEXT NOT NULL DEFAULT 'pending',
         created INTEGER NOT NULL, PRIMARY KEY(account,operation));
+      CREATE TABLE IF NOT EXISTS web_purchases(receipt_hash TEXT PRIMARY KEY,
+        account TEXT NOT NULL UNIQUE REFERENCES accounts(id), operation TEXT NOT NULL,
+        plan TEXT NOT NULL, owner TEXT REFERENCES accounts(id), created INTEGER NOT NULL);
+      CREATE INDEX IF NOT EXISTS web_purchases_owner ON web_purchases(owner);
       CREATE TABLE IF NOT EXISTS events(id TEXT PRIMARY KEY, created INTEGER NOT NULL);
+      CREATE TABLE IF NOT EXISTS apple_accounts(account TEXT PRIMARY KEY REFERENCES accounts(id), token TEXT NOT NULL UNIQUE);
+      CREATE TABLE IF NOT EXISTS apple_transactions(id TEXT PRIMARY KEY REFERENCES grants(id),
+        account TEXT NOT NULL REFERENCES accounts(id), product TEXT NOT NULL, units INTEGER NOT NULL,
+        purchased INTEGER NOT NULL, signed_at INTEGER NOT NULL, revoked INTEGER NOT NULL DEFAULT 0);
+      CREATE TABLE IF NOT EXISTS purchase_buyers(account TEXT PRIMARY KEY REFERENCES accounts(id), buyer TEXT NOT NULL);
+      CREATE TABLE IF NOT EXISTS account_deletions(identity_hash TEXT PRIMARY KEY, account TEXT NOT NULL UNIQUE,
+        requested INTEGER NOT NULL, completed INTEGER);
+      CREATE TABLE IF NOT EXISTS account_deletion_sources(source TEXT PRIMARY KEY, account TEXT NOT NULL);
+      CREATE TABLE IF NOT EXISTS sales(seq INTEGER PRIMARY KEY AUTOINCREMENT, id TEXT NOT NULL UNIQUE, kind TEXT NOT NULL,
+        account TEXT NOT NULL REFERENCES accounts(id), operation TEXT, plan TEXT NOT NULL, channel TEXT NOT NULL,
+        amount_total INTEGER, amount_tax INTEGER, currency TEXT, name TEXT, email TEXT, address TEXT, tax_id TEXT, buyer TEXT,
+        stripe_customer TEXT, stripe_invoice TEXT, subscription TEXT, payment_intent TEXT,
+        period_start INTEGER, period_end INTEGER, created INTEGER NOT NULL);
       CREATE INDEX IF NOT EXISTS grants_account ON grants(account, ends);`);
+    // Promotion codes (activ #1104): additive columns, idempotent.
+    const add = (table, column, type) => {
+      if (!this.db.prepare(`SELECT 1 FROM pragma_table_info('${table}') WHERE name=?`).get(column)) this.db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${type}`);
+    };
+    add('web_purchases', 'promo', 'TEXT');
+    add('sales', 'amount_subtotal', 'INTEGER');
+    add('sales', 'amount_discount', 'INTEGER');
+    add('sales', 'promo_code', 'TEXT');
   }
   close() { this.db.close(); }
+  /** One row per paid sale (first payment or renewal), read by the invoicing worker. */
+  recordSale(sale) {
+    const web = this.db.prepare('SELECT 1 FROM web_purchases WHERE account=?').get(sale.account);
+    const buyer = this.db.prepare('SELECT buyer FROM purchase_buyers WHERE account=?').get(sale.account)?.buyer ?? null;
+    this.db.prepare(`INSERT OR IGNORE INTO sales(id,kind,account,operation,plan,channel,amount_total,amount_tax,currency,name,email,address,tax_id,buyer,
+      stripe_customer,stripe_invoice,subscription,payment_intent,period_start,period_end,created,amount_subtotal,amount_discount,promo_code)
+      VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`).run(
+      sale.id, sale.kind, sale.account, sale.operation ?? null, sale.plan, web ? 'web' : 'app', sale.amountTotal ?? null, sale.amountTax ?? null,
+      sale.currency ?? null, sale.name ?? null, sale.email ?? null, sale.address ? JSON.stringify(sale.address) : null, sale.taxId ?? null, buyer,
+      sale.customer ?? null, sale.invoice ?? null, sale.subscription ?? null, sale.paymentIntent ?? null, sale.periodStart ?? null, sale.periodEnd ?? null, this.now(),
+      sale.amountSubtotal ?? null, sale.amountDiscount ?? null, sale.promoCode ?? null);
+  }
   transaction(fn) {
     this.db.exec('BEGIN IMMEDIATE');
     try { const result = fn(); this.db.exec('COMMIT'); return result; }
@@ -45,6 +82,8 @@ export class Ledger {
   }
   account(issuer, subject) {
     if (!issuer || typeof subject !== 'string' || !subject || subject.length > 255) throw new BillingError('invalid_identity', 401);
+    const deletion = this.deletionForIdentity(issuer, subject);
+    if (deletion) throw new BillingError(deletion.completed !== null ? 'account_deleted' : 'account_deletion_pending', 410);
     return this.transaction(() => {
       const existing = this.db.prepare('SELECT * FROM accounts WHERE issuer=? AND subject=?').get(issuer, subject);
       if (existing) return existing;
@@ -59,29 +98,85 @@ export class Ledger {
     if (!account) throw new BillingError('account_not_found', 404);
     return account;
   }
+  deletionForIdentity(issuer, subject) {
+    // The shared identity is a random provider subject. Retain only its digest to
+    // prevent old JWTs or the Manage bridge silently recreating the PDF profile.
+    const hash = createHash('sha256').update(JSON.stringify([issuer, subject])).digest('hex');
+    return this.db.prepare('SELECT * FROM account_deletions WHERE identity_hash=?').get(hash);
+  }
+  isClosing(account) {
+    return !!this.db.prepare('SELECT 1 FROM account_deletion_sources WHERE source=?').get(account);
+  }
+  assertActive(account) {
+    if (this.isClosing(account)) throw new BillingError('account_deletion_pending', 410);
+  }
+  requestDeletion(account) {
+    return this.transaction(() => {
+      const previous = this.db.prepare('SELECT * FROM account_deletions WHERE account=?').get(account);
+      if (previous) return previous;
+      const owner = this.getAccount(account), sources = this.sources(account);
+      const hash = createHash('sha256').update(JSON.stringify([owner.issuer, owner.subject])).digest('hex');
+      this.db.prepare('INSERT INTO account_deletions(identity_hash,account,requested) VALUES(?,?,?)').run(hash, account, this.now());
+      for (const source of sources) {
+        this.db.prepare('INSERT INTO account_deletion_sources(source,account) VALUES(?,?)').run(source, account);
+        this.db.prepare('UPDATE accounts SET blocked=1 WHERE id=?').run(source);
+      }
+      return this.db.prepare('SELECT * FROM account_deletions WHERE account=?').get(account);
+    });
+  }
+  completeDeletion(account) {
+    return this.transaction(() => {
+      const sources = this.db.prepare('SELECT source FROM account_deletion_sources WHERE account=?').all(account);
+      if (!sources.length) throw new BillingError('account_not_found', 404);
+      for (const { source } of sources) {
+        this.db.prepare('DELETE FROM exports WHERE account=?').run(source);
+        this.db.prepare('DELETE FROM purchase_buyers WHERE account=?').run(source);
+        this.db.prepare('DELETE FROM web_purchases WHERE account=?').run(source);
+        this.db.prepare("DELETE FROM grants WHERE account=? AND kind!='apple'").run(source);
+        // Apple transaction records and financial invoices remain for refunds /
+        // accounting, but no usable credits or export history remain.
+        this.db.prepare('UPDATE grants SET used=0,reserved=0,total=0 WHERE account=?').run(source);
+        this.db.prepare("UPDATE accounts SET issuer='urn:inklura:pdf:deleted',subject=id,created=0,subscription=NULL,blocked=1 WHERE id=?").run(source);
+      }
+      this.db.prepare('UPDATE account_deletions SET completed=COALESCE(completed,?) WHERE account=?').run(this.now(), account);
+    });
+  }
   grant({ id, account, kind, units, starts, ends }) {
     if (!Number.isSafeInteger(units) || units <= 0 || !Number.isSafeInteger(starts) || !Number.isSafeInteger(ends) || ends <= starts) throw new BillingError('invalid_grant');
+    if (this.isClosing(account)) return; // Late financial webhooks cannot restore a deleted profile.
     this.db.prepare('INSERT OR IGNORE INTO grants(id,account,kind,total,starts,ends) VALUES(?,?,?,?,?,?)').run(id, account, kind, units, starts, ends);
     const saved = this.db.prepare('SELECT * FROM grants WHERE id=?').get(id);
     if (saved.account !== account || saved.total !== units || saved.kind !== kind || saved.starts !== starts || saved.ends !== ends) throw new BillingError('grant_conflict', 409);
   }
+  sources(account) {
+    this.getAccount(account);
+    return [account, ...this.db.prepare('SELECT account FROM web_purchases WHERE owner=?').all(account).map(row => row.account)];
+  }
+  isBlocked(account) {
+    if (this.isClosing(account)) return true;
+    const owner = this.db.prepare('SELECT owner FROM web_purchases WHERE account=?').get(account)?.owner || account;
+    return this.sources(owner).some(id => this.getAccount(id).blocked || !!this.db.prepare(
+      'SELECT 1 FROM apple_transactions a JOIN grants g ON g.id=a.id WHERE a.account=? AND a.revoked=1 AND g.used+g.reserved>0 LIMIT 1'
+    ).get(id));
+  }
   balance(account) {
-    const owner = this.getAccount(account), now = this.now();
-    const grants = this.db.prepare('SELECT kind,total,used,reserved,starts,ends FROM grants WHERE account=? AND starts<=? AND ends>? ORDER BY ends').all(account, now, now);
-    return { accountId: account, blocked: !!owner.blocked, remaining: grants.reduce((n, g) => n + g.total - g.used - g.reserved, 0),
-      reserved: grants.reduce((n, g) => n + g.reserved, 0), grants: grants.map(g => ({ ...g, expiresAt: g.kind === 'trial' ? null : new Date(g.ends).toISOString() })) };
+    this.assertActive(account);
+    const sources = this.sources(account), now = this.now();
+    const grants = this.db.prepare(`SELECT kind,total,used,reserved,starts,ends FROM grants WHERE account IN (${sources.map(() => '?').join(',')}) AND starts<=? AND ends>? ORDER BY ends`).all(...sources, now, now);
+    return { accountId: account, blocked: this.isBlocked(account), remaining: grants.reduce((n, g) => n + g.total - g.used - g.reserved, 0),
+      reserved: grants.reduce((n, g) => n + g.reserved, 0), grants: grants.map(g => ({ ...g, expiresAt: ['trial', 'apple'].includes(g.kind) ? null : new Date(g.ends).toISOString() })) };
   }
   reserve(account, operation) {
     operationId(operation);
     return this.transaction(() => {
-      if (this.getAccount(account).blocked) throw new BillingError('account_under_review', 403);
+      if (this.isBlocked(account)) throw new BillingError('account_under_review', 403);
       const existing = this.db.prepare('SELECT * FROM exports WHERE account=? AND operation=?').get(account, operation);
       if (existing) {
         if (['released', 'refunded'].includes(existing.state)) throw new BillingError('operation_closed', 409);
         return { operation, state: existing.state };
       }
-      const now = this.now();
-      const grant = this.db.prepare('SELECT * FROM grants WHERE account=? AND starts<=? AND ends>? AND total-used-reserved>0 ORDER BY ends,starts,id LIMIT 1').get(account, now, now);
+      const now = this.now(), sources = this.sources(account);
+      const grant = this.db.prepare(`SELECT * FROM grants WHERE account IN (${sources.map(() => '?').join(',')}) AND starts<=? AND ends>? AND total-used-reserved>0 ORDER BY ends,starts,id LIMIT 1`).get(...sources, now, now);
       if (!grant) throw new BillingError('quota_exhausted', 402);
       this.db.prepare('UPDATE grants SET reserved=reserved+1 WHERE id=?').run(grant.id);
       this.db.prepare("INSERT INTO exports(account,operation,grant_id,state,created) VALUES(?,?,?,'reserved',?)").run(account, operation, grant.id, now);
@@ -89,6 +184,7 @@ export class Ledger {
     });
   }
   transition(account, operation, action) {
+    this.assertActive(account);
     operationId(operation);
     return this.transaction(() => {
       const item = this.db.prepare('SELECT * FROM exports WHERE account=? AND operation=?').get(account, operation);
@@ -104,7 +200,11 @@ export class Ledger {
       // Only a reservation can be released. A completed export can never self-refund.
       if (item.state === 'committed') throw new BillingError('already_committed', 409);
       if (item.state === 'reserved') {
-        this.db.prepare('UPDATE grants SET reserved=reserved-1 WHERE id=?').run(item.grant_id);
+        // A refund may arrive while an export is reserved. Releasing that hold
+        // must not turn its revoked credit back into an available credit.
+        this.db.prepare(`UPDATE grants SET reserved=reserved-1,
+          total=total-CASE WHEN EXISTS(SELECT 1 FROM apple_transactions WHERE id=grants.id AND revoked=1) THEN 1 ELSE 0 END
+          WHERE id=?`).run(item.grant_id);
         this.db.prepare("UPDATE exports SET state='released' WHERE account=? AND operation=?").run(account, operation);
       }
       return { operation, state: 'released' };
@@ -113,6 +213,7 @@ export class Ledger {
   // Holds do not auto-expire: a saved file with an interrupted commit must not
   // silently become free. The desktop journals and reconciles pending operations.
   createOrder(account, operation, plan) {
+    this.assertActive(account);
     operationId(operation);
     this.getAccount(account);
     const existing = this.db.prepare('SELECT * FROM orders WHERE account=? AND operation=?').get(account, operation);
@@ -121,12 +222,12 @@ export class Ledger {
       return existing;
     }
     if (plan.kind === 'subscription') {
-      const owner = this.getAccount(account);
-      const pending = this.db.prepare("SELECT * FROM orders WHERE account=? AND plan LIKE 'business-%' AND state='pending'").get(account);
-      if (owner.subscription) throw new BillingError('subscription_already_exists', 409);
+      const sources = this.sources(account);
+      const pending = this.db.prepare(`SELECT * FROM orders WHERE account IN (${sources.map(() => '?').join(',')}) AND (plan LIKE 'business-%' OR plan LIKE 'annual-%') AND state='pending'`).get(...sources);
+      if (this.sources(account).some(id => this.getAccount(id).subscription)) throw new BillingError('subscription_already_exists', 409);
       // Resume the same checkout after an app restart or an ambiguous Stripe
       // timeout, preserving its original Stripe idempotency key.
-      if (pending?.plan === plan.id) return pending;
+      if (pending?.plan === plan.id && pending.account === account) return pending;
       if (pending) throw new BillingError('subscription_already_exists', 409);
     }
     this.db.prepare('INSERT INTO orders(account,operation,plan,created) VALUES(?,?,?,?)').run(account, operation, plan.id, this.now());

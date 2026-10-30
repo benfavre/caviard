@@ -1,0 +1,64 @@
+Inklura PDF — essai Windows avant certification Microsoft Store
+
+Ce kit contient la copie signée pour test du paquet 1.4.0.0 déjà validé dans
+Partner Center. Il ne s'agit pas d'une version publiée dans le Store.
+La signature ne change pas le code ou les fichiers de l'application.
+
+Prérequis : Windows 10 version 2004 (build 19041) ou supérieur, ou Windows 11,
+PC x64, accès administrateur pour le certificat. 8 Go de RAM recommandés pour
+l'assistant. Utiliser uniquement des documents fictifs pour ce premier essai.
+
+Installation (à effectuer par le propriétaire du PC)
+
+1. Extraire complètement le ZIP. Ouvrir CERTIFICAT.txt et conserver l'empreinte.
+2. Ouvrir Inklura-PDF-TEST-ONLY.cer, onglet Détails, vérifier que l'empreinte
+   correspond. Ce certificat temporaire permet à Windows d'accepter ce paquet
+   de test. Ne l'installer que si vous acceptez cette confiance temporaire.
+   Installer le certificat > Ordinateur local > Placer tous les certificats
+   dans le magasin suivant > Personnes autorisées (Trusted People).
+   Ne pas choisir Autorités de certification racines de confiance.
+3. Ouvrir Inklura-PDF-1.4.0-TEST-ONLY.appx puis Installer et lancer Inklura PDF.
+   Si Windows affiche une erreur, conserver son code et arrêter là : ne pas
+   désactiver Defender, SmartScreen, le contrôle des signatures ou une stratégie
+   de sécurité du PC. Aucun mode développeur n'est nécessaire sur ces versions.
+
+Premier résultat attendu
+
+L'application s'ouvre et affiche son interface. Répondre dans le ticket avec
+« installation et ouverture OK » ou la capture de l'erreur :
+https://github.com/webdesign29/activ/issues/1411
+
+Contrôles fonctionnels après cette première validation
+
+- Ouvrir un PDF fictif, masquer un nom, relire et exporter vers un nouveau
+  fichier après connexion au compte Inklura. Vérifier que l'original est intact,
+  que le masquage apparaît dans un autre lecteur et que l'export a consommé un
+  seul crédit. Annuler un autre export : aucun crédit ne doit être consommé.
+- Enregistrer un projet, fermer et relancer, vérifier sa récupération et le
+  solde du compte. Le projet contient l'original non caviardé : rester sur des
+  données fictives. Tester l'ouverture de PDF depuis l'Explorateur, ainsi que
+  l'import d'un dossier. Ne pas modifier l'application PDF par défaut du PC.
+- Si souhaité, télécharger les modèles locaux (environ 1,18 Go), tester
+  l'assistant et l'OCR. Sans les modèles, le caviardage manuel doit fonctionner.
+- Faire des captures de l'application avec des documents fictifs uniquement,
+  sans adresse de compte ni informations personnelles visibles.
+
+Ce kit ne valide PAS la livraison ni les mises à jour par Microsoft Store.
+Ce contrôle nécessitera un paquet certifié puis une seconde version distribuée
+par le Store, en vérifiant la conservation des projets, modèles et crédits.
+Le Windows App Certification Kit devra également être exécuté avant soumission.
+Ne pas acheter de crédits ni effectuer de paiement réel pour le simple test
+d'installation. Les essais de paiement seront organisés séparément.
+
+Après les essais
+
+Le certificat expire après 14 jours. Une fois les essais terminés et les projets
+utiles exportés, désinstaller cette version de test via Paramètres > Applications.
+Attention : la désinstallation peut supprimer les données locales du paquet.
+Ouvrir certlm.msc > Personnes autorisées > Certificats et supprimer uniquement
+le certificat dont l'empreinte figure dans CERTIFICAT.txt. Ne toucher à aucun
+autre certificat. Installer ensuite la version officielle depuis le Store quand
+son lien d'installation sera fourni dans le ticket.
+
+Méthode Microsoft :
+https://learn.microsoft.com/en-us/windows/msix/package/sign-msix-package-guide#testing-distribute-to-testers-with-a-self-signed-certificate

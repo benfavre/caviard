@@ -1,0 +1,60 @@
+Inklura PDF — validation Mac App Store / TestFlight
+
+État : le build signé doit d’abord être accepté par Apple et rendu disponible
+au groupe TestFlight. Ce document ne signifie pas qu’une invitation est envoyée.
+Utiliser uniquement une copie de documents fictifs, sans données clients.
+
+1. Installation
+   Installer TestFlight depuis Apple : https://testflight.apple.com/
+   Ouvrir l’invitation Inklura PDF fournie séparément, puis installer le build.
+   Noter la version de macOS, le modèle du Mac et le numéro du build TestFlight.
+   Vérifier le lancement sans erreur de signature ou d’autorisation.
+
+2. Fichiers et export
+   Ouvrir un PDF fictif, tracer une zone, rechercher du texte, puis relire la page.
+   Se connecter au compte Inklura de test prévu pour cette validation.
+   Choisir explicitement un dossier de destination et exporter une copie.
+   Vérifier dans Aperçu que la zone est masquée, que le texte n’est plus
+   sélectionnable et que l’original est intact. Vérifier un seul crédit débité.
+   Refaire avec un dossier contenant plusieurs PDF et avec un PDF scanné.
+   Vérifier l’annulation d’un export et la confirmation avant remplacement.
+
+3. Reprise
+   Enregistrer un projet fictif, fermer l’app, la relancer et rouvrir le projet.
+   Vérifier les autorisations de fichiers, les zones et le solde conservés.
+   Tester une coupure réseau lors de la synchronisation des crédits : la reprise
+   ne doit pas débiter deux fois ni perdre un export déjà enregistré.
+
+4. Assistant facultatif
+   Télécharger les modèles depuis l’app, puis vérifier une analyse et l’OCR.
+   Le mode manuel doit fonctionner sans télécharger ces modèles.
+   Noter toute erreur de sandbox, de téléchargement, de mémoire ou de traitement.
+
+5. Achats de test
+   Utiliser le build TestFlight et le compte Inklura explicitement autorisé pour
+   les achats sandbox. Un autre compte ne reçoit pas les crédits de test.
+   Vérifier les trois offres et les prix affichés par Apple ; capturer cet écran
+   pour le dossier de vérification des achats intégrés.
+   Effectuer un achat uniquement dans l’environnement de test indiqué par Apple.
+   Vérifier le montant de crédits, puis « Actualiser » et relancer l’application :
+   le même achat ne doit être crédité qu’une fois. Vérifier également l’annulation.
+   La reprise d’un achat interrompu et le remboursement sandbox demandent une
+   coordination avec Ben pour contrôler les événements reçus par le serveur.
+
+6. Suppression du compte PDF
+   Cette opération est irréversible. Ne pas l’effectuer sur un compte personnel,
+   client ou de vérification Apple : demander un compte jetable dédié.
+   Vérifier que l’écran explique le périmètre PDF et exige la confirmation écrite.
+   Après l’essai autorisé sur ce compte jetable, vérifier le refus d’accès au profil
+   PDF, mais la conservation de la connexion partagée aux autres produits Inklura.
+   Les PDF et projets enregistrés sur le Mac doivent rester présents.
+
+7. Mise à jour
+   Une seconde version distribuée par TestFlight / l’App Store sera nécessaire.
+   Vérifier après cette mise à jour la conservation des projets, modèles et crédits.
+   Un simple relancement ne prouve pas le fonctionnement des mises à jour Store.
+
+Retour dans le suivi Apple : https://github.com/webdesign29/activ/issues/1410
+Indiquer l’étape, le résultat attendu/obtenu, le build et le modèle du Mac.
+Masquer les identifiants privés et ne joindre que des captures de documents fictifs.
+Une seule machine ne valide pas à elle seule Intel et Apple Silicon.

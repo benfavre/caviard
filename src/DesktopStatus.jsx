@@ -34,6 +34,7 @@ export default function DesktopStatus({ dirty, busy }) {
     ready: `La version ${state.version} est prête à installer`,
     installing: "Redémarrage…",
     disabled: state.message,
+    store: state.message,
     error: state.message,
   };
   const blocked = dirty || busy;
@@ -43,7 +44,7 @@ export default function DesktopStatus({ dirty, busy }) {
       <span aria-live="polite">{message || labels[state.phase]}</span>
       {info?.platform === "darwin" && state.phase === "disabled" &&
         <a href={`https://pdf.inklura.fr/#${info.arch === "arm64" ? "mac-apple" : "mac-intel"}`} target="_blank" rel="noreferrer">Télécharger pour mon Mac</a>}
-      <a href="https://pdf.inklura.fr/changelog" target="_blank" rel="noreferrer">Historique des versions</a>
+      {state.phase !== "store" && <a href="https://pdf.inklura.fr/changelog" target="_blank" rel="noreferrer">Historique des versions</a>}
       {state.phase === "ready" ? (
         <button
           className="primary"
@@ -57,7 +58,7 @@ export default function DesktopStatus({ dirty, busy }) {
         >
           Redémarrer et installer
         </button>
-      ) : (
+      ) : state.phase !== "store" && (
         <button
           disabled={[
             "disabled",

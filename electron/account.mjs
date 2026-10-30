@@ -10,6 +10,8 @@ const messages = {
   purchases_not_enabled: 'Les achats ne sont pas encore activés.',
   accounts_not_configured: 'La connexion Inklura est en préparation.',
   account_under_review: 'La facturation de ce compte nécessite une vérification.',
+  account_deleted: 'Votre compte PDF a été supprimé. Votre identité et vos autres produits Inklura sont conservés.',
+  account_deletion_pending: 'La suppression de votre compte PDF est enregistrée et se termine automatiquement. Vos autres produits Inklura sont conservés.',
   subscription_already_exists: 'Un abonnement ou un paiement d’abonnement existe déjà pour ce compte.',
   france_only: 'Les achats sont réservés à la France métropolitaine pour le moment.',
   billing_address_required: 'Renseignez votre nom et votre adresse complète de facturation.',
@@ -24,8 +26,9 @@ export function accountApiUrl(value, development = false) {
   return u.href.replace(/\/$/, '');
 }
 export class AccountController extends EventEmitter {
-  constructor({ apiUrl, development = false, fetcher = fetch, openExternal, now = () => Date.now(), setTimer = setTimeout, clearTimer = clearTimeout, onSignedIn = async () => {} }) {
+  constructor({ apiUrl, development = false, externalPurchases = true, fetcher = fetch, openExternal, now = () => Date.now(), setTimer = setTimeout, clearTimer = clearTimeout, onSignedIn = async () => {} }) {
     super(); Object.assign(this, { fetcher, openExternal, now, setTimer, clearTimer, onSignedIn });
+    this.externalPurchases = externalPurchases;
     this.apiUrl = accountApiUrl(apiUrl, development); this.phase = this.apiUrl ? 'loading' : 'disabled';
     this.config = null; this.account = null; this.tokens = null; this.flow = null; this.timer = null; this.message = ''; this.generation = 0;
     this.checkoutOperations = new Map(); this.purchaseTimer = null; this.purchasePending = false;
@@ -33,7 +36,10 @@ export class AccountController extends EventEmitter {
   snapshot() {
     return { phase: this.phase, enabled: !!this.apiUrl && !!this.config?.enabled, message: this.message,
       account: this.account, purchasePending: this.purchasePending, userCode: this.flow?.userCode || null,
-      plans: this.account?.plans || this.config?.plans || [], paymentsEnabled: !!this.account?.paymentsEnabled };
+      externalPurchases: this.externalPurchases,
+      accountDeletionEnabled: !!this.config?.accountDeletionEnabled,
+      apple: this.appleStore?.snapshot() || null,
+      plans: this.externalPurchases ? this.account?.plans || this.config?.plans || [] : [], paymentsEnabled: this.externalPurchases && !!this.account?.paymentsEnabled };
   }
   publish() { this.emit('state', this.snapshot()); return this.snapshot(); }
   async json(url, options = {}) {
@@ -148,12 +154,13 @@ export class AccountController extends EventEmitter {
     } catch (error) {
       if (generation !== this.generation) return this.snapshot();
       this.message = error.message;
-      if (error.code === 'session_expired') { this.tokens = null; this.account = null; this.phase = 'signed-out'; }
+      if (['session_expired', 'account_deleted', 'account_deletion_pending'].includes(error.code)) { this.tokens = null; this.account = null; this.phase = 'signed-out'; }
       this.publish(); throw error;
     }
     return this.publish();
   }
   async checkout(planId, billing) {
+    if (!this.externalPurchases) throw new Error('Les achats externes ne sont pas disponibles dans cette édition.');
     const plan = this.account?.plans?.find(p => p.id === planId);
     if (!plan?.purchasable || !this.account.paymentsEnabled) throw new Error(messages.purchases_not_enabled);
     if (!this.checkoutOperations.has(planId)) this.checkoutOperations.set(planId, randomUUID());
@@ -189,9 +196,20 @@ export class AccountController extends EventEmitter {
     this.purchaseTimer = this.setTimer(poll, 2000);
   }
   async portal() {
+    if (!this.externalPurchases) throw new Error('La facturation externe n’est pas disponible dans cette édition.');
     const result = await this.request('/v1/portal', {}), url = new URL(result.url);
     if (url.protocol !== 'https:' || url.hostname !== 'billing.stripe.com' || url.username || url.password) throw new Error('Lien de facturation invalide.');
     await this.openExternal(url.href); return { opened: true };
+  }
+  async deletePdfAccount(confirmation) {
+    if (!this.config?.accountDeletionEnabled) throw new Error('La suppression est momentanément indisponible. Réessayez après reconnexion.');
+    if (confirmation !== 'SUPPRIMER MON COMPTE PDF') throw new Error('Saisissez exactement SUPPRIMER MON COMPTE PDF pour confirmer.');
+    const result = await this.request('/v1/account/deletion', { confirmation });
+    if (!['pending', 'deleted'].includes(result.state)) throw new Error('Réponse de suppression invalide.');
+    this.logout();
+    this.message = messages[result.state === 'deleted' ? 'account_deleted' : 'account_deletion_pending'];
+    this.publish();
+    return result;
   }
   cancel() { ++this.generation; this.clearTimer(this.purchaseTimer); this.purchasePending = false; this.clearTimer(this.timer); this.flow = null; this.phase = this.tokens ? 'signed-in' : 'signed-out'; return this.publish(); }
   logout() { this.cancel(); this.tokens = null; this.refreshing = null; this.account = null; this.checkoutOperations.clear(); this.phase = this.config?.enabled ? 'signed-out' : 'disabled'; this.message = ''; return this.publish(); }

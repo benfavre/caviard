@@ -15,23 +15,24 @@ export function launchPaths(argv, cwd, packaged) {
 
 // The renderer receives one-use IDs, never an API for arbitrary filesystem reads.
 export class DocumentImports {
-  constructor(notify = () => {}) {
+  constructor(notify = () => {}, openAccess = () => () => {}) {
     this.notify = notify;
+    this.openAccess = openAccess;
     this.files = new Map();
     this.pending = [];
     this.messages = [];
     this.queue = Promise.resolve();
   }
-  enqueue(paths) {
-    const next = this.queue.then(() => this.scan(paths));
+  enqueue(paths, bookmarks = []) {
+    const next = this.queue.then(() => this.scan(paths, bookmarks));
     this.queue = next.catch(() => {});
     return next;
   }
-  async scan(paths) {
+  async scan(paths, bookmarks = []) {
     let total = [...this.files.values()].reduce((n, file) => n + file.size, 0);
     let visited = 0, ignored = 0, added = 0, limited = false;
     const seen = new Set([...this.files.values()].map((file) => file.path));
-    const visit = async (filePath, relativePath) => {
+    const visit = async (filePath, relativePath, bookmark) => {
       if (limited) return;
       if (++visited > 20000 || this.files.size >= MAX_DOCUMENTS) {
         limited = true;
@@ -46,7 +47,7 @@ export class DocumentImports {
           entries.sort((a, b) => a.name.localeCompare(b.name, "en", { numeric: true }));
           for (const entry of entries) {
             if (entry.name.startsWith(".")) { ignored++; continue; }
-            await visit(path.join(filePath, entry.name), `${relativePath}/${entry.name}`);
+            await visit(path.join(filePath, entry.name), `${relativePath}/${entry.name}`, bookmark);
             if (limited) break;
           }
           return;
@@ -64,6 +65,7 @@ export class DocumentImports {
           id, path: canonical, name: path.basename(filePath), relativePath,
           size: stat.size,
           sourceKey: createHash("sha256").update(canonical).digest("hex"),
+          ...(bookmark ? { bookmark } : {}),
         };
         this.files.set(id, file);
         this.pending.push(id);
@@ -73,9 +75,12 @@ export class DocumentImports {
         this.messages.push(`${relativePath} : lecture impossible.`);
       }
     };
-    for (const value of paths.slice(0, MAX_DOCUMENTS)) {
+    for (const [index, value] of paths.slice(0, MAX_DOCUMENTS).entries()) {
       if (typeof value !== "string" || !path.isAbsolute(value) || value.includes("\0")) continue;
-      await visit(value, path.basename(value));
+      const bookmark = bookmarks[index];
+      const stopAccess = bookmark ? this.openAccess(bookmark) : () => {};
+      try { await visit(value, path.basename(value), bookmark); }
+      finally { stopAccess(); }
     }
     if (paths.length > MAX_DOCUMENTS) limited = true;
     if (limited) this.messages.push("Import limité à 250 PDF ou 20 000 entrées. Sélectionnez un sous-dossier pour continuer.");
@@ -85,7 +90,7 @@ export class DocumentImports {
   }
   take() {
     const files = this.pending.splice(0).map((id) => {
-      const { path: _path, ...file } = this.files.get(id);
+      const { path: _path, bookmark: _bookmark, ...file } = this.files.get(id);
       return file;
     });
     return { files, messages: this.messages.splice(0) };
@@ -94,8 +99,10 @@ export class DocumentImports {
     const file = this.files.get(id);
     if (!file) throw new Error("Sélection de fichier expirée.");
     this.files.delete(id);
-    const handle = await open(file.path, constants.O_RDONLY | (constants.O_NOFOLLOW || 0));
+    const stopAccess = file.bookmark ? this.openAccess(file.bookmark) : () => {};
+    let handle;
     try {
+      handle = await open(file.path, constants.O_RDONLY | (constants.O_NOFOLLOW || 0));
       const stat = await handle.stat();
       if (!stat.isFile() || stat.size !== file.size || stat.size > MAX_IMPORT_BYTES)
         throw new Error("Le fichier a changé depuis sa sélection.");
@@ -109,7 +116,7 @@ export class DocumentImports {
       }
       return bytes;
     } finally {
-      await handle.close();
+      try { await handle?.close(); } finally { stopAccess(); }
     }
   }
   discard(ids) {
