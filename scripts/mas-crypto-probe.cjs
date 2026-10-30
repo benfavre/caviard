@@ -1,7 +1,7 @@
 // Read-only runtime inventory. No account login, credential use or HTTP request.
 const tls = require('node:tls');
 const crypto = require('node:crypto');
-const targets = ['outils.inklura.fr', 'auth.1clic.pro', 'huggingface.co'];
+const targets = ['outils.inklura.fr', 'auth.1clic.pro', 'huggingface.co', 'raw.githubusercontent.com'];
 async function handshake(host, version) {
   return new Promise(resolve => {
     const socket = tls.connect({host, port:443, servername:host, minVersion:version, maxVersion:version, rejectUnauthorized:true});
