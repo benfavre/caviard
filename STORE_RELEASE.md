@@ -1,7 +1,7 @@
 # Inklura PDF store release preparation
 
 This prepares **Mac App Store** and **Microsoft Store** packages alongside the
-existing direct downloads. No store submission or signed release has been made.
+existing direct downloads. No submission for certification or signed release has been made.
 The public version remains 1.4.0. Do not submit the current MAS build: Apple
 commerce and native sandbox acceptance below are still outstanding.
 
@@ -31,15 +31,28 @@ identity documents here. Azure identity validation alone is not a Store account.
 
 As of 30 October, authenticated Developer access to BEO PLUS is verified through
 its associated Entra tenant. The publisher profile reports an active company
-account and EU Digital Services Act compliance. The name `Inklura PDF` is
-available, but reservation fails for the invited Microsoft account with an Entra
-application-registration permission error. No product identity has been reserved
-or copied. Bruno has been asked in the private Microsoft ticket to reserve the
-MSIX/PWA application using his native tenant account. Do not broaden guest or
-tenant permissions to work around this error. The temporary tenant-administrator
+account and EU Digital Services Act compliance. Reservation failed with the
+invited Microsoft account, but subsequently succeeded using Bruno's native
+tenant account in a separate browser profile. **Inklura PDF** is now reserved
+as Store product `9PLQZNJTGPCW`, and submission `1152921505702276768` is a draft.
+No guest or tenant permissions were broadened. The temporary tenant-administrator
 role used for association has been removed. Apple membership is confirmed and
 the team variable is configured; App Store Connect access and signing assets
 remain to be verified.
+
+The verified Microsoft identity is configured in the GitHub `release` environment:
+
+| Variable | Partner Center value |
+| --- | --- |
+| `INKLURA_WINDOWS_IDENTITY_NAME` | `BEOPLUS.InkluraPDF` |
+| `INKLURA_WINDOWS_PUBLISHER` | `CN=235F0568-FD70-4528-8D32-8E37822DF41D` |
+| `INKLURA_WINDOWS_PUBLISHER_DISPLAY_NAME` | `BEO PLUS` |
+
+Package family: `BEOPLUS.InkluraPDF_cqz2xj63mf1vt`.
+These are package identifiers, not signing credentials.
+[Product management](https://partner.microsoft.com/fr-fr/dashboard/products/9PLQZNJTGPCW/overview)
+is private to authorized publisher users. The assigned public Store URL does not
+mean the application has been published.
 
 ### Microsoft Store
 
@@ -163,6 +176,25 @@ The independent audit passed for 151 PDFs / 399 pages. Production frontend and
 direct Linux AppImage builds also passed. The export-test helper now waits for
 the visible dialog and fresh acknowledgement reset. Check the PR's current CI
 result before merging; native installed Store acceptance is still outstanding.
+
+The [first real BEO PLUS Windows package build](https://github.com/benfavre/caviard/actions/runs/41039014119)
+passed on `a94ff0fa9703c4324df97c3d0a755fd3bed1d1cc`. Its AppX is version
+`1.4.0.0`, x64, with the publisher identity above. The downloaded artifact's
+SHA-256 was independently checked against the workflow report:
+`d60a72e53bb3064ac3eb2605df9d3632b7800892e32af7a90ae40b58e70d8512`.
+This is still an internal review build, not evidence of installed Windows
+acceptance, certification or a published Store release.
+It has been uploaded and saved in submission `1152921505702276768`: Partner
+Center reports **Validated** and the Packages section is complete. Windows
+Desktop is selected; other current/future device families are not enabled.
+The portal warns that `runFullTrust` requires approval during certification.
+Its technical justification is saved in the draft submission options, with
+manual publication selected. The options section is complete; this does not
+constitute capability approval or submission for certification.
+The French description, short description and first feature are saved. The
+listing remains incomplete pending screenshots; availability, properties, age
+rating, privacy/support links, reviewer access and installed acceptance remain
+to be completed before certification.
 
 ## Primary references (checked 29 October 2026)
 

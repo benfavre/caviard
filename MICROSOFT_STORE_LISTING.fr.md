@@ -1,16 +1,16 @@
 # Microsoft Store — fiche française en préparation
 
-Brouillon pour le compte éditeur BEO PLUS, au 30 octobre 2026. Aucun de ces
-champs n’a encore été enregistré dans Partner Center. L’accès BEO PLUS est
-confirmé ; le nom est disponible mais la réservation par le compte invité a
-échoué sur une autorisation Entra. La réservation est demandée à Bruno dans le
-ticket privé Microsoft. Les caractéristiques
+Brouillon pour le compte éditeur BEO PLUS, au 30 octobre 2026. La description,
+la description courte et une fonctionnalité sont enregistrées dans Partner
+Center ; la fiche reste incomplète sans captures d’écran. L’accès
+BEO PLUS est confirmé et le nom a été réservé depuis le compte natif de Bruno :
+produit `9PLQZNJTGPCW`, soumission `1152921505702276768` en brouillon. Les caractéristiques
 ci-dessous proviennent du code et du README de cette branche ; la validation
 du paquet installé reste à réaliser.
 
 ## Champs de la fiche
 
-**Nom à réserver :** Inklura PDF
+**Nom réservé :** Inklura PDF
 
 **Langue :** français (France)
 
@@ -91,7 +91,7 @@ de certification ; ne jamais les conserver dans ce dépôt.
 
 ## Éléments nécessaires avant envoi
 
-- Identité réelle du produit réservée dans BEO PLUS et paquet correspondant.
+- Validation du paquet correspondant à l’identité réelle BEO PLUS dans le portail.
 - Installation Windows et Windows App Certification Kit, puis test d’une mise
   à jour Store en conservant projets, modèles et crédits.
 - Captures réelles du paquet final avec des PDF synthétiques : édition manuelle,
