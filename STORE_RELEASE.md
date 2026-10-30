@@ -305,3 +305,50 @@ asks Bruno to generate/download an Inklura PDF In-App Purchase key and confirm i
 is ready, without attaching secrets to the ticket. Private transfer remains to
 arrange. The existing minute-based ticket watcher is active with no expiry. Native installation, StoreKit sandbox purchases/refunds, account deletion,
 privacy labels, screenshots, reviewer credentials, upload and submission remain.
+
+### Apple listing progress — 30 October, afternoon
+
+The macOS download is configured at **€0**, base country France. Availability is
+**France only**, effective after approval/publication, with future countries not
+automatically enabled. Consumable packs remain separate. This does not mean the
+app is submitted or live.
+
+App Privacy now has a **saved, unpublished draft** for name, email, user ID,
+purchase history and product interaction (account-bound export accounting).
+All five are declared linked to the account, for app functionality, without
+advertising tracking. No document-content collection is declared because PDF
+contents/paths never enter the account API. The existing BEO PLUS policy URL is
+saved. `APPLE_STORE_PRIVACY.fr.txt` is a product-specific draft, not a published
+policy: retention/logging, third-party disclosures and account-deletion scope
+still need completion before publishing the label and notice.
+
+Do not use `https://www.inklura.fr/privacy` as the definitive publisher notice
+without correction: the live page names “Inklura SAS”, a Paris address and an
+ISO 27001 certification not substantiated by this release dossier. No edit to that
+shared website or company-wide legal policy has been made here.
+
+Three 1440×900 French screenshots were captured from the real packaged macOS
+Electron UI on Apple Silicon in run
+[41054372488](https://github.com/benfavre/caviard/actions/runs/41054372488), commit
+`2738a29a3383ba9e9f619a9d9e544649eb6d57b2`. Synthetic PDF, real import/search/redaction/
+review interactions, no account mocks or bitmap scaling. A viewport override is
+needed because GitHub's Mac desktop constrains native windows to 1024px. The
+ad-hoc UI package uses App Store channel metadata but standard Electron, not the
+MAS runtime; **this is not evidence of App Sandbox, StoreKit, export or installed
+acceptance**. Only screenshots and provenance are retained, never this UI-only
+app. The three screenshots are uploaded to the French version draft, in order:
+redaction/review, search, original document. App Store Connect shows 3 of 10.
+
+Reviewer workflow notes and explanations for `network.client` and
+`files.user-selected.read-write` are saved. Notes explicitly retain the pending
+reviewer credentials, sandbox purchase tests and build upload. The account
+creation identity is shared with other Inklura products; account deletion must
+not silently remove those products or global workspace membership. The scope
+question is pending with Ben; no customer account has been deleted.
+
+Bruno confirmed **“clé prête”** in
+[Apple comment 6522739655](https://github.com/webdesign29/activ/issues/1410#issuecomment-6522739655).
+The next action is the private `.p8`/Key ID/Issuer ID handoff in the authorized
+Bruno–Ben Slack DM, requested in
+[comment 6522798254](https://github.com/webdesign29/activ/issues/1410#issuecomment-6522798254).
+No key content is posted to GitHub. Receipt and configuration are still pending.

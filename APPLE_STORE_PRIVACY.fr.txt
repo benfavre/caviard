@@ -1,0 +1,32 @@
+Inklura PDF — confidentialité de l’édition Mac App Store
+Projet de notice du 30 octobre 2026 — à finaliser avant publication
+
+Éditeur et contact
+Inklura PDF est distribué par BEO PLUS (ACTIV communication). Pour toute question sur vos données : contact@activ-communication.com. Cette notice décrit l’application Mac et complète la politique générale de BEO PLUS : https://www.activ-communication.com/politique-de-confidentialite/.
+
+Vos documents
+Les PDF, leur texte, les zones de caviardage et les instructions de l’assistant sont traités sur votre Mac. Ils ne sont pas transmis au service de compte, de crédits ou de paiement. La reconnaissance de texte et les modèles facultatifs s’exécutent localement. Les exports sont enregistrés à l’emplacement que vous choisissez.
+
+Les projets et la récupération facultative conservent des copies locales des PDF originaux non caviardés et des informations de travail. Vous pouvez supprimer ces copies dans « Projets et récupération ». Les fichiers sources et les exports que vous avez enregistrés ailleurs restent à leur emplacement. Un dossier synchronisé par votre propre outil de sauvegarde ou de partage dépend des réglages de cet outil. Les mots de passe des PDF ne sont pas conservés par l’application.
+
+Compte et décompte des exports
+La connexion utilise votre identifiant Inklura et les informations fournies à la création du compte, notamment le nom et l’adresse e-mail. Le service conserve le solde et les opérations de crédits afin d’autoriser les exports, d’éviter les doubles débits et de reprendre une opération interrompue. Il reçoit un identifiant aléatoire d’opération et son état ; il ne reçoit ni le nom, ni le chemin, ni le contenu du PDF. Ces opérations sont rattachées au compte.
+
+Un journal local conserve temporairement les informations nécessaires à la reprise d’un export, notamment son emplacement et l’autorisation macOS associée. Les autorisations portent sur les fichiers ou dossiers choisis par l’utilisateur.
+
+Achats Apple
+Les achats intégrés sont traités par Apple. L’application ne collecte pas votre numéro de carte bancaire. Le service Inklura vérifie les transactions auprès d’Apple et conserve les références, produits, quantités et états nécessaires à l’attribution des crédits, à la prévention de la fraude et au traitement des remboursements. Un identifiant aléatoire relie les achats au compte Inklura ; il ne contient ni nom ni adresse e-mail. Les transactions interrompues sont conservées localement jusqu’à leur vérification pour éviter de perdre l’achat ou de créditer deux fois le compte.
+
+Les crédits des packs Apple n’ont pas de date d’expiration. L’application n’utilise pas ces données pour du ciblage publicitaire et n’intègre pas de SDK publicitaire ou de mesure d’audience.
+
+Connexions et prestataires
+L’authentification et la gestion des crédits utilisent HTTPS. Les modèles facultatifs sont téléchargés depuis Hugging Face et GitHub. Ces services reçoivent les informations techniques nécessaires à la connexion, notamment l’adresse IP ; ils ne reçoivent pas les documents analysés. Les mises à jour de cette édition sont fournies par l’App Store. Les services tiers appliquent également leurs propres politiques aux données qu’ils traitent ; leur utilisation peut impliquer des traitements hors de l’Union européenne.
+
+Conservation et droits
+Les copies locales restent sur votre appareil jusqu’à leur suppression. La fermeture ou la suppression d’un compte ne supprime pas les fichiers sources, projets ou exports restés sur votre Mac. Certaines informations de paiement peuvent devoir être conservées pour les obligations comptables ou la gestion d’un litige. Vous pouvez adresser une demande d’accès, de rectification ou d’effacement à contact@activ-communication.com et saisir la CNIL : https://www.cnil.fr/.
+
+Points à finaliser avant publication de cette notice
+- Parcours de suppression du compte PDF et traitement de l’identité partagée Inklura.
+- Durées opérationnelles de conservation, sauvegardes et purge des journaux d’accès.
+- Vérification des disclosures des hébergeurs de modèles et du service d’authentification.
+- Hébergement d’une URL publique propre à Inklura PDF ; ne pas présenter ce projet comme une notice publiée.
