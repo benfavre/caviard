@@ -26,8 +26,15 @@ the direct download release workflow.
 Use **BEO PLUS**, not the separate Webdesign29 Apple team. Bruno was contacted on
 29 October 2026 for the active membership/team, App Store Connect access,
 Microsoft Partner Center status, the neighbour's OS and the Apple offer decision.
-Track the private conversation and ACTIV #1105; do not copy credentials or
+Track the private publisher-access tickets (Microsoft #1411, Apple #1410); do not copy credentials or
 identity documents here. Azure identity validation alone is not a Store account.
+
+As of 30 October, the BEO PLUS Microsoft tenant association is complete and Ben
+reports accepting the Developer invitation. Access in the packaging operator's
+browser still needs an authenticated check. No product identity has been reserved
+or copied. The temporary tenant-administrator role used for association has been
+removed. Apple membership is confirmed and the team variable is configured;
+App Store Connect access and signing assets remain to be verified.
 
 ### Microsoft Store
 
@@ -49,6 +56,9 @@ identity documents here. Azure identity validation alone is not a Store account.
    territories, reviewer access and the `runFullTrust` explanation. The app runs
    local PDF/OCR processing and uses user-selected files. Submit only after
    installed acceptance and a verified package identity.
+
+Use [the French listing and review draft](MICROSOFT_STORE_LISTING.fr.md) for the
+submission fields. Its unresolved items must be completed before submission.
 
 Pull requests build an unsigned **QA identity** on a Windows runner to validate
 packaging. It is not reserved in Partner Center and must never be submitted.
@@ -138,16 +148,16 @@ Local validation: 59 desktop unit tests, electron-builder schema validation for
 all four configurations, a production web build, and two real Electron UI/IPC
 tests for Store update isolation. These tests validate metadata-driven behavior,
 not an installed native Store package, approved listing, payment or Store update.
-The [native Windows QA build](https://github.com/benfavre/caviard/actions/runs/40910998781)
-passed AppX manifest/content verification using the explicitly non-submittable
-QA identity. The direct Linux AppImage build and real update-feed integrity test
-also passed. The local desktop run passed 14/15; the second-instance exit-code
-assertion also fails on unchanged `8c00588` in this environment. The full CI run
-also exposed a pre-existing export-test race, reproduced on that baseline: the
-test could check the old hidden acknowledgement before the dialog reset it.
-The shared test helper now waits for the visible dialog and fresh reset. Check
-the PR's current CI result before merging; native installed Store acceptance is
-still outstanding.
+On commit `aa22cd9966f22f8aa74e582095d570a770a50c1a`, the
+[native Windows QA build](https://github.com/benfavre/caviard/actions/runs/40914259673)
+passed AppX manifest/content verification with the non-submittable QA identity.
+The [full regression run](https://github.com/benfavre/caviard/actions/runs/40914259542)
+passed 216 PDF tests, 75 browser tests, 59 desktop unit/schema tests, 15 Electron
+desktop tests, 39 account-service tests and the real AppImage update-feed test.
+The independent audit passed for 151 PDFs / 399 pages. Production frontend and
+direct Linux AppImage builds also passed. The export-test helper now waits for
+the visible dialog and fresh acknowledgement reset. Check the PR's current CI
+result before merging; native installed Store acceptance is still outstanding.
 
 ## Primary references (checked 29 October 2026)
 
