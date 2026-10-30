@@ -26,7 +26,7 @@ Conservation et droits
 Les copies locales restent sur votre appareil jusqu’à leur suppression. La fermeture ou la suppression d’un compte ne supprime pas les fichiers sources, projets ou exports restés sur votre Mac. Certaines informations de paiement peuvent devoir être conservées pour les obligations comptables ou la gestion d’un litige. Vous pouvez adresser une demande d’accès, de rectification ou d’effacement à contact@activ-communication.com et saisir la CNIL : https://www.cnil.fr/.
 
 Points à finaliser avant publication de cette notice
-- Parcours de suppression du compte PDF et traitement de l’identité partagée Inklura.
+- Implémenter et vérifier le parcours de suppression du compte PDF ; le périmètre approuvé préserve l’identité partagée et les autres produits Inklura.
 - Durées opérationnelles de conservation, sauvegardes et purge des journaux d’accès.
 - Vérification des disclosures des hébergeurs de modèles et du service d’authentification.
 - Hébergement d’une URL publique propre à Inklura PDF ; ne pas présenter ce projet comme une notice publiée.

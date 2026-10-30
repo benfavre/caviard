@@ -299,12 +299,13 @@ Apple payment or credit grant is claimed. Server purchases remain disabled.
 Bruno confirmed the updated Developer agreement was signed for BEO PLUS in
 [Apple ticket #1410](https://github.com/webdesign29/activ/issues/1410#issuecomment-6521850408).
 EU trader-status setup and the Paid Applications agreement remain to verify.
-Benjamin is an App Manager; In-App Purchase key creation requires Admin/Account
-Holder access. [The next action](https://github.com/webdesign29/activ/issues/1410#issuecomment-6522193322)
-asks Bruno to generate/download an Inklura PDF In-App Purchase key and confirm it
-is ready, without attaching secrets to the ticket. Private transfer remains to
-arrange. The existing minute-based ticket watcher is active with no expiry. Native installation, StoreKit sandbox purchases/refunds, account deletion,
-privacy labels, screenshots, reviewer credentials, upload and submission remain.
+Benjamin is an App Manager; Bruno created the In-App Purchase key and supplied
+it and the Issuer ID privately in Slack. Sandbox authentication is verified;
+production configuration and purchase acceptance remain pending (details below).
+The existing minute-based ticket watcher is active with no expiry; it watches
+GitHub tickets, not Slack. Native installation, StoreKit sandbox purchases/refunds,
+account deletion, published privacy labels, reviewer credentials, upload and
+submission remain.
 
 ### Apple listing progress — 30 October, afternoon
 
@@ -319,7 +320,7 @@ All five are declared linked to the account, for app functionality, without
 advertising tracking. No document-content collection is declared because PDF
 contents/paths never enter the account API. The existing BEO PLUS policy URL is
 saved. `APPLE_STORE_PRIVACY.fr.txt` is a product-specific draft, not a published
-policy: retention/logging, third-party disclosures and account-deletion scope
+policy: retention/logging, third-party disclosures and account-deletion implementation
 still need completion before publishing the label and notice.
 
 Do not use `https://www.inklura.fr/privacy` as the definitive publisher notice
@@ -343,12 +344,24 @@ Reviewer workflow notes and explanations for `network.client` and
 `files.user-selected.read-write` are saved. Notes explicitly retain the pending
 reviewer credentials, sandbox purchase tests and build upload. The account
 creation identity is shared with other Inklura products; account deletion must
-not silently remove those products or global workspace membership. The scope
-question is pending with Ben; no customer account has been deleted.
+not silently remove those products or global workspace membership. Ben approved
+deleting the PDF account while preserving the user's other Inklura products and
+shared identity. Implementation and acceptance remain pending; no customer
+account has been deleted.
 
 Bruno confirmed **“clé prête”** in
 [Apple comment 6522739655](https://github.com/webdesign29/activ/issues/1410#issuecomment-6522739655).
-The next action is the private `.p8`/Key ID/Issuer ID handoff in the authorized
-Bruno–Ben Slack DM, requested in
-[comment 6522798254](https://github.com/webdesign29/activ/issues/1410#issuecomment-6522798254).
-No key content is posted to GitHub. Receipt and configuration are still pending.
+Bruno subsequently supplied the `.p8` and Issuer ID in the authorized private
+Slack DM. The matching downloaded key was moved out of Downloads into local
+protected storage outside the repository (directory 0700, files 0600). OpenSSL
+validated its format. On 30 October at 12:30 UTC, the official Apple server
+library authenticated to Sandbox and read notification history successfully
+(zero notifications). The same read against Production returned HTTP 401:
+production authentication and real purchases are not yet validated. No purchase
+or test notification was created by this check.
+
+[Receipt was acknowledged in Slack](https://activ-comm.slack.com/archives/D8G01PS3B/p1793363473572799).
+No further key handoff is required from Bruno. No key content is posted to GitHub,
+bundled in the app or deployed to the server. Production service configuration,
+notifications and sandbox purchase acceptance remain pending. This In-App Purchase
+key does not provide build-upload authentication.
