@@ -1180,6 +1180,7 @@ function App() {
           <p>
             Vérifiez visuellement votre copie exportée avant de la partager.
           </p>
+          <p><a href="https://outils.inklura.fr/api/inklura-pdf/privacy" target="_blank" rel="noopener noreferrer">Notice de confidentialité de l’édition Mac App Store : compte, achats et suppression des données</a></p>
         </div>
       </dialog>
       <dialog
