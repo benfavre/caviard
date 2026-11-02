@@ -90,9 +90,14 @@ test("macOS open-file and second-instance events add documents without replacing
   const args = process.env.CAVIARD_EXECUTABLE ? [third] : [path.resolve("."), third];
   // Playwright's process is a cmd.exe wrapper on Windows; launch Electron itself.
   const executable = await app.evaluate(() => process.execPath);
-  const second = spawn(executable, args, { stdio: "ignore" });
-  const [code] = await once(second, "exit");
-  expect(code).toBe(0);
+  // Match Playwright’s Linux test launch; npm Electron has no installed SUID helper.
+  // This affects only the synthetic second test process, never the shipped app.
+  if (process.platform === "linux") args.push("--no-sandbox");
+  const second = spawn(executable, args, { stdio: ["ignore", "ignore", "pipe"] });
+  let diagnostic = "";
+  second.stderr.on("data", chunk => { diagnostic += chunk; });
+  const [code, signal] = await once(second, "exit");
+  expect(code, `Second instance exited with ${signal || code}: ${diagnostic}`).toBe(0);
   await expect(page.getByLabel("Document actif").locator("option")).toHaveCount(3);
   await page.getByLabel("Document actif").selectOption("0");
   await expect(page.locator(".redaction:not(.draft)")).toHaveCount(1);

@@ -696,3 +696,16 @@ be completed using the approved TestFlight build on Bruno's Mac. Do not substitu
 mock purchase screens or claim tests occurred. The existing 2-minute encryption
 monitor remains active and will resume TestFlight when the declaration changes.
 No App Review submission or public Mac availability is claimed.
+
+
+## Microsoft Store 1.5.2 — préparation du 2 novembre 2026
+
+- Branche `feat/microsoft-store-ai-152`, paquet construit depuis `cc9acba`.
+- Run Windows réussi : https://github.com/benfavre/caviard/actions/runs/41490229421.
+- Paquet `Inklura-PDF-1.5.2-microsoft-store-x64.appx`, identité `BEOPLUS.InkluraPDF`, version `1.5.2.0`, nom visible `InkluraPDF`.
+- SHA-256 : `d90452a5ac1f96ccf3c2edf95d092c662c1dbe6997f182daa584f1c8f8a8083f`, recalculé après téléchargement et identique à la provenance des captures Windows.
+- 83 tests serveur et 80 tests unitaires desktop réussis. Scénarios natifs : 24 réussis au total, 1 essai OVH live non activé pour ce passage (déjà vérifié dans la release directe). Les assertions de titre nécessitent le build direct pour la suite générique ; les contrôles Windows du paquet vérifient séparément le nom exact Store. Le second processus Linux de test utilise la même option sandbox que le lancement Playwright ; aucun changement du runtime distribué.
+- Vérifications de l’exécutable extrait du paquet Windows : lancement, import PDF, recherche, trois caviardages, relecture, mises à jour Store, mode local par défaut, consentement IA hébergée et option clé personnelle. Les tests natifs IA vérifient séparément les débits IA/PDF, annulations et erreurs, choix d’achat et clé personnelle.
+- Fiche et confidentialité préparées dans `MICROSOFT_STORE_LISTING.fr.md` et `STORE_PRIVACY.fr.txt` pour expliquer le mode OVH facultatif et les crédits séparés.
+- **Pas encore soumis** : le navigateur connecté affiche toujours le formulaire Microsoft, malgré le signalement d’une connexion par l’utilisateur. Une clarification sur le profil/onglet est demandée. Aucune modification effectuée dans Partner Center pour cette version.
+- L’installation Store, WACK et la mise à jour d’une installation existante restent non vérifiés. La certification Microsoft reste requise.
