@@ -27,7 +27,7 @@ async function copyRuntime(target) {
       );
 }
 export default defineConfig({
-  define: { __PRODUCT_NAME__: JSON.stringify(productNames[process.env.INKLURA_DISTRIBUTION_CHANNEL || "direct"]) },
+  define: { __MICROSOFT_EDITION__: JSON.stringify(process.env.INKLURA_DISTRIBUTION_CHANNEL === "microsoft-store"), __PRODUCT_NAME__: JSON.stringify(productNames[process.env.INKLURA_DISTRIBUTION_CHANNEL || "direct"]) },
   worker: { format: "es" },
   plugins: [
     {

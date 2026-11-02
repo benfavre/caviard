@@ -55,12 +55,13 @@ try {
   const info = await page.evaluate(() => window.caviardDesktop.info());
   expect(info.distributionChannel).toBe(mac ? 'mac-app-store' : 'microsoft-store');
   expect(info.platform).toBe(process.platform);
-  const version = JSON.parse(await readFile('package.json', 'utf8')).version;
+  const version = process.env.STORE_EXPECTED_VERSION || JSON.parse(await readFile('package.json', 'utf8')).version;
+  const productName = process.env.STORE_EXPECTED_PRODUCT_NAME || JSON.parse(await readFile('build/product-names.json', 'utf8'))['microsoft-store'];
   expect(info.version).toBe(version);
   if (!mac) {
-    await expect(page).toHaveTitle('BEO Caviardage');
-    await expect(page.locator('.logo')).toContainText('BEO Caviardage');
-    expect(await app.evaluate(({ app }) => app.getName())).toBe('BEO Caviardage');
+    await expect(page).toHaveTitle(productName);
+    await expect(page.locator('.logo')).toContainText(productName);
+    expect(await app.evaluate(({ app }) => app.getName())).toBe(productName);
     expect(await app.evaluate(({ app }) => app.getPath('userData'))).toBe(profile);
   }
   await expect(page.getByLabel('Version et mises à jour')).toContainText(mac ? 'gérées par App Store' : 'gérées par Microsoft Store');

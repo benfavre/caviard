@@ -168,6 +168,8 @@ jobs:
           "CAVIARD_EXECUTABLE=$exe" | Out-File $env:GITHUB_ENV -Append -Encoding utf8
       - name: Capture actual Windows package UI using synthetic documents
         env:
+          STORE_EXPECTED_PRODUCT_NAME: 'BEO Caviardage'
+          STORE_EXPECTED_VERSION: '1.4.1'
           STORE_SOURCE_RUN: '41420699990'
           STORE_SOURCE_SHA256: d4f60db2102cc2f331956bcf9374d0eba7f0fa4872dbedaa9d7e5fab41f0e58e
         run: node scripts/store-screenshots.mjs

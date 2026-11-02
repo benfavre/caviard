@@ -625,3 +625,19 @@ instead of the temporary signed test kit.
 
 The hourly mail follow-up for the historical title clarification is resolved and
 its timer stopped. The separate Bruno ticket and Apple monitoring remain active.
+
+### Exact product name restoration requested (2 November 2026)
+
+Ben clarified that the intended Microsoft product name is **Inklura PDF** and
+explicitly requested restoring it. BEO Caviardage was an interim naming decision,
+not the accepted final brand. Version 1.4.1 remains published while Microsoft
+reviews the request. A human re-review was requested in the existing certification
+email thread, with the product website, original report and explicit distinction
+from unrelated inklura.com. No trademark ownership or Microsoft approval is claimed.
+
+Source version 1.4.2 restores Inklura PDF in the package, executable and UI while
+retaining Store identity, update channel and user-data location. Package preparation
+is separate from submission; do not claim the public name has changed until a
+matching update is certified and visible. The original 1.4.1 test/capture workflows
+remain pinned to their historical bytes. Hourly mail monitoring is active again
+for the name-restoration request.

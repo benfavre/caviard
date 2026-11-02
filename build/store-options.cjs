@@ -26,7 +26,7 @@ function applyStoreOptions(base, env) {
       ...common,
       productName: productNames[distribution],
       extraMetadata: { ...common.extraMetadata, storeProductName: productNames[distribution] },
-      artifactName: "BEO-Caviardage-${version}-microsoft-store-${arch}.${ext}",
+      artifactName: "Inklura-PDF-${version}-microsoft-store-${arch}.${ext}",
       // Partner Center signs uploaded AppX packages. Azure signing remains for
       // direct NSIS downloads and is deliberately not a Store dependency.
       forceCodeSigning: false,
