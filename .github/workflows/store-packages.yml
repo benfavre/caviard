@@ -122,7 +122,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: microsoft-store-internal-review
-          run-id: 41039014119
+          run-id: 41420699990
           github-token: ${{ github.token }}
           path: source-store-package
       - name: Prepare an ephemeral test signature and public certificate
@@ -151,7 +151,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: microsoft-store-internal-review
-          run-id: 41039014119
+          run-id: 41420699990
           github-token: ${{ github.token }}
           path: source-store-package
       - name: Unpack the exact submitted AppX with the Windows SDK
@@ -159,7 +159,7 @@ jobs:
         run: |
           $package = @(Get-ChildItem 'source-store-package/*.appx')
           if ($package.Count -ne 1) { throw 'Expected one package' }
-          if ((Get-FileHash $package[0].FullName -Algorithm SHA256).Hash.ToLowerInvariant() -ne 'd60a72e53bb3064ac3eb2605df9d3632b7800892e32af7a90ae40b58e70d8512') { throw 'Unexpected package bytes' }
+          if ((Get-FileHash $package[0].FullName -Algorithm SHA256).Hash.ToLowerInvariant() -ne 'd4f60db2102cc2f331956bcf9374d0eba7f0fa4872dbedaa9d7e5fab41f0e58e') { throw 'Unexpected package bytes' }
           $tool = Get-ChildItem "${env:ProgramFiles(x86)}/Windows Kits/10/bin/*/x64/makeappx.exe" | Sort-Object FullName -Descending | Select-Object -First 1
           & $tool.FullName unpack /p $package[0].FullName /d unpacked-store /o
           if ($LASTEXITCODE -ne 0) { throw 'AppX extraction failed' }
@@ -167,6 +167,9 @@ jobs:
           $exe = Join-Path (Resolve-Path 'unpacked-store') $manifest.Package.Applications.Application.Executable
           "CAVIARD_EXECUTABLE=$exe" | Out-File $env:GITHUB_ENV -Append -Encoding utf8
       - name: Capture actual Windows package UI using synthetic documents
+        env:
+          STORE_SOURCE_RUN: '41420699990'
+          STORE_SOURCE_SHA256: d4f60db2102cc2f331956bcf9374d0eba7f0fa4872dbedaa9d7e5fab41f0e58e
         run: node scripts/store-screenshots.mjs
       - uses: actions/upload-artifact@v4
         if: always()

@@ -1,4 +1,9 @@
-# Microsoft Store — fiche française en préparation
+# Microsoft Store — BEO Caviardage
+
+Mise à jour du 2 novembre : Ben confirme qu’inklura.com ne leur appartient pas
+et demande de corriger le nom. « BEO Caviardage » est réservé sur le produit
+existant 9PLQZNJTGPCW et sélectionné dans la fiche française. Paquet 1.4.1.0
+compilé et contrôlé sur Windows, run 41420699990 ; dépôt en cours.
 
 Soumission BEO PLUS envoyée en certification le 30 octobre 2026 : produit
 `9PLQZNJTGPCW`, soumission `1152921505702276768`, AppX x64 `1.4.0.0`.
@@ -14,7 +19,7 @@ L’installation native, WACK et la mise à jour via le Store restent à valider
 
 ## Champs de la fiche
 
-**Nom réservé :** Inklura PDF
+**Nom réservé et sélectionné :** BEO Caviardage
 
 **Langue :** français (France)
 
@@ -24,7 +29,7 @@ L’installation native, WACK et la mise à jour via le Store restent à valider
 
 **Description :**
 
-Inklura PDF vous aide à retirer les informations sensibles d’un document avant
+BEO Caviardage, édité par BEO PLUS, vous aide à retirer les informations sensibles d’un document avant
 de le transmettre. Importez vos PDF, tracez les zones à masquer, relisez les
 pages et exportez une nouvelle copie. Votre original reste intact.
 
@@ -45,7 +50,7 @@ Le texte du PDF exporté n’est plus sélectionnable ni recherchable. Les proje
 et la récupération conservent localement les PDF originaux non caviardés jusqu’à
 leur suppression dans l’application.
 
-Un compte Inklura et une connexion Internet sont nécessaires pour exporter.
+Un compte sur le service Inklura de BEO PLUS (inklura.fr) et une connexion Internet sont nécessaires pour exporter.
 Le compte comprend 20 PDF d’essai, une seule fois. Au-delà, des packs et des
 abonnements payants sont proposés ; un crédit correspond à un PDF enregistré.
 Les documents ne sont pas transmis au service de facturation. Consultez les

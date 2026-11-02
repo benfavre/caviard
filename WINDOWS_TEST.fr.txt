@@ -1,7 +1,6 @@
-Inklura PDF — essai Windows avant certification Microsoft Store
+BEO Caviardage — essai Windows avant certification Microsoft Store
 
-Ce kit contient la copie signée pour test du paquet 1.4.0.0 déjà validé dans
-Partner Center. Il ne s'agit pas d'une version publiée dans le Store.
+Ce kit contient la copie signée pour test du paquet Windows 1.4.1.0 vérifié par la chaîne de compilation. Il ne s'agit pas d'une version publiée dans le Store.
 La signature ne change pas le code ou les fichiers de l'application.
 
 Prérequis : Windows 10 version 2004 (build 19041) ou supérieur, ou Windows 11,
@@ -17,7 +16,7 @@ Installation (à effectuer par le propriétaire du PC)
    Installer le certificat > Ordinateur local > Placer tous les certificats
    dans le magasin suivant > Personnes autorisées (Trusted People).
    Ne pas choisir Autorités de certification racines de confiance.
-3. Ouvrir Inklura-PDF-1.4.0-TEST-ONLY.appx puis Installer et lancer Inklura PDF.
+3. Ouvrir BEO-Caviardage-1.4.1-TEST-ONLY.appx puis Installer et lancer BEO Caviardage.
    Si Windows affiche une erreur, conserver son code et arrêter là : ne pas
    désactiver Defender, SmartScreen, le contrôle des signatures ou une stratégie
    de sécurité du PC. Aucun mode développeur n'est nécessaire sur ces versions.

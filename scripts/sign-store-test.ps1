@@ -2,12 +2,12 @@
 $ErrorActionPreference = 'Stop'
 $source = @(Get-ChildItem 'source-store-package/*.appx')
 if ($source.Count -ne 1) { throw 'Expected exactly one source package' }
-$expected = 'd60a72e53bb3064ac3eb2605df9d3632b7800892e32af7a90ae40b58e70d8512'
+$expected = 'd4f60db2102cc2f331956bcf9374d0eba7f0fa4872dbedaa9d7e5fab41f0e58e'
 if ((Get-FileHash $source[0].FullName -Algorithm SHA256).Hash.ToLowerInvariant() -ne $expected) {
     throw 'Source package differs from the package validated in Partner Center'
 }
 $out = New-Item -ItemType Directory -Path 'release-windows-test' -Force
-$package = Join-Path $out.FullName 'Inklura-PDF-1.4.0-TEST-ONLY.appx'
+$package = Join-Path $out.FullName 'BEO-Caviardage-1.4.1-TEST-ONLY.appx'
 Copy-Item $source[0].FullName $package
 Copy-Item 'WINDOWS_TEST.fr.txt' (Join-Path $out.FullName 'LIRE-EN-PREMIER.txt')
 $tools = @(Get-ChildItem "${env:ProgramFiles(x86)}/Windows Kits/10/bin/*/x64/signtool.exe" | Sort-Object FullName -Descending)
@@ -20,7 +20,7 @@ try {
         -Subject 'CN=235F0568-FD70-4528-8D32-8E37822DF41D' `
         -CertStoreLocation 'Cert:\CurrentUser\My' -KeyExportPolicy NonExportable `
         -TextExtension @('2.5.29.37={text}1.3.6.1.5.5.7.3.3', '2.5.29.19={text}') `
-        -FriendlyName 'Inklura PDF - TEST ONLY - 14 days' `
+        -FriendlyName 'BEO Caviardage - TEST ONLY - 14 days' `
         -NotAfter (Get-Date).AddDays(14)
     $cerPath = Join-Path $out.FullName 'Inklura-PDF-TEST-ONLY.cer'
     Export-Certificate -Cert $cert -FilePath $cerPath | Out-Null
