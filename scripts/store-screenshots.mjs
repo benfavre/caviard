@@ -3,7 +3,7 @@
 // No mocked account, synthetic UI, DOM rewriting or marketing overlays.
 import { _electron as electron, expect } from '@playwright/test';
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
-import { mkdir, mkdtemp, writeFile, rm } from 'node:fs/promises';
+import { mkdir, mkdtemp, writeFile, rm, readFile } from 'node:fs/promises';
 import { tmpdir, release } from 'node:os';
 import path from 'node:path';
 
@@ -55,7 +55,14 @@ try {
   const info = await page.evaluate(() => window.caviardDesktop.info());
   expect(info.distributionChannel).toBe(mac ? 'mac-app-store' : 'microsoft-store');
   expect(info.platform).toBe(process.platform);
-  expect(info.version).toBe('1.4.0');
+  const version = JSON.parse(await readFile('package.json', 'utf8')).version;
+  expect(info.version).toBe(version);
+  if (!mac) {
+    await expect(page).toHaveTitle('BEO Caviardage');
+    await expect(page.locator('.logo')).toContainText('BEO Caviardage');
+    expect(await app.evaluate(({ app }) => app.getName())).toBe('BEO Caviardage');
+    expect(await app.evaluate(({ app }) => app.getPath('userData'))).toBe(profile);
+  }
   await expect(page.getByLabel('Version et mises à jour')).toContainText(mac ? 'gérées par App Store' : 'gérées par Microsoft Store');
   await page.locator('input[type=file]:not([webkitdirectory])').setInputFiles(pdf);
   await expect(page.locator('.drawing-layer')).toBeVisible();
@@ -84,7 +91,7 @@ try {
   await page.screenshot({ path: path.join(output, '03-relecture.png') });
   expect(errors).toEqual([]);
   await writeFile(path.join(output, 'provenance.json'), JSON.stringify({
-    ...(mac ? { sourceCommit: process.env.GITHUB_SHA, sourceRun: process.env.GITHUB_RUN_ID } : { sourceRun: 41039014119, sourceSha256: 'd60a72e53bb3064ac3eb2605df9d3632b7800892e32af7a90ae40b58e70d8512' }),
+    ...(mac ? { sourceCommit: process.env.GITHUB_SHA, sourceRun: process.env.GITHUB_RUN_ID } : { sourceRun: process.env.STORE_SOURCE_RUN, sourceSha256: process.env.STORE_SOURCE_SHA256 }),
     capture: mac ? 'Native macOS packaged UI, ad-hoc signature, App Store channel metadata; synthetic document; no account/authentication mocks' : 'Unmodified packaged UI extracted from AppX; synthetic document; no account/authentication mocks',
     platform: process.platform, osVersion: release(), info,
     ...(mac ? { viewport: { width: 1440, height: 900 }, viewportEmulation: 'Real UI rendered at 1440x900 because the CI desktop constrains native window size; no bitmap scaling' } : {}),

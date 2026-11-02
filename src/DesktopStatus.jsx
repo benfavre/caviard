@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { PRODUCT_NAME } from "./branding.mjs";
 export default function DesktopStatus({ dirty, busy }) {
   const desktop = window.caviardDesktop;
   const [info, setInfo] = useState(null),
@@ -29,7 +30,7 @@ export default function DesktopStatus({ dirty, busy }) {
   const labels = {
     idle: "Mises à jour automatiques activées",
     checking: "Recherche de mises à jour…",
-    current: "Inklura PDF est à jour",
+    current: `${PRODUCT_NAME} est à jour`,
     downloading: `Téléchargement de la mise à jour : ${Math.round(state.percent)} %`,
     ready: `La version ${state.version} est prête à installer`,
     installing: "Redémarrage…",
@@ -40,7 +41,7 @@ export default function DesktopStatus({ dirty, busy }) {
   const blocked = dirty || busy;
   return (
     <aside className="desktop-status" aria-label="Version et mises à jour">
-      <span className="desktop-version">Inklura PDF {info?.version}</span>
+      <span className="desktop-version">{PRODUCT_NAME} {info?.version}</span>
       <span aria-live="polite">{message || labels[state.phase]}</span>
       {info?.platform === "darwin" && state.phase === "disabled" &&
         <a href={`https://pdf.inklura.fr/#${info.arch === "arm64" ? "mac-apple" : "mac-intel"}`} target="_blank" rel="noreferrer">Télécharger pour mon Mac</a>}

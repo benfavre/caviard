@@ -27,8 +27,11 @@ with zipfile.ZipFile(package) as archive:
     assert identity.attrib["Version"] == version + ".0", "Unexpected Store version"
     publisher = manifest.find("m:Properties/m:PublisherDisplayName", ns)
     assert publisher.text == os.environ["INKLURA_WINDOWS_PUBLISHER_DISPLAY_NAME"]
+    expected_name = json.loads(Path("build/product-names.json").read_text())["microsoft-store"]
+    assert manifest.find("m:Properties/m:DisplayName", ns).text == expected_name
     app = manifest.find("m:Applications/m:Application", ns)
     assert app.attrib["Id"] == "InkluraPDF"
+    assert app.find("uap:VisualElements", ns).attrib["DisplayName"] == expected_name
     executable = app.attrib["Executable"].replace("\\", "/")
     assert executable in names, f"Manifest executable {executable!r} missing; archive executables: {[name for name in names if name.lower().endswith('.exe')]}"
     assert app.find("m:Extensions/uap:Extension/uap:FileTypeAssociation/uap:SupportedFileTypes/uap:FileType", ns).text == ".pdf"

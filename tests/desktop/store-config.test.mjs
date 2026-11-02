@@ -35,6 +35,10 @@ test("store packages cannot leak into the direct release feed", () => {
 test("Windows Store uses the reserved identity, Store signing and no updater manifests", () => {
   const config = applyStoreOptions(base, microsoft);
   assert.deepEqual(config.win.target, ["appx"]);
+  assert.equal(config.productName, "BEO Caviardage");
+  assert.equal(config.appx.displayName, config.productName);
+  assert.equal(config.win.executableName, config.productName);
+  assert.equal(config.extraMetadata.storeProductName, config.productName);
   assert.equal(config.appx.publisher, microsoft.INKLURA_WINDOWS_PUBLISHER);
   assert.equal(config.appx.identityName, microsoft.INKLURA_WINDOWS_IDENTITY_NAME);
   assert.equal(config.appx.electronUpdaterAware, false);

@@ -38,7 +38,8 @@ import DocumentTree from "./DocumentTree.jsx";
 import WorkspaceTools from "./WorkspaceTools.jsx";
 import ExportReview from "./ExportReview.jsx";
 import { isReviewed, pageSignature } from "./workspace.mjs";
-document.title = "Inklura PDF — Caviardage";
+import { PRODUCT_NAME, MICROSOFT_EDITION } from "./branding.mjs";
+document.title = MICROSOFT_EDITION ? PRODUCT_NAME : `${PRODUCT_NAME} — Caviardage`;
 
 pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
 // Load the worker with the page so local files can also be opened offline.
@@ -564,12 +565,12 @@ function App() {
         <a
           href="/"
           className="logo"
-          aria-label="Inklura, accueil"
+          aria-label={`${PRODUCT_NAME}, accueil`}
           onClick={(event) => event.preventDefault()}
         >
           <img src="/inklura-icon.svg" alt="" />
           <span>
-            Inklura<span className="brand-dot">.</span>
+            {MICROSOFT_EDITION ? PRODUCT_NAME : "Inklura"}<span className="brand-dot">.</span>
           </span>
         </a>
         <span className="product-label">
@@ -1055,8 +1056,8 @@ function App() {
       <footer>
         <span>
           Un outil{" "}
-          <a href="https://www.inklura.fr/" target="_blank" rel="noreferrer">
-            Inklura
+          <a href={MICROSOFT_EDITION ? "https://www.activ-communication.com/" : "https://www.inklura.fr/"} target="_blank" rel="noreferrer">
+            {MICROSOFT_EDITION ? "BEO PLUS" : "Inklura"}
             <Icon icon={faArrowUpRightFromSquare} />
           </a>
         </span>

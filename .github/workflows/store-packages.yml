@@ -35,6 +35,8 @@ jobs:
       - run: npm ci
       - run: npm run test:desktop:unit
       - run: npm run build
+        env:
+          INKLURA_DISTRIBUTION_CHANNEL: microsoft-store
       - run: node scripts/store-assets.mjs
       - name: Build and inspect non-submittable QA package
         env:
@@ -76,9 +78,30 @@ jobs:
       - run: node -e "require('./electron-builder.config.cjs')"
       - run: npm ci
       - run: npm run build
+        env:
+          INKLURA_DISTRIBUTION_CHANNEL: microsoft-store
       - run: node scripts/store-assets.mjs
       - run: npx electron-builder --config electron-builder.config.cjs --win appx --x64 --publish never
       - run: python scripts/verify-store-appx.py
+      - name: Capture the corrected package on Windows
+        shell: pwsh
+        run: |
+          $package = @(Get-ChildItem 'release-microsoft-store/*.appx')
+          if ($package.Count -ne 1) { throw 'Expected one package' }
+          $tool = Get-ChildItem "${env:ProgramFiles(x86)}/Windows Kits/10/bin/*/x64/makeappx.exe" | Sort-Object FullName -Descending | Select-Object -First 1
+          & $tool.FullName unpack /p $package[0].FullName /d unpacked-store /o
+          if ($LASTEXITCODE -ne 0) { throw 'AppX extraction failed' }
+          [xml]$manifest = Get-Content 'unpacked-store/AppxManifest.xml'
+          $env:CAVIARD_EXECUTABLE = Join-Path (Resolve-Path 'unpacked-store') $manifest.Package.Applications.Application.Executable
+          $env:STORE_SOURCE_SHA256 = (Get-FileHash $package[0].FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+          $env:STORE_SOURCE_RUN = '${{ github.run_id }}'
+          node scripts/store-screenshots.mjs
+          if ($LASTEXITCODE -ne 0) { throw 'Packaged UI checks failed' }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: microsoft-store-screenshots
+          path: output/store-screenshots/*
+          if-no-files-found: error
       - uses: actions/upload-artifact@v4
         with:
           name: microsoft-store-internal-review

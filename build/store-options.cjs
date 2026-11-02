@@ -1,4 +1,5 @@
 // Store identities must come from the publisher portals, never a guessed name.
+const productNames = require("./product-names.json");
 const CHANNELS = ["direct", "mac-app-store", "microsoft-store"];
 function channel(env) {
   const value = env.INKLURA_DISTRIBUTION_CHANNEL || "direct";
@@ -23,17 +24,20 @@ function applyStoreOptions(base, env) {
   if (distribution === "microsoft-store") {
     return {
       ...common,
+      productName: productNames[distribution],
+      extraMetadata: { ...common.extraMetadata, storeProductName: productNames[distribution] },
+      artifactName: "BEO-Caviardage-${version}-microsoft-store-${arch}.${ext}",
       // Partner Center signs uploaded AppX packages. Azure signing remains for
       // direct NSIS downloads and is deliberately not a Store dependency.
       forceCodeSigning: false,
-      win: { ...base.win, target: ["appx"], azureSignOptions: undefined,
+      win: { ...base.win, executableName: productNames[distribution], target: ["appx"], azureSignOptions: undefined,
         fileAssociations: [{ ext: "pdf", name: "PDF", role: "Editor" }] },
       appx: {
         identityName: required(env, "INKLURA_WINDOWS_IDENTITY_NAME", /^[A-Za-z0-9.-]{3,50}$/),
         publisher: required(env, "INKLURA_WINDOWS_PUBLISHER", /^CN=[^<>\r\n'&]+$/),
         publisherDisplayName: required(env, "INKLURA_WINDOWS_PUBLISHER_DISPLAY_NAME", /^[^<>&\r\n]+$/),
         applicationId: "InkluraPDF",
-        displayName: "Inklura PDF",
+        displayName: productNames[distribution],
         languages: ["fr-FR"],
         minVersion: "10.0.19041.0",
         maxVersionTested: "10.0.19041.0",

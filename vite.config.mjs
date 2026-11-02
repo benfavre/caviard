@@ -1,4 +1,5 @@
 import { defineConfig } from "vite";
+import productNames from "./build/product-names.json";
 import { cp, mkdir } from "node:fs/promises";
 // All executable AI assets ship with the app; no CDN code at inference time.
 async function copyRuntime(target) {
@@ -26,6 +27,7 @@ async function copyRuntime(target) {
       );
 }
 export default defineConfig({
+  define: { __PRODUCT_NAME__: JSON.stringify(productNames[process.env.INKLURA_DISTRIBUTION_CHANNEL || "direct"]) },
   worker: { format: "es" },
   plugins: [
     {

@@ -9,7 +9,7 @@ import {
   session,
 } from "electron";
 import { readFile, writeFile, rename, unlink } from "node:fs/promises";
-import { existsSync, createReadStream } from "node:fs";
+import { existsSync, createReadStream, readFileSync } from "node:fs";
 import { Readable } from "node:stream";
 import { ModelStore } from "./ai-models.mjs";
 import { AccountController } from "./account.mjs";
@@ -33,7 +33,15 @@ import electron from "electron";
 import { AppleStore } from "./apple-purchases.mjs";
 const here = path.dirname(fileURLToPath(import.meta.url));
 const dist = path.join(here, "../dist");
+const productMetadata = JSON.parse(readFileSync(path.join(app.getAppPath(), "package.json"), "utf8"));
+const productName = productMetadata.storeProductName || "Inklura PDF";
 app.setName("Inklura PDF");
+// Keep the existing profile location when only the Store display name changes.
+if (productName !== "Inklura PDF") {
+  const existingProfile = app.getPath("userData");
+  app.setName(productName);
+  app.setPath("userData", existingProfile);
+}
 protocol.registerSchemesAsPrivileged([
   {
     scheme: "caviard",
@@ -130,7 +138,7 @@ async function createWindow() {
     height: 900,
     minWidth: 390,
     minHeight: 600,
-    title: "Inklura PDF",
+    title: productName,
     icon: path.join(dist, "inklura-icon.png"),
     show: false,
     backgroundColor: "#ffffff",
@@ -162,7 +170,7 @@ async function createWindow() {
     dialog
       .showMessageBox(window, {
         type: "warning",
-        title: "Fermer Inklura PDF ?",
+        title: `Fermer ${productName} ?`,
         message: documentState.busy
           ? "Un PDF est en cours de traitement."
           : "Des caviardages n’ont pas encore été exportés.",
@@ -519,12 +527,12 @@ if (primary) app
               click: () => controller.check(),
             },
             {
-              label: "À propos d’Inklura PDF",
+              label: `À propos de ${productName}`,
               click: () =>
                 dialog.showMessageBox(window, {
                   type: "info",
-                  title: "Inklura PDF",
-                  message: `Inklura PDF ${app.getVersion()}`,
+                  title: productName,
+                  message: `${productName} ${app.getVersion()}`,
                   detail:
                     "Caviardage de PDF sur votre appareil. Vos documents ne sont jamais envoyés sur un serveur.",
                 }),
