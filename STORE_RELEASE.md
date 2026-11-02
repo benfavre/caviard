@@ -675,3 +675,24 @@ Partner Center confirms **Mise à jour en cours de certification**, preprocessin
 The previous 1.4.1 remains published during review. Version 1.4.2 was never
 submitted. Hourly monitoring now tracks InkluraPDF, the update and the existing
 clarification thread; do not send duplicate support messages.
+
+### Apple submission readiness checked (2 November 2026)
+
+The existing VALID build 1.4.0 / 1.4.56 was selected and saved on the macOS
+version; no package was uploaded again. Attempting Add for Review returns one
+explicit validation error: **Les attestations pour l’exportation de ce build
+sont manquantes.** The attached ANSSI document is received without error and its
+declaration remains IN_REVIEW. Association does not establish export approval.
+
+The account homepage still requests EU trader status; Benjamin's App Manager
+role cannot complete the account-holder/admin workflow. Bruno was asked in
+activ#1410 comment 6576047562 to complete or confirm that verification. Paid
+Applications agreement remains unverified from this role.
+
+All three consumables remain drafts. Their localized descriptions/pricing are
+present; private review instructions were added for 100, 500 and 1000 exports.
+Their required purchase-screen captures and real StoreKit acceptance must still
+be completed using the approved TestFlight build on Bruno's Mac. Do not substitute
+mock purchase screens or claim tests occurred. The existing 2-minute encryption
+monitor remains active and will resume TestFlight when the declaration changes.
+No App Review submission or public Mac availability is claimed.
