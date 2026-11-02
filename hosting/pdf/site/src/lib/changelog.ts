@@ -1,6 +1,32 @@
 // Public stable releases, newest first. Keep unpublished drafts out of this list.
 // Dates and changes come from the corresponding GitHub release notes.
 export const releases = [
+{
+  "version": "1.5.2",
+  "date": "2026-11-02",
+  "dateLabel": "2 novembre 2026",
+  "title": "Mistral dans votre assistant PDF",
+  "summary": "Choisissez l’IA hébergée Inklura ou votre propre clé OVHcloud, avec votre accord avant tout envoi. Le mode local reste disponible par défaut.",
+  "groups": [
+    {
+      "title": "Choisir votre moteur",
+      "items": [
+        "Dix analyses IA hébergées offertes par compte ; puis un crédit IA par analyse terminée, jusqu’à 60 000 caractères.",
+        "Cent crédits IA pour 5 € HT / 6 € TTC, valables douze mois. Les crédits d’export PDF restent séparés.",
+        "Utilisez votre propre clé OVHcloud AI Endpoints sans consommer de crédits IA Inklura ; OVHcloud facture directement cet usage."
+      ]
+    },
+    {
+      "title": "Garder la maîtrise du document",
+      "items": [
+        "L’envoi de texte et d’instructions exige votre accord explicite. Les PDF et images ne sont pas transmis ; l’OCR reste local.",
+        "Les propositions doivent être relues et ajoutées à l’aperçu avant export. Les projets, dossiers, profils et la relecture de la version 1.4 sont conservés.",
+        "Les échecs et annulations avant la fin libèrent le crédit réservé. La reprise d’une analyse terminée ne crée pas un nouveau débit."
+      ]
+    }
+  ]
+},
+
   {
   "version": "1.4.0",
   "date": "2026-09-24",
