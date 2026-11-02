@@ -13,9 +13,9 @@ sur inklura.fr ; aucune affiliation avec inklura.com.
 
 Le paquet x64 1.4.1.0 est marqué Validated dans Partner Center et remplace
 1.4.0.0. Les trois nouvelles captures proviennent du véritable exécutable.
-La nouvelle soumission a été envoyée le 2 novembre : Partner Center confirme
-« En cours de certification », étape Prétraitement (2/4). Publication automatique
-après approbation ; l’application n’est pas encore publiée.
+La nouvelle soumission a été publiée le 2 novembre : Partner Center confirme
+« Dans Microsoft Store » et la fiche publique française est accessible :
+https://apps.microsoft.com/detail/9PLQZNJTGPCW?hl=fr-FR&gl=FR .
 L’installation sur le PC de Bruno, WACK et la mise à jour Store restent à valider.
 
 ## Champs de la fiche

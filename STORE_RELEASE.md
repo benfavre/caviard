@@ -3,9 +3,9 @@
 This prepares **Mac App Store** and **Microsoft Store** packages alongside the
 existing direct downloads. Following the 2 November title rejection (10.1.1.1),
 the Microsoft edition was renamed **BEO Caviardage** and version 1.4.1.0 was
-resubmitted on the same product/submission. Partner Center confirms **En cours de
-certification**, preprocessing step 2/4, with automatic publication after approval.
-The product is not live. The public direct version remains 1.4.0.
+resubmitted on the same product/submission. Partner Center now confirms **Dans
+Microsoft Store** and the public French listing is live:
+https://apps.microsoft.com/detail/9PLQZNJTGPCW?hl=fr-FR&gl=FR . The public direct version remains 1.4.0.
 
 The uploaded Apple build 1.4.56 remains VALID. The ANSSI attestation has been
 uploaded to Apple and its encryption declaration remains IN_REVIEW (checked
@@ -613,3 +613,15 @@ All 70 desktop unit tests passed locally and in the initial Windows PR run
 download-cancellation test: its timer could abort before the mock registered its
 listener. Commit 6596f76 waits for the mocked download to start; no app payload
 changed. The subsequent Windows PR check 41421834363 passed.
+
+### Microsoft publication confirmed (2 November 2026)
+
+Partner Center now displays **Dans Microsoft Store**. The public France listing
+for BEO Caviardage, publisher BEO PLUS, is accessible at
+https://apps.microsoft.com/detail/9PLQZNJTGPCW?hl=fr-FR&gl=FR .
+This confirms publication of the corrected submission, not installed Windows
+acceptance or Store-update testing. Bruno should now install from this listing
+instead of the temporary signed test kit.
+
+The hourly mail follow-up for the historical title clarification is resolved and
+its timer stopped. The separate Bruno ticket and Apple monitoring remain active.
