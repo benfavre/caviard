@@ -88,7 +88,7 @@ test('hosted analysis uses one AI credit; successful native export uses one sepa
   await analyze(); await expect(page.locator('.suggestion')).toContainText('Mistral · OVHcloud');
   await expect(page.locator('.redaction:not(.draft)')).toHaveCount(0);
   expect(JSON.stringify(requests)).not.toContain('synthetic-contact.pdf');
-  await apply(); await page.getByRole('button', { name: 'Annuler', exact: true }).click();
+  await apply(); await page.getByTitle('Annuler (Ctrl/Cmd+Z)', { exact: true }).click();
   await expect(page.locator('.redaction:not(.draft)')).toHaveCount(0);
   expect(ledger.balance(owner).remaining).toBe(20);
   await apply(); await save(info);

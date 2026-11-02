@@ -1,4 +1,4 @@
-# Inklura PDF 1.5.0 — Mistral dans l’assistant
+# Inklura PDF 1.5.1 — Mistral dans l’assistant
 
 - **IA hébergée par Inklura et OVHcloud** : dix analyses offertes par compte, puis un crédit IA par analyse terminée. Le pack de 100 crédits IA coûte 5 € HT / 6 € TTC et reste valable douze mois. Les crédits d’export PDF restent séparés.
 - **Votre propre clé OVHcloud** : utilisez votre compte AI Endpoints sans consommer de crédits IA Inklura. La clé reste en mémoire pour la session.
@@ -10,4 +10,4 @@ L’analyse hébergée est limitée à 60 000 caractères par document, OCR comp
 
 La page de démonstration IA séparée a été retirée. Les essais et achats IA se font dans l’application.
 
-[Téléchargements](https://pdf.inklura.fr/) · [Guide](https://github.com/benfavre/caviard/blob/v1.5.0/GUIDE.fr.md)
+[Téléchargements](https://pdf.inklura.fr/) · [Guide](https://github.com/benfavre/caviard/blob/v1.5.1/GUIDE.fr.md)
