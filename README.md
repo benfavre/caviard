@@ -62,7 +62,7 @@ Projects contain the **original, unredacted PDF bytes**. They remain in this app
 
 ## Optional hosted AI or your own key
 
-Version 1.5.1 adds OVHcloud Mistral directly to the desktop assistant. Choose hosted Inklura AI credits (10 trial analyses, then 100 for €5 HT / €6 TTC) or your own OVHcloud AI Endpoints key. Export credits remain separate. Remote processing requires explicit consent; only extracted text and instructions leave the device. Review suggestions before applying. Local remains the default. [Configuration, billing and limits](AI.md).
+Version 1.5.2 adds OVHcloud Mistral directly to the desktop assistant. Choose hosted Inklura AI credits (10 trial analyses, then 100 for €5 HT / €6 TTC) or your own OVHcloud AI Endpoints key. Export credits remain separate. Remote processing requires explicit consent; only extracted text and instructions leave the device. Review suggestions before applying. Local remains the default. [Configuration, billing and limits](AI.md).
 
 ## Three ways to use local AI
 
