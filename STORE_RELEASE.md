@@ -2,8 +2,9 @@
 
 This prepares **Mac App Store** and **Microsoft Store** packages alongside the
 existing direct downloads. Microsoft submission `1152921505702276768` was sent
-for certification on 30 October 2026; Partner Center shows preprocessing in
-progress and automatic publication after certification. It is not live yet.
+for certification on 30 October 2026; the 2 November review failed under policy
+10.1.1.1 concerning the French listing title. The product is not live. See the
+Microsoft certification follow-up below; no resubmission has been made.
 The public version remains 1.4.0. Do not submit the current MAS build: Apple
 native StoreKit acceptance, encryption compliance and review completion below are still outstanding. The corrected package was uploaded successfully on 30 October at 15:46 UTC; Apple processing is complete/VALID. TestFlight is blocked by missing encryption compliance documentation.
 
@@ -549,3 +550,25 @@ in the protected local apple-encryption directory, outside the repository.
 
 Next: re-read the declaration state, then associate the approved declaration and
 resume Bruno's TestFlight validation. App Store publication has not occurred.
+
+
+### Microsoft certification follow-up (2 November 2026)
+
+Bruno supplied the report in activ#1411 comment 6572082409. A live read of
+Partner Center confirmed certification failure and a single reported item:
+policy 10.1.1.1, alleging that the French product name contains another software
+or service title. The report does not identify the allegedly conflicting title.
+
+The French Product Name field was checked live and is exactly `Inklura PDF`,
+matching the package display name and the product website. There is no verified
+basis yet for choosing a replacement name. No listing field was changed and no
+unchanged submission was sent again.
+
+Report: https://partner.microsoft.com/fr-fr/dashboard/products/9PLQZNJTGPCW/certification/reports/57ecae4f-a638-4890-87f2-a181919937a6
+
+A clarification message is prepared in
+`docs/microsoft-store/certification-clarification-20261102.txt` for the contact
+provided by Partner Center, `reportapp@microsoft.com`. It requests the exact
+conflicting title and required correction/evidence. It has not been sent;
+Ben's authorization to send this separate email is pending. Existing authorization
+to reply to Bruno in #1411/Slack remains in force.
