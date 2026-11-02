@@ -641,3 +641,12 @@ is separate from submission; do not claim the public name has changed until a
 matching update is certified and visible. The original 1.4.1 test/capture workflows
 remain pinned to their historical bytes. Hourly mail monitoring is active again
 for the name-restoration request.
+
+Restoration package run 41429394862 succeeded on source 34e0a25. AppX
+`Inklura-PDF-1.4.2-microsoft-store-x64.appx` has SHA-256
+`c6d15b1fb5a14cd2ced4e3ba07af78fd2fe5058a8424e130b69bc0f146602550`
+(verified after download). Manifest checks, native Windows executable launch,
+Inklura PDF title/header/app name, PDF import/search/redactions/review and capture
+checks pass. Windows PR run 41429403447 also passes. The review capture was
+visually checked. This package is prepared, **not submitted**; public 1.4.1 remains
+BEO Caviardage pending the name review.
