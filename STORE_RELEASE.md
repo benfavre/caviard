@@ -1,5 +1,9 @@
 # Inklura PDF store release preparation
 
+**Latest Microsoft state (2 November):** update 1.4.3 under the user-requested
+name **InkluraPDF** (no space) is in certification, submission
+`1152921505702295581`. Published 1.4.1 remains BEO Caviardage until approval.
+
 This prepares **Mac App Store** and **Microsoft Store** packages alongside the
 existing direct downloads. Following the 2 November title rejection (10.1.1.1),
 the Microsoft edition was renamed **BEO Caviardage** and version 1.4.1.0 was
@@ -650,3 +654,24 @@ Inklura PDF title/header/app name, PDF import/search/redactions/review and captu
 checks pass. Windows PR run 41429403447 also passes. The review capture was
 visually checked. This package is prepared, **not submitted**; public 1.4.1 remains
 BEO Caviardage pending the name review.
+
+### InkluraPDF variant submitted (2 November 2026)
+
+Ben requested trying **InkluraPDF**, without a space. It was available and
+reserved on the same product. The French product name, description, release notes,
+package display/executable/UI names and three screenshots were updated together.
+Certification notes explicitly disclose the earlier spaced-name rejection and
+pending human review; no claim that removing a space guarantees compliance.
+
+Version 1.4.3.0 comes from source 34868f2, successful package run 41430083997 and
+Windows PR run 41430095493. All 70 desktop unit tests pass. The exact AppX passes
+manifest and native packaged launch/import/search/redaction/review checks.
+SHA-256: `1298c159cf987da40fb45ad51a4e3ce7b61027a923652beca933eb28b0d196b9`.
+The three uploaded screenshot bytes match the run's files. Same package identity,
+publisher, application ID, user-data path and Store update channel are preserved.
+
+Partner Center confirms **Mise à jour en cours de certification**, preprocessing
+2/4, submission 1152921505702295581; automatic publication after approval.
+The previous 1.4.1 remains published during review. Version 1.4.2 was never
+submitted. Hourly monitoring now tracks InkluraPDF, the update and the existing
+clarification thread; do not send duplicate support messages.

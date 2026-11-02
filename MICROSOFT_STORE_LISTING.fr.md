@@ -1,26 +1,23 @@
-# Microsoft Store — BEO Caviardage
+# Microsoft Store — InkluraPDF
 
-Mise à jour du 2 novembre : Ben confirme qu’inklura.com ne leur appartient pas
-et demande de corriger le nom. « BEO Caviardage » est réservé sur le produit
-existant 9PLQZNJTGPCW et sélectionné dans la fiche française. Paquet 1.4.1.0
-compilé et contrôlé sur Windows, run 41420699990 ; dépôt validé.
+Le 2 novembre, à la demande de Ben, la variante exacte **InkluraPDF** (sans
+espace) a été réservée sur le même produit `9PLQZNJTGPCW`. La mise à jour
+`1152921505702295581` utilise ce nom dans la fiche française, le paquet 1.4.3.0
+et les trois captures réelles. Partner Center confirme **Mise à jour en cours
+de certification**, prétraitement 2/4, avec publication automatique après accord.
 
-Produit BEO PLUS `9PLQZNJTGPCW`, soumission `1152921505702276768`.
-Le refus initial du 2 novembre (10.1.1.1) portait sur « Inklura PDF ».
-Le nom réservé, la description et le nom du développeur sont maintenant
-« BEO Caviardage » / BEO PLUS. La connexion reste le service Inklura de BEO PLUS
-sur inklura.fr ; aucune affiliation avec inklura.com.
+La version publiée 1.4.1 reste BEO Caviardage pendant cet examen. La réservation
+ne vaut pas acceptation du nom. Les notes privées signalent explicitement le
+refus initial de « Inklura PDF » (10.1.1.1), la demande de clarification en cours
+et l’absence d’affiliation avec inklura.com. Le développeur reste BEO PLUS et
+le compte partagé reste le service Inklura sur inklura.fr.
 
-Le paquet x64 1.4.1.0 est marqué Validated dans Partner Center et remplace
-1.4.0.0. Les trois nouvelles captures proviennent du véritable exécutable.
-La nouvelle soumission a été publiée le 2 novembre : Partner Center confirme
-« Dans Microsoft Store » et la fiche publique française est accessible :
-https://apps.microsoft.com/detail/9PLQZNJTGPCW?hl=fr-FR&gl=FR .
+Paquet préparé sur le run 41430083997, contrôles Windows et captures vérifiés.
 L’installation sur le PC de Bruno, WACK et la mise à jour Store restent à valider.
 
 ## Champs de la fiche
 
-**Nom réservé et sélectionné :** BEO Caviardage
+**Nom réservé et sélectionné :** InkluraPDF
 
 **Langue :** français (France)
 
@@ -30,7 +27,7 @@ L’installation sur le PC de Bruno, WACK et la mise à jour Store restent à va
 
 **Description :**
 
-BEO Caviardage, édité par BEO PLUS, vous aide à retirer les informations sensibles d’un document avant
+InkluraPDF, édité par BEO PLUS, vous aide à retirer les informations sensibles d’un document avant
 de le transmettre. Importez vos PDF, tracez les zones à masquer, relisez les
 pages et exportez une nouvelle copie. Votre original reste intact.
 
