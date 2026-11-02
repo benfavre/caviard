@@ -1,14 +1,17 @@
 import { DOCUMENT_PLANS, planById, periodMonths } from '../electron/commerce-catalog.mjs';
 import { BillingError, addMonths, operationId } from './ledger.mjs';
+import { AI_PLANS } from '../electron/ai-commerce.mjs';
+import { AICredits } from './ai-credits.mjs';
 import { billingDetails, isMetropolitanFrance, promoCode } from './france-billing.mjs';
 export class Payments {
   constructor({ ledger, stripe, webhookSecret, priceIds = {}, enabled = false, publicUrl, live = false, allowLive = false, portalConfiguration, franceTaxRate }) {
     Object.assign(this, { ledger, stripe, webhookSecret, priceIds, publicUrl, live, portalConfiguration, franceTaxRate });
     this.enabled = enabled && !!stripe && !!webhookSecret && !!franceTaxRate && (!live || allowLive);
+    this.aiCredits = ledger ? new AICredits(ledger) : null;
     this.checkouts = new Map();
   }
   catalog() {
-    return DOCUMENT_PLANS.map(plan => ({ ...plan, priceCentsTtc: Math.round(plan.priceCentsHt * 1.2), taxPercent: 20, salesRegion: 'FR-METRO', purchasable: !!(this.enabled && this.priceIds[plan.id]) }));
+    return [...DOCUMENT_PLANS, ...AI_PLANS].map(plan => ({ ...plan, priceCentsTtc: Math.round(plan.priceCentsHt * 1.2), taxPercent: 20, salesRegion: 'FR-METRO', purchasable: !!(this.enabled && this.priceIds[plan.id]) }));
   }
   async checkout(account, planId, operation, billing, web = {}) {
     this.ledger.assertActive(account);
@@ -153,7 +156,8 @@ export class Payments {
         }
         // Validity begins when payment succeeds, including delayed payments.
         // A second event for the same purchase preserves the original date.
-        const starts = this.ledger.db.prepare('SELECT starts FROM grants WHERE id=?').get('checkout:' + session.id)?.starts ?? event.created * 1000;
+        const creditLedger = plan.creditType === 'ai' ? this.aiCredits : this.ledger;
+        const starts = this.ledger.db.prepare(`SELECT starts FROM ${plan.creditType === 'ai' ? 'ai_grants' : 'grants'} WHERE id=?`).get('checkout:' + session.id)?.starts ?? event.created * 1000;
         // The code shown on the Manage invoice: from /panier, or typed on the Stripe page.
         let promoCode = session.metadata?.inkluraPdfPromo || null;
         if (!promoCode && session.total_details?.amount_discount > 0) {
@@ -161,7 +165,7 @@ export class Payments {
         }
         apply = () => {
           this.ledger.db.prepare("UPDATE orders SET state='paid',payment_intent=? WHERE checkout=?").run(session.payment_intent || null, session.id);
-          if (plan.kind === 'volume') this.ledger.grant({ id: 'checkout:' + session.id, account: owner.id, kind: 'volume', units: plan.documents, starts, ends: addMonths(starts, 12) });
+          if (plan.kind === 'volume') creditLedger.grant({ id: 'checkout:' + session.id, account: owner.id, kind: 'volume', units: plan.documents, starts, ends: addMonths(starts, 12) });
           this.ledger.recordSale({ id: 'checkout:' + session.id, kind: 'first', account: owner.id, operation: order.operation, plan: plan.id,
             amountTotal: session.amount_total, amountTax: session.total_details?.amount_tax ?? null, currency: session.currency,
             name: details.name, email: details.email, address: details.address, taxId: details.tax_ids?.[0]?.value ?? null, customer: session.customer,

@@ -81,7 +81,7 @@ export class WebPurchases {
     return { plan: planById(purchase.plan)?.label || null, linked: !!purchase.owner, email: buyer?.email || null, name: buyer?.contact || null };
   }
   account(account) {
-    return { ...this.ledger.balance(account), pendingPurchases: this.ledger.db.prepare("SELECT count(*) AS n FROM web_purchases w JOIN orders o ON o.account=w.account AND o.operation=w.operation WHERE w.owner=? AND o.state='pending'").get(account).n, billing: this.ledger.sources(account).map(id => this.ledger.getAccount(id)).filter(a => a.customer).map(a => ({ id: a.id, subscription: !!a.subscription, label: planById(this.ledger.db.prepare('SELECT plan FROM web_purchases WHERE account=?').get(a.id)?.plan)?.label || 'Achats dans l’application' })) };
+    return { ...this.ledger.balance(account), aiCredits: this.payments.aiCredits.balance(account), pendingPurchases: this.ledger.db.prepare("SELECT count(*) AS n FROM web_purchases w JOIN orders o ON o.account=w.account AND o.operation=w.operation WHERE w.owner=? AND o.state='pending'").get(account).n, billing: this.ledger.sources(account).map(id => this.ledger.getAccount(id)).filter(a => a.customer).map(a => ({ id: a.id, subscription: !!a.subscription, label: planById(this.ledger.db.prepare('SELECT plan FROM web_purchases WHERE account=?').get(a.id)?.plan)?.label || 'Achats dans l’application' })) };
   }
   async portal(account, source) {
     if (!this.ledger.sources(account).includes(source)) throw new BillingError('account_not_found', 404);

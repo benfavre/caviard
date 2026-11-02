@@ -65,6 +65,8 @@ try {
     expect(await app.evaluate(({ app }) => app.getPath('userData'))).toBe(profile);
   }
   await expect(page.getByLabel('Version et mises à jour')).toContainText(mac ? 'gérées par App Store' : 'gérées par Microsoft Store');
+  const cloudState = await page.evaluate(() => window.caviardDesktop.ovhState());
+  expect(cloudState.available).toBe(!mac);
   await page.locator('input[type=file]:not([webkitdirectory])').setInputFiles(pdf);
   await expect(page.locator('.drawing-layer')).toBeVisible();
   await page.getByRole('button', { name: 'Réduire le zoom', exact: true }).click();
@@ -90,13 +92,24 @@ try {
   await expect(page.locator('.redaction:not(.draft)')).toHaveCount(3);
   await page.getByLabel('Page relue', { exact: true }).check();
   await page.screenshot({ path: path.join(output, '03-relecture.png') });
+  if (!mac) {
+    await page.getByRole('button', { name: '✦ Assistant local +', exact: true }).click();
+    await expect(page.getByLabel('Moteur de l’assistant')).toHaveValue('local');
+    await page.getByLabel('Moteur de l’assistant').selectOption('ovh');
+    await expect(page.getByRole('checkbox', { name: /J’autorise l’envoi à Inklura et OVHcloud/ })).not.toBeChecked();
+    await expect(page.getByRole('button', { name: 'Rechercher les informations', exact: true })).toBeDisabled();
+    await page.getByLabel('Moteur de l’assistant').selectOption('ovh-own');
+    await expect(page.getByLabel('Clé API OVHcloud AI Endpoints')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Rechercher les informations', exact: true })).toBeDisabled();
+    await page.screenshot({ path: path.join(output, '04-assistant-ovh.png') });
+  }
   expect(errors).toEqual([]);
   await writeFile(path.join(output, 'provenance.json'), JSON.stringify({
     ...(mac ? { sourceCommit: process.env.GITHUB_SHA, sourceRun: process.env.GITHUB_RUN_ID } : { sourceRun: process.env.STORE_SOURCE_RUN, sourceSha256: process.env.STORE_SOURCE_SHA256 }),
     capture: mac ? 'Native macOS packaged UI, ad-hoc signature, App Store channel metadata; synthetic document; no account/authentication mocks' : 'Unmodified packaged UI extracted from AppX; synthetic document; no account/authentication mocks',
     platform: process.platform, osVersion: release(), info,
     ...(mac ? { viewport: { width: 1440, height: 900 }, viewportEmulation: 'Real UI rendered at 1440x900 because the CI desktop constrains native window size; no bitmap scaling' } : {}),
-    checks: ['packaged launch', 'local PDF import', 'text search', 'three redactions', 'page review'],
+    checks: ['packaged launch', 'local PDF import', 'text search', 'three redactions', 'page review', 'Store-managed updates', 'cloud availability by distribution channel', ...(!mac ? ['local AI default', 'hosted AI consent gate', 'personal OVH key option'] : [])],
     limitations: mac ? 'UI-only macOS CI build. Standard Electron, not MAS runtime: does not validate App Sandbox, StoreKit, provisioning, installed acceptance, export or App Store updates. Not for submission or distribution.' : 'Windows CI host, not Store-installed Windows 10/11 acceptance, live export, WACK or Store update validation',
   }, null, 2) + '\n');
 } finally {

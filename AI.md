@@ -10,9 +10,21 @@ The desktop app offers three ways to prepare the same reversible redaction recta
 
 The first-use model pack is **1,180,213,607 bytes (about 1.18 GB)**. Models are optional and do not inflate the installer. The installer contains the inference and OCR code. Model downloads use pinned Hugging Face/GitHub revisions and SHA-256 hashes in `electron/ai-manifest.json`. Completed, verified files are reused when retrying an interrupted installation; an incomplete file is restarted. Models live in Electron's user-data directory under `ai-models/v1` and survive application updates.
 
-Only model downloads and the existing application update checks require the network. The sandboxed renderer and its workers allow only same-origin resources. Documents, extracted text, and instructions are never uploaded. There is no telemetry, cloud inference, Python dependency, localhost server, or general-purpose tool execution. The instruction model receives the user's instruction only; PDF contents never enter its prompt. Closing the document releases its suggestions; no document text is logged or stored by the assistant.
+Local mode does not upload document text or instructions. Network access is used for model downloads, account and billing, and updates. OVHcloud inference is optional and requires explicit consent. The server key never enters the renderer or installer; a personal key stays in the Electron main process for the session.
 
 Models execute on CPU using WebAssembly in a disposable worker. Cancelling terminates that worker. NER and instruction models are not held active together. The UI recommends 8 GB RAM; speed and peak memory depend on the document and machine. This is an optional assistant: manual redaction works without installing models.
+
+## OVHcloud Mistral: hosted credits or your own key
+
+Choose **OVHcloud · crédits IA Inklura** for the hosted service. Each authenticated account receives 10 free AI analyses, separate from its PDF export allowance. A completed document analysis uses one AI credit, including all text chunks (up to 60,000 characters / 64 chunks, OCR included). Preparing an instruction plan is included and limited to 20 requests daily. Failed or cancelled server work releases the reservation; an already completed analysis remains charged. Identical operation retries return the cached result without charging again (five-minute in-memory recovery window). Expired recovery returns an explicit error rather than silently running and charging again.
+
+The approved AI pack is 100 analyses for **€5 HT / €6 TTC**, valid for 12 months. Stripe's verified payment webhook credits only the AI wallet, idempotently. PDF exports continue to use their separate credits. Refunds and disputes block account consumption pending review.
+
+Choose **OVHcloud · ma propre clé** to supply a personal AI Endpoints token. It remains in Electron main-process memory for the session, is not sent to Inklura, and is cleared when forgotten or the window closes. OVHcloud bills this usage directly; it does not consume Inklura AI credits. PDF export billing still applies.
+
+Local remains the default. Both remote modes require explicit document consent. Hosted mode sends extracted text and instructions through Inklura to OVHcloud; personal-key mode sends them directly to OVHcloud. PDF binaries, filenames, images and coordinates are never sent. OCR runs locally and requires the model pack. No prompt or result is persisted by the service; only accounting, usage counts and operation digests are retained. Model suggestions always require review before applying.
+
+Server configuration: `OVH_AI_ENDPOINTS_ACCESS_TOKEN`, `INKLURA_PDF_AI_MODEL` (default `mistral@latest`), and the approved Stripe price `INKLURA_PDF_PRICE_AI_100`. Never ship the service key in an installer. Paid custom-document analysis requires authentication, consent and AI credits.
 
 ## Detection and limits
 

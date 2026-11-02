@@ -8,7 +8,7 @@ const escapeHtml = text => text.replaceAll('&', '&amp;').replaceAll('<', '&lt;')
 const privacyHtml = '<!doctype html><html lang="fr"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Confidentialité · Inklura PDF</title><main>' +
   privacyText.trim().split('\n\n').map((paragraph, index) => index === 0 ? '<h1>Inklura PDF — confidentialité</h1><p>Édition Mac App Store · 30 octobre 2026</p>' :
     '<' + (paragraph.length < 100 ? 'h2' : 'p') + '>' + escapeHtml(paragraph) + '</' + (paragraph.length < 100 ? 'h2' : 'p') + '>').join('') + '</main></html>';
-export function createApi({ webPurchases, applePurchases, accountDeletion, ledger, payments, authenticate, clientId, publicUrl, now = () => Date.now() }) {
+export function createApi({ ai, webPurchases, applePurchases, accountDeletion, ledger, payments, authenticate, clientId, publicUrl, now = () => Date.now() }) {
   // Promotion code lookups: pdf.inklura.fr/api/panier/promo relays them (the
   // site limits each visitor); a global ceiling here bounds Stripe calls.
   let lookups = [];
@@ -29,6 +29,7 @@ export function createApi({ webPurchases, applePurchases, accountDeletion, ledge
       const pathname = new URL(req.url, publicUrl).pathname;
       const prefix = new URL(publicUrl).pathname.replace(/\/$/, '');
       const path = prefix && pathname.startsWith(prefix + '/') ? pathname.slice(prefix.length) : pathname;
+      if (['/ai','/ai-demo.js','/ai-demo.css','/demo/analyze'].includes(path)) throw new BillingError('not_found',404);
       if (req.method === 'GET' && path === '/health') return send(res, 200, { ok: true });
       if (req.method === 'GET' && path === '/privacy') return send(res, 200, privacyHtml, 'text/html; charset=utf-8');
       if (req.method === 'GET' && path === '/web/resume') {
@@ -104,6 +105,7 @@ export function createApi({ webPurchases, applePurchases, accountDeletion, ledge
         enabled: !!clientId, issuer: INKLURA_ISSUER, clientId: clientId || null,
         deviceEndpoint: INKLURA_ISSUER + '/oauth2/device', tokenEndpoint: INKLURA_ISSUER + '/oauth2/token',
         plans: payments.catalog(), paymentsEnabled: payments.enabled, webPurchasesEnabled: !!webPurchases?.enabled,
+        ai: ai?.status() || { enabled: false },
         applePurchasesEnabled: !!applePurchases?.enabled, appleProducts: applePurchases?.catalog() || [],
         accountDeletionEnabled: !!accountDeletion,
       });
@@ -125,7 +127,8 @@ export function createApi({ webPurchases, applePurchases, accountDeletion, ledge
         return send(res, 200, await applePurchases.notification(data.signedPayload));
       }
       const allowed = new Set(['GET /v1/account', 'POST /v1/account/deletion', 'GET /v1/account/deletion', 'POST /v1/exports/reserve', 'POST /v1/exports/commit', 'POST /v1/exports/release', 'POST /v1/checkout', 'POST /v1/portal', 'POST /v1/apple/prepare', 'POST /v1/apple/claim']);
-      if (!allowed.has(req.method + ' ' + path)) throw new BillingError('not_found', 404);
+      const aiRoute = req.method === 'POST' && ['/v1/ai/plan', '/v1/ai/analyze'].includes(path);
+      if (!aiRoute && !allowed.has(req.method + ' ' + path)) throw new BillingError('not_found', 404);
       const identity = await authenticate(req.headers.authorization);
       if (path === '/v1/account/deletion') {
         if (!accountDeletion) throw new BillingError('deletion_unavailable', 503);
@@ -143,14 +146,22 @@ export function createApi({ webPurchases, applePurchases, accountDeletion, ledge
         return send(res, result.state === 'deleted' ? 200 : 202, result);
       }
       const account = ledger.account(identity.issuer, identity.subject);
-      if (path === '/v1/account') return send(res, 200, { ...ledger.balance(account.id), plans: payments.catalog(), paymentsEnabled: payments.enabled,
+      if (path === '/v1/account') return send(res, 200, { ...ledger.balance(account.id), aiCredits: payments.aiCredits.balance(account.id), ai: ai?.status() || { enabled: false }, plans: payments.catalog(), paymentsEnabled: payments.enabled,
         applePurchasesEnabled: !!applePurchases?.enabled, appleProducts: applePurchases?.catalog() || [] });
       if (!(req.headers['content-type'] || '').startsWith('application/json')) throw new BillingError('json_required', 415);
       let data;
-      try { data = JSON.parse((await readBody(req, 4096)).toString()); } catch (error) { if (error instanceof BillingError) throw error; throw new BillingError('invalid_json'); }
+      try { data = JSON.parse((await readBody(req, aiRoute ? 400000 : 4096)).toString()); } catch (error) { if (error instanceof BillingError) throw error; throw new BillingError('invalid_json'); }
       if (!data || typeof data !== 'object' || Array.isArray(data)) throw new BillingError('invalid_request');
-      const keys = path === '/v1/apple/prepare' ? ['productId'] : path === '/v1/apple/claim' ? ['transactionId'] : path === '/v1/checkout' ? ['planId', 'operation', 'billing'] : path === '/v1/portal' ? [] : ['operation'];
+      const keys = aiRoute ? ['payload', 'consent'] : path === '/v1/apple/prepare' ? ['productId'] : path === '/v1/apple/claim' ? ['transactionId'] : path === '/v1/checkout' ? ['planId', 'operation', 'billing'] : path === '/v1/portal' ? [] : ['operation'];
       if (Object.keys(data).some(key => !keys.includes(key))) throw new BillingError('unexpected_fields');
+      if (aiRoute) {
+        if (!ai) throw new BillingError('ai_not_configured', 503);
+        const controller = new AbortController();
+        const cancel = () => { if (!res.writableEnded) controller.abort(); };
+        res.on('close', cancel);
+        try { return send(res, 200, { result: await ai.request(account.id, path.split('/').at(-1), data.payload, data.consent, controller.signal) }); }
+        finally { res.off('close', cancel); }
+      }
       if (path.startsWith('/v1/apple/')) {
         if (!applePurchases?.enabled) throw new BillingError('apple_purchases_unavailable', 503);
         return send(res, 200, path.endsWith('/prepare') ? applePurchases.prepare(account.id, data.productId) : await applePurchases.claim(account.id, data.transactionId));

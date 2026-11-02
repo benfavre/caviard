@@ -41,3 +41,8 @@ Le serveur de crédits est hébergé en France chez OVHcloud. L’authentificati
 
 Vos droits et contact
 Vous pouvez demander l’accès, la rectification, l’effacement, la limitation ou la portabilité de vos données, ou vous opposer à un traitement fondé sur l’intérêt légitime, en écrivant à contact@activ-communication.com. Indiquez « Inklura PDF » et l’adresse de votre compte, sans joindre de PDF confidentiel ni de mot de passe. Certaines obligations légales peuvent limiter l’effacement immédiat. Vous pouvez saisir la CNIL : https://www.cnil.fr/.
+
+Assistant OVHcloud facultatif (versions compatibles et démonstration web)
+Après votre accord explicite, le mode hébergé transmet le texte extrait et les instructions au service Inklura, puis à OVHcloud AI Endpoints. Les PDF, images, noms de fichiers et coordonnées des zones ne sont pas transmis. Le mode avec votre propre clé contacte directement OVHcloud. La clé personnelle reste en mémoire jusqu’à la fermeture de l’application. Les suggestions doivent être relues. Le mode local reste disponible sans envoi de texte.
+
+Le serveur conserve le solde IA, les opérations, une empreinte de requête et des compteurs d’usage, séparément des crédits PDF. Les résultats d’analyse sont gardés temporairement en mémoire pour la reprise, jusqu’à cinq minutes. Les contenus ne sont pas inscrits dans la base ni les journaux applicatifs. La démonstration utilise seulement le texte fictif affiché ; un identifiant réseau haché sert à limiter les essais. Les données IA liées au compte sont supprimées avec le profil PDF.

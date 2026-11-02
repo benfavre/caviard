@@ -1,4 +1,5 @@
 // Document quotas and EUR prices excluding tax approved on 2026-09-23.
+import { AI_PLANS } from './ai-commerce.mjs';
 export const TRIAL_DOCUMENTS = 20;
 export const DOCUMENT_PLANS = Object.freeze([
   { id: 'volume-100', priceCentsHt: 2900, currency: 'eur', label: 'Volume 100', kind: 'volume', documents: 100, validityMonths: 12 },
@@ -17,7 +18,7 @@ export const WEB_PLANS = Object.freeze([
   { id: 'annual-100', priceCentsHt: 14900, currency: 'eur', label: 'Entreprise 100 · annuel', kind: 'subscription', documents: 100, interval: 'year' },
   { id: 'annual-500', priceCentsHt: 39900, currency: 'eur', label: 'Entreprise 500 · annuel', kind: 'subscription', documents: 500, interval: 'year' },
 ].map(Object.freeze));
-export const ALL_PLANS = Object.freeze([...DOCUMENT_PLANS, ...WEB_PLANS]);
+export const ALL_PLANS = Object.freeze([...DOCUMENT_PLANS, ...WEB_PLANS, ...AI_PLANS]);
 export function planById(id) { return ALL_PLANS.find(plan => plan.id === id); }
 /** Months covered by one paid subscription period. */
 export function periodMonths(plan) { return plan.interval === 'year' ? 12 : 1; }

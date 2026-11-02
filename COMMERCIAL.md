@@ -48,3 +48,7 @@ Le service de crédits, l’authentification Inklura et les achats Stripe sont d
 Les pages Checkout de production ont été ouvertes et les totaux vérifiés : 34,80 € TTC pour Volume 100, 5,88 € TTC/mois pour Entreprise 20. Les sessions non payées et le client de vérification ont ensuite été supprimés/expirés. Aucun débit réel n’a été effectué ; les scénarios de paiement, renouvellement et remboursement sont couverts par les tests automatisés. Les clés de test Webdesign29 ne sont pas utilisées. Voir [le guide technique](server/README.md).
 
 Seule la version stable 1.2.0 est proposée au téléchargement. Les copies de 1.1.0 déjà installées et le code public peuvent toujours fonctionner sans quota ; cette intégration ne constitue pas une protection contre la modification du logiciel.
+
+## IA hébergée — décision du 2 novembre 2026
+
+10 analyses offertes par compte, puis 100 crédits IA pour 5 € HT / 6 € TTC (TVA 20 %, France métropolitaine), valables 12 mois. Une analyse terminée utilise un crédit IA. Export PDF vendu séparément. La préparation des instructions est incluse. Une clé OVHcloud personnelle n’utilise aucun crédit IA Inklura et est facturée par OVHcloud.

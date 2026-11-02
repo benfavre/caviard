@@ -135,3 +135,9 @@ conservant la base et les secrets existants. Les tables Apple sont additives.
 Valider les achats/annulations, interruptions, doublons, mauvais compte,
 remboursements et reprise après fermeture avec de vrais achats sandbox sur Mac.
 Ne pas activer les achats clients tant que cette recette n’a pas réussi.
+
+## Optional OVHcloud AI
+
+Set the server-only `OVH_AI_ENDPOINTS_ACCESS_TOKEN`, optional `INKLURA_PDF_AI_MODEL` (default `mistral@latest`) and `INKLURA_PDF_PRICE_AI_100`. Never include the token in an installer. Authenticated `/v1/ai/plan` and `/v1/ai/analyze` calls require explicit consent. Each account has ten trial analyses; a completed bounded document batch consumes one AI credit, separately from PDF exports. The Stripe AI pack is 100 analyses for €5 HT / €6 TTC, valid twelve months. A personal desktop key calls OVH directly without using Inklura AI credits.
+
+The standalone AI demo and its public analysis API have been removed. AI trial access and purchases are part of the desktop assistant and existing account interface. The production service includes the existing Apple purchases, annual plans, web purchases and deletion features; keep these when deploying a new release. Include `src/ai/core.mjs` and `src/ai/prompt.mjs` alongside the server and Electron modules.

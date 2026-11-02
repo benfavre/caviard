@@ -26,6 +26,8 @@ test('HTTP account/export flow rejects uploads, forged identity, cross-origin an
  const headers={Authorization:'Bearer '+await token(),'Content-Type':'application/json'};
  try {
   assert.equal((await fetch(base+'/v1/account')).status,401);
+  for (const path of ['/ai','/ai-demo.js','/ai-demo.css']) assert.equal((await fetch(base+path)).status,404);
+  assert.equal((await fetch(base+'/demo/analyze',{method:'POST'})).status,404);
   const account=await(await fetch(base+'/v1/account',{headers})).json();assert.equal(account.remaining,20);
   const post=(p,data,h=headers)=>fetch(base+p,{method:'POST',headers:h,body:JSON.stringify(data)});
   assert.equal((await post('/v1/exports/reserve',{operation:'operation-123456789',pdf:'not allowed'})).status,400);

@@ -24,13 +24,13 @@ export default function Page(): any {
         <div>
           <div className="ipdf-eyebrow"><span /> INKLURA PDF · ESSAI GRATUIT</div>
           <h1 id="ipdf-title">Partagez l’essentiel.<br /><em>Gardez le reste<br />pour vous.</em></h1>
-          <p className="ipdf-lead">Préparez vos PDF avant de les partager avec une IA, un client ou un partenaire. Masquez les données personnelles et les informations confidentielles sur votre ordinateur, à la main ou avec un assistant IA local.</p>
+          <p className="ipdf-lead">Préparez vos PDF avant de les partager avec une IA, un client ou un partenaire. Masquez les données personnelles et les informations confidentielles sur votre ordinateur, à la main ou avec un assistant IA local ou OVHcloud, selon votre choix.</p>
           <div className="ipdf-actions"><a className="ipdf-primary" href="#telecharger">Télécharger Inklura PDF <span aria-hidden="true">↓</span></a><a className="ipdf-textlink" href="#demonstration">Voir la démo <span aria-hidden="true">↗</span></a></div>
           <p className="ipdf-meta">Windows, macOS et Linux · Version {release.version} · 20 PDF d’essai par compte · <a href="/tarifs">Voir les tarifs</a></p>
         </div>
         <RedactionDemo />
       </section>
-      <div className="ipdf-trust"><span>◎ <strong>Vos documents restent chez vous</strong></span><span>↶ Modifications annulables</span><span>▤ PDF numériques & scans</span><span>✦ IA locale optionnelle</span></div>
+      <div className="ipdf-trust"><span>◎ <strong>Vos documents restent chez vous</strong></span><span>↶ Modifications annulables</span><span>▤ PDF numériques & scans</span><span>✦ IA locale ou OVHcloud</span></div>
 
       <section className="ipdf-section ipdf-anonymisation" id="anonymisation" aria-labelledby="anonymisation-title">
         <div className="ipdf-section-head"><div><p className="ipdf-eyebrow">ANONYMISATION · IA GÉNÉRATIVE · PARTAGE</p><h2 id="anonymisation-title">Retirez les informations personnelles<br />avant de transmettre un PDF à une IA.</h2></div><p>Vous souhaitez faire résumer un contrat ou analyser un dossier par une IA ? Ne conservez dans la copie que les informations nécessaires à votre demande.</p></div>

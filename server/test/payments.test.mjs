@@ -439,3 +439,21 @@ test('a receipt reveals the buyer e-mail only until the purchase is claimed',asy
  assert.throws(()=>web.receipt('0'.repeat(64)),{code:'invalid_receipt'});assert.throws(()=>web.receipt('x'),{code:'invalid_receipt'});
  web.claim(f.account.id,receipt);assert.equal(web.receipt(receipt).email,null);assert.equal(web.receipt(receipt).linked,true);f.ledger.close();
 });
+
+test('paid AI pack credits only the AI wallet; paid notifications are idempotent',async()=>{
+ const f=fixture();
+ try {
+  f.payments.priceIds['ai-100']='price_ai';
+  f.stripe.prices.retrieve=async()=>({id:'price_ai',active:true,currency:'eur',unit_amount:500,tax_behavior:'exclusive'});
+  f.checkout.line_items.data[0].price.id='price_ai';
+  await f.payments.checkout(f.account.id,'ai-100','ai-purchase-1234567890');
+  assert.equal(f.payments.aiCredits.balance(f.account.id).remaining,10);
+  assert.equal(f.ledger.balance(f.account.id).remaining,20);
+  await f.event('checkout.session.completed');await f.event('checkout.session.completed');await f.event('checkout.session.async_payment_succeeded');
+  assert.equal(f.payments.aiCredits.balance(f.account.id).remaining,110);
+  assert.equal(f.ledger.balance(f.account.id).remaining,20);
+  const grant=f.ledger.db.prepare('SELECT * FROM ai_grants WHERE id=?').get('checkout:cs_fixture');
+  assert.equal(grant.ends,addMonths(grant.starts,12));
+  const offer=f.payments.catalog().find(p=>p.id==='ai-100');assert.equal(offer.priceCentsHt,500);assert.equal(offer.priceCentsTtc,600);
+ } finally {f.ledger.close();}
+});

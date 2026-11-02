@@ -1,19 +1,6 @@
 # Microsoft Store — InkluraPDF
 
-Le 2 novembre, à la demande de Ben, la variante exacte **InkluraPDF** (sans
-espace) a été réservée sur le même produit `9PLQZNJTGPCW`. La mise à jour
-`1152921505702295581` utilise ce nom dans la fiche française, le paquet 1.4.3.0
-et les trois captures réelles. Partner Center confirme **Mise à jour en cours
-de certification**, prétraitement 2/4, avec publication automatique après accord.
-
-La version publiée 1.4.1 reste BEO Caviardage pendant cet examen. La réservation
-ne vaut pas acceptation du nom. Les notes privées signalent explicitement le
-refus initial de « Inklura PDF » (10.1.1.1), la demande de clarification en cours
-et l’absence d’affiliation avec inklura.com. Le développeur reste BEO PLUS et
-le compte partagé reste le service Inklura sur inklura.fr.
-
-Paquet préparé sur le run 41430083997, contrôles Windows et captures vérifiés.
-L’installation sur le PC de Bruno, WACK et la mise à jour Store restent à valider.
+Mise à jour 1.5.2 préparée pour le produit existant `9PLQZNJTGPCW`. La soumission et son état seront consignés après vérification dans Partner Center.
 
 ## Champs de la fiche
 
@@ -31,7 +18,7 @@ InkluraPDF, édité par BEO PLUS, vous aide à retirer les informations sensible
 de le transmettre. Importez vos PDF, tracez les zones à masquer, relisez les
 pages et exportez une nouvelle copie. Votre original reste intact.
 
-Le caviardage et l’analyse des documents s’exécutent sur votre ordinateur.
+Le caviardage et l’analyse locale des documents s’exécutent sur votre ordinateur. Un mode OVHcloud facultatif est également proposé : après votre accord explicite, le texte extrait et vos instructions sont transmis à Inklura puis à OVHcloud, ou directement à OVHcloud avec votre propre clé. Les fichiers PDF, images et noms de fichiers restent sur votre appareil.
 L’assistant facultatif peut proposer des noms, coordonnées et autres éléments
 à masquer. Vous gardez la main sur chaque proposition : il peut manquer des
 informations et une relecture de toutes les pages reste indispensable.
@@ -53,6 +40,8 @@ Le compte comprend 20 PDF d’essai, une seule fois. Au-delà, des packs et des
 abonnements payants sont proposés ; un crédit correspond à un PDF enregistré.
 Les documents ne sont pas transmis au service de facturation. Consultez les
 offres et leurs conditions sur https://pdf.inklura.fr/tarifs.
+
+Le service IA hébergé comprend 10 analyses d’essai par compte. Une analyse terminée consomme un crédit IA ; les crédits d’export restent séparés. Le pack de 100 crédits IA coûte 5 € HT (6 € TTC), valable 12 mois. Avec votre propre clé OVHcloud, l’analyse ne consomme aucun crédit IA Inklura et relève de votre compte OVHcloud. L’analyse locale reste sans crédit IA.
 
 Le mode manuel ne nécessite pas les modèles de l’assistant. Leur téléchargement
 facultatif représente environ 1,18 Go ; l’analyse fonctionne ensuite localement.
@@ -84,14 +73,14 @@ Résumé des notes enregistrées dans les champs privés de certification :
 > Inklura PDF is an Electron desktop productivity application. The runFullTrust
 > capability is needed for its desktop process, native file dialogs, PDF and
 > folder imports, local OCR/model execution, and saving user-selected exports
-> and local projects. Documents are processed locally. Network access is used
+> and local projects. Local processing remains the default. Optional hosted AI sends extracted text and instructions to Inklura and OVHcloud only after explicit consent; a personal OVH key sends requests directly to OVHcloud. PDF binaries and images stay local. Network access is used
 > for account authentication, export credits, billing and optional model
 > downloads. This Store edition does not use the direct-download self-updater.
 >
 > Import a synthetic PDF, draw a redaction rectangle, review the page, sign in
 > to the supplied review account and export a new PDF. The result contains
 > rasterized redacted pages; the original file is unchanged. Exports require
-> Internet access and account credits. Import and analysis do not consume credits.
+> Internet access and account credits. Import and local analysis do not consume credits. Hosted analysis uses one separate AI credit after success (10 trial analyses); PDF export uses one PDF credit (20 trial exports). Personal OVH keys do not consume Inklura AI credits.
 > The optional model download is not required for manual redaction.
 
 Un compte de revue dédié avec 20 exports, sans données clients ni administration,
@@ -117,3 +106,7 @@ ne figurent pas dans ce dépôt. Ce contrôle du service n’est pas un export P
 Référence produit consultée : [site Inklura PDF](https://pdf.inklura.fr/),
 30 octobre 2026. Le suivi de certification se trouve dans
 [Partner Center](https://partner.microsoft.com/fr-fr/dashboard/products/9PLQZNJTGPCW/overview).
+
+## Nouveautés 1.5.2
+
+Assistant OVHcloud Mistral facultatif, avec 10 analyses d’essai, crédits IA séparés et possibilité d’utiliser votre propre clé. Le traitement local reste disponible par défaut. Consentement explicite avant transmission du texte, compteurs IA et PDF distincts, et fiabilisation de la confirmation avant export.

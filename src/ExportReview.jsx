@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useLayoutEffect, useRef, useState } from "react";
 import { isReviewed, reviewedCount } from "./workspace.mjs";
 export default function ExportReview({
   open,
@@ -12,7 +12,8 @@ export default function ExportReview({
   const dialog = useRef(null),
     [selected, setSelected] = useState(new Set()),
     [acknowledged, setAcknowledged] = useState(false);
-  useEffect(() => {
+  // Reset consent and selection before the dialog can receive input on reopen.
+  useLayoutEffect(() => {
     if (open) {
       setSelected(new Set(documents.map((d) => d.id)));
       setAcknowledged(false);

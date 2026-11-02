@@ -48,7 +48,13 @@ export async function analyzeDocument(
       if (signal?.aborted) abort();
       else signal?.addEventListener("abort", abort, { once: true });
     });
+  const jobs = []; let collecting = !!ai.batch, totalCharacters = 0, batchResults = null, resultIndex = 0;
   const scan = async (index, page, source) => {
+    if (collecting) {
+      totalCharacters += index.text.length;
+      if (totalCharacters > 60000) throw new Error("Analyse OVHcloud limitée à 60 000 caractères, OCR compris. Choisissez une page.");
+      jobs.push({ index, page, source }); return;
+    }
     check();
     if (index.text.length > 80000)
       throw new Error(
@@ -59,12 +65,9 @@ export async function analyzeDocument(
     if (requested.length)
       for (const chunk of textChunks(index.text)) {
         check();
-        const result = await abortable(
-          ai.request("detect", {
-            text: chunk.text,
-            labels: requested.map((c) => labels[c]),
-          }),
-        );
+        const result = batchResults ? batchResults[resultIndex++] : await abortable(ai.request("detect", {
+          text: chunk.text, labels: requested.map((c) => labels[c]),
+        }));
         entities.push(
           ...result.map((e) => ({
             ...e,
@@ -263,6 +266,20 @@ export async function analyzeDocument(
       } finally {
         page.cleanup();
       }
+    }
+    check();
+    if (collecting) {
+      collecting = false;
+      const requested = plan.categories.filter(c => labels[c]).map(c => labels[c]);
+      const blocks = requested.length ? jobs.flatMap(job => textChunks(job.index.text).filter(chunk => chunk.text.trim()).map(chunk => ({ text: chunk.text, labels: requested }))) : [];
+      if (blocks.length) {
+        if (blocks.length > 64 || blocks.reduce((n,b) => n+b.text.length,0)>60000) throw new Error("Analyse trop volumineuse. Réduisez la portée à une page.");
+        onProgress("Analyse OVHcloud — 1 crédit IA si elle réussit…");
+        batchResults = await abortable(ai.batchDetect(blocks));
+        if (!Array.isArray(batchResults) || batchResults.length !== blocks.length) throw new Error("Réponse IA incomplète.");
+      }
+      check();
+      for (const job of jobs) await scan(job.index,job.page,job.source);
     }
     check();
     return { suggestions, warnings: [...new Set(warnings)], coverage };

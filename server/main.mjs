@@ -7,6 +7,7 @@ import { Payments } from './payments.mjs';
 import { createAuthenticator } from './auth.mjs';
 import { WebPurchases } from './web-purchases.mjs';
 import { createApi } from './http.mjs';
+import { IncludedAI } from './ai.mjs';
 import { ALL_PLANS } from '../electron/commerce-catalog.mjs';
 import { ApplePurchases, appleProvider } from './apple-purchases.mjs';
 import { AccountDeletion } from './account-deletion.mjs';
@@ -32,7 +33,8 @@ const applePurchases = new ApplePurchases({ ledger, provider: appleProvider(env)
 const accountDeletion = new AccountDeletion({ ledger, payments });
 const deletionTimer = setInterval(() => void accountDeletion.run(), 60000);
 void accountDeletion.run();
-const server = createApi({ accountDeletion, applePurchases, webPurchases, ledger, payments, clientId, publicUrl, authenticate: createAuthenticator({ clientId }) });
+const ai = new IncludedAI({ ledger, apiKey: env.OVH_AI_ENDPOINTS_ACCESS_TOKEN || '', model: env.INKLURA_PDF_AI_MODEL || 'mistral@latest' });
+const server = createApi({ ai, accountDeletion, applePurchases, webPurchases, ledger, payments, clientId, publicUrl, authenticate: createAuthenticator({ clientId }) });
 server.requestTimeout = 15000; server.headersTimeout = 10000;
 server.listen(Number(env.INKLURA_PDF_PORT || 4387), '127.0.0.1', () => console.log('Inklura PDF account service listening on loopback; purchases ' + (payments.enabled ? 'enabled' : 'disabled')));
 function close() { clearInterval(deletionTimer); server.close(async () => { await accountDeletion.running; ledger.close(); process.exit(0); }); }
