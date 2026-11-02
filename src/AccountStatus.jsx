@@ -14,6 +14,14 @@ export default function AccountStatus({ busy }) {
     return () => { alive = false; off(); };
   }, []);
   useEffect(() => {
+    const buyAI = () => {
+      if (state?.phase !== 'signed-in') { run(() => desktop.signIn()); return; }
+      setOffers(true); setSelected(state.plans?.find(plan => plan.id === 'ai-100') || null);
+    };
+    window.addEventListener('inklura:buy-ai', buyAI);
+    return () => window.removeEventListener('inklura:buy-ai', buyAI);
+  }, [state]);
+  useEffect(() => {
     const dialog = offersDialog.current;
     if (offers && state?.phase === 'signed-in') dialog?.showModal();
     else dialog?.close();
@@ -33,7 +41,7 @@ export default function AccountStatus({ busy }) {
   return <aside className="account-status" aria-label="Compte Inklura et crédits PDF">
     <div className="account-status-row">
       <strong>Compte Inklura</strong>
-      <span aria-live="polite">{state.phase === 'signed-in' ? `${state.account?.remaining ?? 0} PDF disponibles` : state.phase === 'waiting' ? `Confirmez le code ${state.userCode} dans votre navigateur` : '20 PDF d’essai avec votre compte Inklura'}</span>
+      <span aria-live="polite">{state.phase === 'signed-in' ? `${state.account?.remaining ?? 0} PDF disponibles · ${state.account?.aiCredits?.remaining ?? 0} crédits IA` : state.phase === 'waiting' ? `Confirmez le code ${state.userCode} dans votre navigateur` : '20 PDF d’essai avec votre compte Inklura'}</span>
       {state.phase === 'signed-in' ? <>
         <button disabled={working || busy} onClick={() => run(() => desktop.refreshAccount())}>Actualiser</button>
         <button disabled={working || busy} onClick={() => setOffers(!offers)} aria-expanded={offers}>Offres et crédits</button>
@@ -50,10 +58,10 @@ export default function AccountStatus({ busy }) {
       <div className="dialog-title"><h2 id="account-offers-title">Offres et crédits</h2><button aria-label="Fermer les offres" onClick={() => setOffers(false)}>✕</button></div>
       <div className="account-offers">
       {error && <p role="alert">{error}</p>}
-      <p>Un crédit par export réussi. Importer, analyser ou annuler l’enregistrement ne consomme pas de crédit. Les packs sont valables 12 mois ; les quotas mensuels ne sont pas reportés.</p>
+      <p>Un crédit PDF par export réussi. Le solde IA est distinct : 10 analyses offertes, puis un crédit IA par analyse hébergée terminée. Le mode Local et votre propre clé ne consomment pas de crédit IA Inklura. Les packs sont valables 12 mois ; les quotas mensuels ne sont pas reportés.</p>
       <p>Achats réservés à la France métropolitaine. TVA 20 %. Les abonnements sont résiliables pour la prochaine échéance.</p>
       {!state.paymentsEnabled && <p>Les achats ne sont pas encore activés. Les tarifs sont validés ; l’ouverture des paiements est en préparation.</p>}
-      <div>{state.plans.map(plan => <article key={plan.id}><strong>{plan.label}</strong><span>{plan.documents} PDF {plan.kind === 'subscription' ? '/ mois / compte' : '· valables 12 mois'}</span><span>{money(plan.priceCentsTtc ?? Math.round(plan.priceCentsHt * 1.2))} TTC{plan.kind === 'subscription' ? ' / mois' : ''}</span><small>{money(plan.priceCentsHt)} HT</small><button disabled={working || busy || !plan.purchasable} onClick={() => { setError(''); setSelected(plan); }}>{plan.purchasable ? 'Choisir cette offre' : 'Bientôt disponible'}</button></article>)}</div>
+      <div>{state.plans.map(plan => <article key={plan.id}><strong>{plan.label}</strong><span>{plan.documents} {plan.creditType === 'ai' ? 'analyses IA' : 'PDF'} {plan.kind === 'subscription' ? '/ mois / compte' : '· valables 12 mois'}</span><span>{money(plan.priceCentsTtc ?? Math.round(plan.priceCentsHt * 1.2))} TTC{plan.kind === 'subscription' ? ' / mois' : ''}</span><small>{money(plan.priceCentsHt)} HT</small><button disabled={working || busy || !plan.purchasable} onClick={() => { setError(''); setSelected(plan); }}>{plan.purchasable ? 'Choisir cette offre' : 'Bientôt disponible'}</button></article>)}</div>
       {selected && <form className="account-billing" onSubmit={event => { event.preventDefault(); run(async () => { await desktop.checkout(selected.id, billing); setSelected(null); }); }}>
         <h3>Facturation · {selected.label}</h3>
         <p>Votre adresse doit être en France métropolitaine. Confirmez le montant sur Stripe avant de payer.</p>

@@ -1259,6 +1259,21 @@ kbd {
   color: #65758f;
   line-height: 1.7;
 }
+.ai-provider { margin-bottom: 18px; }
+.ai-provider label:not(.ovh-consent) { display: grid; gap: 7px; }
+.ai-provider select, .ai-provider input:not([type="checkbox"]) {
+  width: 100%; min-width: 0; box-sizing: border-box; padding: 9px;
+  border: 1px solid #c6d3e5; border-radius: 6px; font: inherit; background: white;
+}
+.ai-provider input:focus-visible, .ai-provider select:focus-visible {
+  outline: 2px solid #146bff; outline-offset: 2px;
+}
+.ovh-settings { display: grid; gap: 12px; margin-top: 12px; padding: 12px;
+  border: 1px solid #c6d3e5; border-radius: 8px; background: #f6f9ff; }
+.ovh-settings p, .ovh-settings small { margin: 0; line-height: 1.6; }
+.ovh-settings-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.ovh-consent { display: flex; gap: 8px; align-items: flex-start; line-height: 1.5; }
+.ovh-consent input { margin-top: 4px; flex-shrink: 0; }
 .model-install {
   padding: 16px;
   background: #f6f7f9;

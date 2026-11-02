@@ -12,6 +12,8 @@ import { readFile, writeFile, rename, unlink } from "node:fs/promises";
 import { existsSync, createReadStream } from "node:fs";
 import { Readable } from "node:stream";
 import { ModelStore } from "./ai-models.mjs";
+import { AccountAI } from "./account-ai.mjs";
+import { OvhMistral } from "./ovh-mistral.mjs";
 import { AccountController } from "./account.mjs";
 import { AccountExports } from "./account-export.mjs";
 import { DocumentImports, launchPaths } from "./document-imports.mjs";
@@ -49,6 +51,7 @@ let window,
   modelStore,
   accountController,
   accountExports,
+  accountAI,
   allowClose = false,
   closingPrompt = false;
 let documentState = { dirty: false, busy: false };
@@ -79,6 +82,7 @@ else {
     receivePaths(Array.isArray(data?.paths) ? data.paths : []);
   });
 }
+const ownOvh = new OvhMistral();
 const csp =
   "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data: blob:; connect-src 'self' data: blob:; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'";
 const mime = {
@@ -167,6 +171,8 @@ async function createWindow() {
       });
   });
   window.on("closed", () => {
+    accountAI?.cancel();
+    ownOvh.clear();
     window = null;
     documentState = { dirty: false, busy: false };
     allowClose = false;
@@ -247,6 +253,7 @@ if (primary) app
       onSignedIn: () => accountExports.reconcile(),
     });
     accountExports = new AccountExports({ directory: path.join(app.getPath("userData"), "account-exports"), account: accountController });
+    accountAI = new AccountAI(accountController);
     accountController.on("state", (state) => {
       if (window && !window.isDestroyed()) window.webContents.send("account:state", state);
     });
@@ -290,6 +297,17 @@ if (primary) app
       trusted(event);
       return modelStore.status();
     });
+    ipcMain.handle("ai:ovh-state", (event) => { trusted(event); return accountAI.snapshot(); });
+    ipcMain.handle("ai:own-ovh-state", (event) => { trusted(event); return ownOvh.snapshot(); });
+    ipcMain.handle("ai:own-ovh-configure", (event, config) => { trusted(event); return ownOvh.configure(config); });
+    ipcMain.handle("ai:own-ovh-clear", (event) => { trusted(event); return ownOvh.clear(); });
+    ipcMain.handle("ai:own-ovh-request", (event, type, payload, consent) => { trusted(event); return ownOvh.request(type, payload, consent); });
+    ipcMain.handle("ai:own-ovh-cancel", (event) => { trusted(event); ownOvh.cancel(); });
+    ipcMain.handle("ai:ovh-request", (event, type, payload, consent) => {
+      trusted(event);
+      return accountAI.request(type, payload, consent);
+    });
+    ipcMain.handle("ai:ovh-cancel", (event) => { trusted(event); accountAI.cancel(); });
     ipcMain.handle("ai:install", (event) => {
       trusted(event);
       return modelStore.install();

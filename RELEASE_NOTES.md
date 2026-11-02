@@ -1,36 +1,13 @@
-# Inklura PDF 1.4.0 — projets, recherche et relecture
+# Inklura PDF 1.5.0 — Mistral dans l’assistant
 
-[Télécharger pour Windows, macOS et Linux](https://pdf.inklura.fr/)
+- **IA hébergée par Inklura et OVHcloud** : dix analyses offertes par compte, puis un crédit IA par analyse terminée. Le pack de 100 crédits IA coûte 5 € HT / 6 € TTC et reste valable douze mois. Les crédits d’export PDF restent séparés.
+- **Votre propre clé OVHcloud** : utilisez votre compte AI Endpoints sans consommer de crédits IA Inklura. La clé reste en mémoire pour la session.
+- **Votre accord avant tout envoi** : seuls le texte extrait et les instructions sont transmis. Les PDF et images restent sur votre appareil ; l’OCR reste local. Le mode local reste le choix par défaut.
+- **Décompte fiable** : les échecs et annulations avant la fin libèrent le crédit réservé ; la reprise d’une même analyse terminée n’ajoute pas de débit. La préparation du plan est incluse.
+- **Le même parcours de relecture** : vérifiez les suggestions, ajoutez les zones à l’aperçu, puis relisez avant l’export. Les projets, profils, dossiers et fonctions de la version 1.4 sont conservés.
 
-## Reprendre un dossier
+L’analyse hébergée est limitée à 60 000 caractères par document, OCR compris. L’IA peut manquer des informations : vérifiez chaque page avant de partager le PDF exporté. Avec votre clé personnelle, OVHcloud facture directement l’utilisation ; les crédits PDF continuent de s’appliquer à l’export.
 
-- Enregistrez un projet nommé sur votre appareil, puis rouvrez ses PDF, ses zones de caviardage, son historique d’annulation et ses pages relues.
-- Activez, si vous le souhaitez, la récupération automatique pour la session. Une copie est enregistrée après une pause de 1,2 seconde ; le prochain lancement propose de la restaurer ou de la supprimer.
-- Les sauvegardes sont atomiques : une interruption conserve la dernière copie complète. Les octets des PDF sont stockés une seule fois par document ouvert et partagés entre les projets qui les utilisent.
-- Supprimez un projet ou la récupération depuis l’application. Les copies de PDF inutilisées sont retirées du stockage local.
+La page de démonstration IA séparée a été retirée. Les essais et achats IA se font dans l’application.
 
-Les projets contiennent les **originaux non caviardés** et restent sur cet appareil. Aucun mot de passe de PDF ni identifiant de compte n’y est enregistré. Ils ne constituent pas des sauvegardes portables : effacer les données de l’application ou du navigateur les supprime. Attendez la confirmation de sauvegarde avant de fermer ; les modifications postérieures à la dernière copie ne sont pas récupérables.
-
-## Naviguer et rechercher
-
-- Une colonne de documents conserve les sous-dossiers, propose une recherche par nom et indique les états « À traiter », « Modifié », « Relu » et « Exporté ».
-- Recherchez un texte exact dans le document courant ou tous les PDF ouverts, sans distinction de casse. Prévisualisez chaque résultat, ajustez la sélection et ajoutez les zones. L’application peut être annulée dans chaque document.
-- Les profils réutilisables conservent vos catégories, expressions à masquer et exceptions. Les politiques prédéfinies peuvent servir de point de départ ; les profils restent locaux et peuvent être supprimés.
-- Le texte exact et les catégories reconnues par règles fonctionnent sans modèle linguistique. La détection des personnes, lieux et organisations ainsi que l’OCR nécessitent les modèles locaux installés.
-
-Sans OCR, les images et scans ne sont pas analysés. Une zone de recherche peut couvrir toute une ligne de texte ; vérifiez les résultats et les exceptions avant de les ajouter.
-
-## Vérifier avant d’exporter
-
-- Marquez une page comme relue. Toute modification de ses zones invalide cet état ; une annulation qui restaure exactement les zones relues rétablit l’indication.
-- Le récapitulatif d’export permet de choisir les documents, de revenir aux pages non relues et de voir le nombre de crédits correspondant aux fichiers sélectionnés.
-- L’export de pages non marquées comme relues demande une confirmation explicite. Les documents sans zone sont signalés, car leur contenu visible restera lisible.
-- Les crédits suivent les enregistrements réussis. Fermer le récapitulatif ou annuler le choix de destination ne consomme rien.
-
-## PDF protégés et mises à jour
-
-- Entrez le mot de passe d’un PDF directement à l’ouverture, réessayez en cas d’erreur ou ignorez le fichier pour poursuivre l’import. Un projet protégé redemande le mot de passe lors de la reprise.
-- Sur les Mac sans mises à jour intégrées, un lien conduit au téléchargement Apple Silicon ou Intel approprié. L’historique des versions est accessible depuis l’application.
-- La chaîne de publication vérifie les signatures configurées. Les mises à jour automatiques Mac sont activées uniquement pour les builds signés et notariés. La signature nécessite les certificats de l’éditeur ; sa préparation ne transforme pas les installateurs existants en versions signées.
-
-Les exports restent reconstruits à partir d’images caviardées, sans texte sélectionnable ni métadonnées documentaires. Les PDF, l’OCR et l’assistant restent locaux ; le compte, les crédits et les achats nécessitent Internet.
+[Téléchargements](https://pdf.inklura.fr/) · [Guide](https://github.com/benfavre/caviard/blob/v1.5.0/GUIDE.fr.md)

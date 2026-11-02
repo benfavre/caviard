@@ -8,7 +8,7 @@ STAGE="${1:?staging directory required}"
 id inklura-pdf >/dev/null 2>&1 || useradd --system --home-dir /var/lib/inklura-pdf --no-create-home --shell /usr/sbin/nologin inklura-pdf
 RELEASE="/opt/inklura-pdf/releases/$(date -u +%Y%m%dT%H%M%SZ)"
 install -d -m 755 "$RELEASE" /opt/inklura-pdf/releases
-cp -a "$STAGE/server" "$STAGE/electron" "$RELEASE/"
+cp -a "$STAGE/server" "$STAGE/electron" "$STAGE/src" "$RELEASE/"
 chown -R root:root "$RELEASE"
 chmod -R go-w "$RELEASE"
 if [ ! -f /etc/inklura-pdf.env ]; then

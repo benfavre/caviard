@@ -1,6 +1,6 @@
 {
   "name": "caviard-pdf",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -25,7 +25,8 @@
     "examples:ai": "node scripts/ensure-examples.mjs && node scripts/generate-ai-examples.mjs",
     "models:install": "node scripts/install-models.mjs",
     "test:ai": "node --test tests/ai.test.mjs tests/desktop/models.test.mjs",
-    "test:ai:real": "npm run examples:ai && npm run build && playwright test --config playwright.ai.config.mjs"
+    "test:ai:real": "npm run examples:ai && npm run build && playwright test --config playwright.ai.config.mjs",
+    "pretest:desktop:unit": "npm --prefix server ci && npm --prefix server test"
   },
   "dependencies": {
     "electron-updater": "^6.8.9"

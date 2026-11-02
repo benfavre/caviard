@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { LocalAI } from "./ai/client.mjs";
+import { OvhAI } from "./ai/ovh-client.mjs";
 import { analyzeDocument } from "./ai/analyze.mjs";
 import { CATEGORIES, POLICIES, regionKey } from "./ai/core.mjs";
 const categoryName = (c) => CATEGORIES[c] || "Texte demandé";
@@ -11,9 +12,18 @@ export default function Assistant({
   onBusy,
   onApply,
   onPreview,
+  onProviderChange = () => {},
 }) {
   const [open, setOpen] = useState(false),
     [mode, setMode] = useState("review");
+  const [provider, setProvider] = useState("local"),
+    [ovh, setOvh] = useState(null),
+    [consent, setConsent] = useState(false);
+  const [ownOvh, setOwnOvh] = useState(null),
+    [apiKey, setApiKey] = useState(""),
+    [ownModel, setOwnModel] = useState("mistral@latest"),
+    [configuring, setConfiguring] = useState(false);
+  const cloud = provider !== "local", ownKey = provider === "ovh-own";
   const [model, setModel] = useState(null),
     [policy, setPolicy] = useState("contact");
   const [categories, setCategories] = useState(POLICIES.contact.categories),
@@ -35,6 +45,11 @@ export default function Assistant({
   useEffect(() => {
     mounted.current = true;
     ai.current = new LocalAI();
+    onProviderChange(false);
+    bridge?.ovhState?.().then((state) => {
+      if (mounted.current) setOvh(state);
+    }).catch(() => setError("Configuration OVHcloud indisponible."));
+    bridge?.ownOvhState?.().then(state => { if (mounted.current) { setOwnOvh(state); setOwnModel(state.model); } }).catch(() => {});
     bridge
       ?.models?.()
       .then((s) => {
@@ -42,11 +57,17 @@ export default function Assistant({
       })
       .catch(() => setError("État des modèles indisponible."));
     const off = bridge?.onModels?.(setModel);
+    const offAccount = bridge?.onAccount?.(() => bridge.ovhState().then(state => {
+      if (mounted.current) { setOvh(state); if (!state.signedIn) setConsent(false); }
+    }).catch(() => {}));
     return () => {
       mounted.current = false;
       off?.();
+      offAccount?.();
       abort.current?.abort();
       ai.current?.stop();
+      bridge?.ovhCancel?.().catch(() => {});
+      bridge?.ownOvhCancel?.().catch(() => {});
       ocrWorker.current?.terminate();
       onBusy(false);
     };
@@ -54,6 +75,8 @@ export default function Assistant({
   function cancel() {
     abort.current?.abort();
     ai.current.stop();
+    bridge?.ovhCancel?.().catch(() => {});
+    bridge?.ownOvhCancel?.().catch(() => {});
     ocrWorker.current?.terminate();
   }
   async function task(fn) {
@@ -95,6 +118,7 @@ export default function Assistant({
     }
   }
   async function analyze(automatic = false) {
+    if (!ready || running || disabled || (ocr && !localReady)) return;
     const chosen =
       mode === "instruction"
         ? plan
@@ -109,7 +133,8 @@ export default function Assistant({
     setSelected(new Set());
     onPreview(null, []);
     await task(async (signal) => {
-      const result = await analyzeDocument(doc.pdf, chosen, ai.current, {
+      const engine = cloud ? new OvhAI(bridge, ownKey) : ai.current;
+      const result = await analyzeDocument(doc.pdf, chosen, engine, {
         signal,
         onProgress: setProgress,
         ocr,
@@ -123,10 +148,22 @@ export default function Assistant({
       setResult(result);
       setLimit(50);
       setSelected(new Set(result.suggestions.map((s) => s.id)));
-      if (automatic) apply(result.suggestions);
+      if (automatic && provider === "local") apply(result.suggestions);
     });
   }
-  const ready = model?.phase === "ready";
+  const localReady = model?.phase === "ready";
+  const ready = provider === "local" ? localReady
+    : ownKey ? ownOvh?.configured && consent && !apiKey && ownModel === ownOvh.model && !configuring
+    : ovh?.enabled && ovh?.signedIn && ovh.remaining > 0 && consent;
+  async function configureOwnKey(clear = false) {
+    setConfiguring(true); setError(""); setConsent(false);
+    try {
+      const state = clear ? await bridge.ownOvhClear()
+        : await bridge.ownOvhConfigure({ ...(apiKey ? { apiKey: apiKey.trim() } : {}), model: ownModel.trim() });
+      if (mounted.current) { setOwnOvh(state); setOwnModel(state.model); setApiKey(""); }
+    } catch { if (mounted.current) setError("Configuration OVHcloud refusée. Vérifiez la clé et le modèle."); }
+    finally { if (mounted.current) setConfiguring(false); }
+  }
   const selectedSuggestions =
     result?.suggestions.filter((s) => selected.has(s.id)) || [];
   const existing = new Set(marks.map(regionKey));
@@ -134,7 +171,7 @@ export default function Assistant({
     s.regions.some((r) => !existing.has(regionKey(r))),
   );
   return (
-    <section className="assistant" aria-label="Assistant local">
+    <section className="assistant" aria-label={cloud ? "Assistant OVHcloud" : "Assistant local"}>
       <button
         className="assistant-toggle"
         aria-expanded={open}
@@ -142,14 +179,14 @@ export default function Assistant({
         disabled={running}
       >
         <span className="assistant-spark">✦</span>
-        <strong>Assistant local</strong>
+        <strong>{cloud ? "Assistant OVHcloud" : "Assistant local"}</strong>
         <span>Détecter · Automatiser · Donner une instruction</span>
         <b>{open ? "−" : "+"}</b>
       </button>
       {open && (
         <div className="assistant-content">
           <p className="assistant-intro">
-            Préparez les caviardages sur votre appareil. Vérifiez chaque page
+            Préparez les caviardages avec le moteur de votre choix. Vérifiez chaque page
             avant d’exporter : le modèle et l’OCR peuvent manquer des
             informations.
           </p>
@@ -160,7 +197,56 @@ export default function Assistant({
             </p>
           ) : (
             <>
-              {!ready && (
+              {bridge?.ovhState && (
+                <div className="ai-provider">
+                  <label>
+                    Moteur de l’assistant
+                    <select value={provider} disabled={running || disabled || configuring}
+                      onChange={(event) => {
+                        const next = event.target.value;
+                        setProvider(next); onProviderChange(next !== "local");
+                        setConsent(false); setResult(null); setPlan(null); setError("");
+                        setSelected(new Set()); onPreview(null, []);
+                        if (next !== "local" && !localReady) setOcr(false);
+                      }}>
+                      <option value="local">Local · hors ligne</option>
+                      <option value="ovh">OVHcloud · crédits IA Inklura</option>
+                      <option value="ovh-own">OVHcloud · ma propre clé</option>
+                    </select>
+                  </label>
+                  {cloud && (
+                    <div className="ovh-settings">
+                      {ownKey ? <>
+                        <p>Votre texte et vos instructions sont envoyés directement à OVHcloud avec votre clé. L’usage IA est facturé par OVHcloud sur votre compte ; aucun crédit Inklura pour l’analyse. L’export PDF reste à un crédit.</p>
+                        <label>Clé API OVHcloud AI Endpoints<input type="password" value={apiKey} autoComplete="off" spellCheck={false} disabled={running || disabled || configuring} placeholder={ownOvh?.configured ? "Clé chargée pour cette session" : "Votre clé API"} onChange={event => { setApiKey(event.target.value); setConsent(false); }} /></label>
+                        <label>Modèle Mistral<input value={ownModel} maxLength={160} spellCheck={false} disabled={running || disabled || configuring} onChange={event => { setOwnModel(event.target.value); setConsent(false); setPlan(null); setResult(null); }} /></label>
+                        <small>Clé uniquement en mémoire, effacée à la fermeture. Elle n’est pas transmise à Inklura. Le modèle par défaut suit le catalogue OVHcloud.</small>
+                        <div className="ovh-settings-actions">
+                          <button disabled={running || disabled || configuring || (!apiKey.trim() && !ownOvh?.configured)} onClick={() => configureOwnKey()}>Utiliser pour cette session</button>
+                          {ownOvh?.configured && <button disabled={running || disabled || configuring} onClick={() => configureOwnKey(true)}>Oublier la clé</button>}
+                        </div>
+                      </> : <>
+                      <p>10 analyses IA offertes à votre compte, puis 1 crédit IA par analyse de document terminée. La préparation du plan est incluse. L’export PDF utilise séparément 1 crédit PDF.</p>
+                      <p>Le texte extrait dans la portée choisie et vos instructions sont transmis au service Inklura, puis à OVHcloud. Les PDF, images et noms de fichiers restent sur votre appareil.</p>
+                      {!ovh?.enabled ? <p role="status">L’assistant OVHcloud n’est pas encore activé sur le service Inklura.</p>
+                        : !ovh?.signedIn ? <p>Connectez-vous à Inklura avec le bouton en haut de l’application.</p>
+                        : ovh.remaining < 1 ? <p>Votre solde IA est épuisé. Achetez des crédits IA ou choisissez « ma propre clé ». Vos crédits PDF restent disponibles pour l’export.</p>
+                        : <small>Modèle : {ovh.model} · {ovh.remaining} crédit(s) IA disponible(s)</small>}
+                      <p>100 crédits IA : 5 € HT (6 € TTC), valables 12 mois. Une analyse peut couvrir jusqu’à 60 000 caractères, OCR compris. Les erreurs du service libèrent le crédit réservé.</p>
+                      <button disabled={running || disabled} onClick={() => window.dispatchEvent(new CustomEvent("inklura:buy-ai"))}>Acheter des crédits IA · 6 € TTC</button>
+                      <small>Usage quotidien limité à {ovh?.dailyCalls || 500} requêtes et {((ovh?.dailyCharacters || 500000) / 1000).toLocaleString("fr-FR")} 000 caractères par compte. Une page peut nécessiter plusieurs requêtes.</small>
+                      </>}
+                      <label className="ovh-consent">
+                        <input type="checkbox" checked={consent} disabled={running || disabled || configuring}
+                          onChange={(event) => setConsent(event.target.checked)} />
+                        <span>J’autorise l’envoi à {ownKey ? "OVHcloud" : "Inklura et OVHcloud"} du texte de « {doc.name} » dans la portée choisie et de mes instructions, quand je lance une demande.</span>
+                      </label>
+                      {!localReady && <p>L’analyse du texte fonctionne sans modèles locaux. Pour analyser les scans et images, installez les modèles depuis le mode Local, puis activez l’OCR.</p>}
+                    </div>
+                  )}
+                </div>
+              )}
+              {provider === "local" && !localReady && (
                 <div className="model-install">
                   <div>
                     <strong>Activer les modèles locaux</strong>
@@ -267,8 +353,7 @@ export default function Assistant({
                       {POLICIES[policy].categories
                         .map(categoryName)
                         .join(" · ")}
-                      . Les zones seront ajoutées automatiquement à l’aperçu ;
-                      l’export reste une action séparée.
+                      . {cloud ? "Relisez les suggestions avant de les ajouter à l’aperçu." : "Les zones seront ajoutées automatiquement à l’aperçu ; l’export reste une action séparée."}
                     </small>
                   </label>
                 )}
@@ -300,9 +385,10 @@ export default function Assistant({
                       onClick={() =>
                         task(async (signal) => {
                           setProgress(
-                            "Interprétation de votre instruction sur cet appareil…",
+                            cloud ? "Interprétation de votre instruction par OVHcloud…" : "Interprétation de votre instruction sur cet appareil…",
                           );
-                          const plan = await ai.current.request("plan", {
+                          const engine = cloud ? new OvhAI(bridge, ownKey) : ai.current;
+                          const plan = await engine.request("plan", {
                             instruction,
                           });
                           signal.throwIfAborted();
@@ -368,7 +454,7 @@ export default function Assistant({
                     <input
                       type="checkbox"
                       checked={ocr}
-                      disabled={running || disabled}
+                      disabled={running || disabled || (cloud && !localReady)}
                       onChange={(e) => setOcr(e.target.checked)}
                     />
                     Analyser aussi les images (OCR français / anglais)
@@ -379,6 +465,7 @@ export default function Assistant({
                     className="primary"
                     disabled={
                       !ready ||
+                      (ocr && !localReady) ||
                       running ||
                       disabled ||
                       (mode === "review" && !categories.length) ||
@@ -388,16 +475,16 @@ export default function Assistant({
                     }
                     onClick={() => analyze(mode === "policy")}
                   >
-                    {mode === "policy"
+                    {mode === "policy" && provider === "local"
                       ? "Appliquer la politique et prévisualiser"
                       : "Rechercher les informations"}
                   </button>
-                  {ready && <small>Modèles installés · traitement local</small>}
+                  {ready && <small>{cloud ? "Texte transmis à OVHcloud · suggestions à vérifier" : "Modèles installés · traitement local"}</small>}
                 </div>
               </div>
               {running && (
                 <div className="ai-progress" role="status">
-                  <span>{progress || "Chargement du modèle local…"}</span>
+                  <span>{progress || (cloud ? "Demande à OVHcloud…" : "Chargement du modèle local…")}</span>
                   <button onClick={cancel}>Annuler l’analyse</button>
                 </div>
               )}
@@ -489,6 +576,8 @@ export default function Assistant({
                                 Page {s.page} · {categoryName(s.category)} ·{" "}
                                 {s.source === "model"
                                   ? "Modèle local"
+                                  : s.source === "ovh"
+                                    ? "Mistral · OVHcloud"
                                   : s.source === "ocr"
                                     ? "OCR"
                                     : s.source === "literal"

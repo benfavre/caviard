@@ -2,7 +2,7 @@
 
 [Télécharger l’application](https://pdf.inklura.fr/#telecharger) · [Essayer avec des PDF fictifs](https://pdf.inklura.fr/#exemples)
 
-Inklura PDF permet de caviarder des documents sur votre ordinateur. La version 1.4.0 nécessite un compte Inklura et offre 20 PDF d’essai par compte. Un crédit est consommé à l’export réussi ; l’import et l’analyse restent sans débit. Les packs et abonnements sont accessibles depuis « Offres et crédits », pour les adresses de facturation en France métropolitaine (TVA 20 %). L’assistant IA est facultatif : vous pouvez commencer immédiatement en dessinant les zones à masquer.
+Inklura PDF permet de caviarder des documents sur votre ordinateur. La version 1.5.0 nécessite un compte Inklura et offre 20 PDF d’essai par compte. Un crédit est consommé à l’export réussi ; l’import et l’analyse locale restent sans débit. L’analyse IA hébergée utilise un crédit IA distinct. Les packs et abonnements sont accessibles depuis « Offres et crédits », pour les adresses de facturation en France métropolitaine (TVA 20 %). L’assistant IA est facultatif : vous pouvez commencer immédiatement en dessinant les zones à masquer.
 
 ## Choisir le bon téléchargement
 
@@ -75,10 +75,18 @@ L’OCR français/anglais permet d’analyser les scans et les PDF mêlant texte
 
 **Comment mettre l’application à jour ?** Windows et Linux disposent des mises à jour intégrées. Exportez vos modifications avant de redémarrer pour installer la mise à jour. Sur macOS, téléchargez la nouvelle version depuis la [page Inklura PDF](https://pdf.inklura.fr/).
 
-**Que reçoit un serveur ?** Aucun PDF, texte extrait ou instruction n’est envoyé. Les téléchargements de modèles et les vérifications de mises à jour utilisent Internet. Le traitement s’exécute sur votre appareil, sans télémétrie. La connexion au compte, le solde et la facturation utilisent aussi Internet, sans envoyer le contenu des documents. [Détails techniques](AI.md).
+**Que reçoit un serveur ?** En mode Local, aucun PDF, texte extrait ou instruction n’est envoyé. Avec votre accord, le mode IA hébergée envoie le texte via Inklura vers OVHcloud ; votre clé personnelle l’envoie directement à OVHcloud. Les fichiers PDF restent locaux. Les téléchargements de modèles et les vérifications de mises à jour utilisent Internet. Le traitement s’exécute sur votre appareil, sans télémétrie. La connexion au compte, le solde et la facturation utilisent aussi Internet, sans envoyer le contenu des documents. [Détails techniques](AI.md).
 
 ## Signaler un problème
 
 [Ouvrir un signalement sur GitHub](https://github.com/benfavre/caviard/issues/new/choose). Indiquez votre système, la version d’Inklura PDF, les étapes et le résultat attendu. Reproduisez si possible avec l’un des 171 PDF fictifs proposés. Les signalements GitHub sont publics : ne joignez pas de document confidentiel.
 
 Sponsored by [Webdesign29](https://www.webdesign29.net/), [Inklura](https://www.inklura.fr/) et [ACTIV communication](https://www.activ-communication.com/).
+
+## Assistant OVHcloud dans la version 1.5.0
+
+Dans l’assistant, choisissez **OVHcloud · crédits IA Inklura**. Dix analyses IA sont offertes par compte. Une analyse terminée utilise un crédit IA, jusqu’à 60 000 caractères (OCR compris). Les cent crédits IA coûtent **5 € HT / 6 € TTC**, valables douze mois, dans « Offres et crédits ». Les crédits d’export PDF restent séparés. La préparation du plan est incluse.
+
+Vous pouvez choisir **OVHcloud · ma propre clé** : saisissez une clé AI Endpoints, puis « Utiliser pour cette session ». Cette clé reste en mémoire et n’est pas envoyée à Inklura ; l’usage est facturé directement par OVHcloud, sans crédit IA Inklura.
+
+Autorisez explicitement l’envoi pour chaque document. Seuls le texte extrait et les instructions sont transmis, jamais les PDF ou images. L’OCR reste local. Vérifiez les suggestions avant de les ajouter à l’aperçu, puis utilisez la relecture avant export habituelle. Le mode local reste disponible par défaut.

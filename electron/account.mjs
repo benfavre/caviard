@@ -13,6 +13,18 @@ const messages = {
   subscription_already_exists: 'Un abonnement ou un paiement d’abonnement existe déjà pour ce compte.',
   france_only: 'Les achats sont réservés à la France métropolitaine pour le moment.',
   billing_address_required: 'Renseignez votre nom et votre adresse complète de facturation.',
+  ai_quota_exhausted: 'Vous n’avez plus de crédits IA. Achetez un pack IA ou utilisez votre propre clé OVHcloud.',
+  ai_document_too_large: 'Analyse limitée à 60 000 caractères, OCR compris. Choisissez une page ou réduisez le document.',
+  ai_result_too_large: 'Trop de suggestions. Réduisez la portée ; aucun crédit IA consommé.',
+  ai_result_expired: 'Cette analyse a déjà été facturée, mais son résultat temporaire a expiré. Une nouvelle analyse utilisera un nouveau crédit IA.',
+  ai_operation_closed: 'La précédente analyse a été annulée. Relancez une nouvelle analyse.',
+  ai_operation_conflict: 'L’analyse a changé. Relancez une nouvelle analyse.',
+  ai_not_configured: 'L’assistant OVHcloud inclus n’est pas encore disponible sur le service Inklura.',
+  ai_consent_required: 'Autorisez l’envoi du texte à Inklura et OVHcloud.',
+  ai_busy: 'L’assistant est occupé. Réessayez dans un instant.',
+  ai_daily_limit: 'Limite quotidienne de l’assistant atteinte. Réessayez demain ; aucun crédit consommé.',
+  ai_provider_failed: 'OVHcloud n’a pas pu fournir une réponse valide. Réessayez ; aucun crédit consommé.',
+  ai_cancelled: 'Analyse annulée. Aucun crédit consommé.',
 };
 export function accountApiUrl(value, development = false) {
   if (!value) return null;
@@ -33,13 +45,15 @@ export class AccountController extends EventEmitter {
   snapshot() {
     return { phase: this.phase, enabled: !!this.apiUrl && !!this.config?.enabled, message: this.message,
       account: this.account, purchasePending: this.purchasePending, userCode: this.flow?.userCode || null,
-      plans: this.account?.plans || this.config?.plans || [], paymentsEnabled: !!this.account?.paymentsEnabled };
+      plans: this.account?.plans || this.config?.plans || [], paymentsEnabled: !!this.account?.paymentsEnabled,
+      ai: this.account?.ai || this.config?.ai || { enabled: false, included: true } };
   }
   publish() { this.emit('state', this.snapshot()); return this.snapshot(); }
-  async json(url, options = {}) {
-    const response = await this.fetcher(url, { ...options, redirect: 'error', signal: AbortSignal.timeout(15000) });
+  async json(url, options = {}, { timeoutMs = 15000, maximum = 128 * 1024 } = {}) {
+    const timeout = AbortSignal.timeout(timeoutMs);
+    const response = await this.fetcher(url, { ...options, redirect: 'error', signal: options.signal ? AbortSignal.any([options.signal, timeout]) : timeout });
     const text = await response.text();
-    if (text.length > 128 * 1024) throw new Error('Réponse du service trop volumineuse.');
+    if (text.length > maximum) throw new Error('Réponse du service trop volumineuse.');
     let data;
     try { data = JSON.parse(text); } catch { throw new Error('Le service Inklura est temporairement indisponible.'); }
     if (!response.ok) {
@@ -133,9 +147,9 @@ export class AccountController extends EventEmitter {
     if (!this.tokens) throw new Error(messages.sign_in_required);
     return this.tokens.access;
   }
-  async request(path, body) {
+  async request(path, body, options = {}) {
     const token = await this.accessToken();
-    return this.json(this.apiUrl + path, { method: body === undefined ? 'GET' : 'POST', headers: { Authorization: 'Bearer ' + token, ...(body === undefined ? {} : { 'Content-Type': 'application/json' }) }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
+    return this.json(this.apiUrl + path, { signal: options.signal, method: body === undefined ? 'GET' : 'POST', headers: { Authorization: 'Bearer ' + token, ...(body === undefined ? {} : { 'Content-Type': 'application/json' }) }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) }, options);
   }
   async refresh() {
     if (!this.tokens) return this.snapshot();
@@ -171,7 +185,7 @@ export class AccountController extends EventEmitter {
     this.clearTimer(this.purchaseTimer);
     const generation = this.generation, deadline = this.now() + 15 * 60000;
     const balance = this.account?.remaining;
-    const granted = () => this.account?.grants?.reduce((sum, g) => sum + g.total, 0);
+    const granted = () => !Array.isArray(this.account?.grants) && !Array.isArray(this.account?.aiCredits?.grants) ? undefined : [...(this.account?.grants || []), ...(this.account?.aiCredits?.grants || [])].reduce((sum, g) => sum + g.total, 0);
     const before = granted(), watch = Symbol();
     this.purchaseWatch = watch;
     this.purchasePending = true; this.publish();

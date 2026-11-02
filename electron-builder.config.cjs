@@ -14,6 +14,8 @@ module.exports = {
   files: [
     "dist/**/*",
     "electron/**/*",
+    "src/ai/core.mjs",
+    "src/ai/prompt.mjs",
     "package.json",
     "THIRD_PARTY_AI.md",
     "AI.md",

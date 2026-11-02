@@ -20,7 +20,7 @@
   <a href="https://www.activ-communication.com/">ACTIV communication</a>
 </p>
 
-Inklura PDF helps you remove sensitive information before sharing a document. Draw redaction rectangles yourself, review suggestions from a local model, or describe the information you want to mask. Your PDFs and instructions stay on your device.
+Inklura PDF helps you remove sensitive information before sharing a document. Draw redaction rectangles yourself, review suggestions from a local model, or describe the information you want to mask. PDF files stay on your device. Local mode keeps instructions and extracted text local; optional OVHcloud modes send them only after explicit consent.
 
 ## Account and pricing
 
@@ -60,6 +60,10 @@ Version 1.4.0 adds these workflows:
 
 Projects contain the **original, unredacted PDF bytes**. They remain in this application’s local storage until deleted; clearing browser/app data also removes them. Deleting a project removes source copies only when no other project or recovery uses them. These are local working copies, not portable backups. Recovery is debounced by 1.2 seconds and cannot recover changes made after the last successful save.
 
+## Optional hosted AI or your own key
+
+Version 1.5.0 adds OVHcloud Mistral directly to the desktop assistant. Choose hosted Inklura AI credits (10 trial analyses, then 100 for €5 HT / €6 TTC) or your own OVHcloud AI Endpoints key. Export credits remain separate. Remote processing requires explicit consent; only extracted text and instructions leave the device. Review suggestions before applying. Local remains the default. [Configuration, billing and limits](AI.md).
+
 ## Three ways to use local AI
 
 | Mode | What it does | Your control |
@@ -81,7 +85,7 @@ The assistant can miss information or select an entire text line. Review every p
 
 ## What happens to your PDF
 
-- **Local processing:** no document uploads, cloud inference or telemetry. Model downloads and application update checks use the network. The account-enabled edition also uses the network for login, credits and billing, without sending document content.
+- **Local processing by default:** no PDF uploads or telemetry. Optional OVHcloud inference sends only consented text and instructions. Model downloads and application update checks use the network. The account-enabled edition also uses the network for login, credits and billing, without sending document content.
 - **A new exported file:** pages are rebuilt from redacted images; source text, annotations, forms, attachments and layers are not copied. Exports contain no document metadata: no Info dictionary, XMP, PDF document ID, author, title, creator/producer or embedded timestamps. Filesystem timestamps and filenames are outside the PDF.
 - **An intact original:** undo/redo, page navigation, region counts, zoom and unsaved-document protection help you review your work.
 - **An image-based result:** exported text cannot be selected or searched. Output uses up to 144 DPI, with a canvas size limit for unusually large pages. Password-protected PDFs open with a password prompt; passwords are never stored in projects.

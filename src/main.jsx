@@ -1158,6 +1158,18 @@ function App() {
             Vous pouvez supprimer ces copies dans « Projets et récupération ».
             Les mots de passe des PDF ne sont pas enregistrés.</p>
           <p>
+            Le mode Local fonctionne sans envoyer de texte à un service d’IA.
+            Si vous choisissez OVHcloud · Mistral et autorisez l’envoi, le texte
+            extrait des pages choisies (y compris le texte OCR si activé) et
+            vos instructions sont transmis au service Inklura puis à OVHcloud AI Endpoints.
+            Les images, noms de fichiers et PDF ne sont pas transmis. Les
+            suggestions sont à vérifier avant application. L’utilisation
+            hébergée consomme un crédit IA par analyse terminée, distinct du crédit PDF de l’export.
+            Dix analyses IA sont offertes. La clé du service reste sur le serveur Inklura.
+            Avec votre propre clé, le texte part directement à OVHcloud et l’usage IA est
+            facturé sur votre compte OVHcloud ; la clé reste en mémoire pour la session.
+          </p>
+          <p>
             Chaque export crée un PDF composé uniquement des images caviardées
             des pages. Aucune métadonnée documentaire (auteur, créateur,
             producteur ou date) n’est ajoutée. Le texte caché, les métadonnées
