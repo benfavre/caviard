@@ -6,8 +6,8 @@ Le contrôle du 2 novembre 2026 a échoué sur la règle 10.1.1.1 : Microsoft es
 que le nom contient celui d’un autre logiciel/service, sans identifier lequel.
 Le champ vérifié dans Partner Center est exactement « Inklura PDF ». Aucune
 modification du nom ni nouvelle soumission effectuée. Une demande de clarification
-est préparée dans `docs/microsoft-store/certification-clarification-20261102.txt`,
-non envoyée. L’application n’est pas publiée.
+a été envoyée à reportapp@microsoft.com le 2 novembre à 10 h Paris ; copie dans
+`docs/microsoft-store/certification-clarification-20261102.txt`. L’application n’est pas publiée.
 Toutes les sections sont
 complètes, avec trois captures réelles Windows, légendes et mots-clés français.
 L’installation native, WACK et la mise à jour via le Store restent à valider.

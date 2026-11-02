@@ -566,9 +566,15 @@ unchanged submission was sent again.
 
 Report: https://partner.microsoft.com/fr-fr/dashboard/products/9PLQZNJTGPCW/certification/reports/57ecae4f-a638-4890-87f2-a181919937a6
 
-A clarification message is prepared in
+The clarification message is archived in
 `docs/microsoft-store/certification-clarification-20261102.txt` for the contact
 provided by Partner Center, `reportapp@microsoft.com`. It requests the exact
-conflicting title and required correction/evidence. It has not been sent;
-Ben's authorization to send this separate email is pending. Existing authorization
-to reply to Bruno in #1411/Slack remains in force.
+conflicting title and required correction/evidence. Ben instructed us to proceed; the message was sent from ben@webdesign29.net
+on 2 November at 09:00:10 UTC (10:00 Paris), then read back from Gmail with the
+SENT label. Gmail thread/message ID: `1a19b7cce6fdf977`. No credentials were sent.
+The local `inklura-microsoft-mail.timer` queues an hourly check of that Gmail
+conversation using the connector; it does not read mail or send mail itself.
+State is retained in `microsoft-mail-followup.json` in the protected local
+monitoring directory. Replies and delivery failures must be read before taking
+further action; do not infer a reply from the timer alone. Existing Bruno ticket
+and Apple review monitors remain active.
