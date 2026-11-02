@@ -12,6 +12,12 @@ __pycache__/
 *.pyc
 
 release/
+release-mac-app-store/
+release-microsoft-store/
+build/appx/
+*.provisionprofile
+*.mobileprovision
+*.p8
 *.pem
 *.p12
 *.pfx

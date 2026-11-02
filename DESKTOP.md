@@ -2,6 +2,10 @@
 
 Repository and release feed: https://github.com/benfavre/caviard
 
+Mac App Store and Microsoft Store packaging is being prepared separately from
+direct downloads. See [Store release preparation](STORE_RELEASE.md) for the
+update channels, build workflow, publisher access and outstanding release checks.
+
 ## Run and package
 
 Use Node 22 or newer, then `npm ci`.

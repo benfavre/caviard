@@ -121,3 +121,24 @@ test("Linux integration quotes the executable and only adds/removes its own desk
   await removeDesktopEntry(root);
   assert.equal(await readFile(path.join(root, "applications", "unrelated.desktop"), "utf8"), "untouched");
 });
+
+test('MAS bookmarks stay private and each scan/read releases its access, including failed reads', async t => {
+  const root = await temporary(t), file = path.join(root, 'private.pdf');
+  await writeFile(file, '%PDF-private');
+  let active = 0, opened = 0;
+  const imports = new DocumentImports(() => {}, bookmark => {
+    assert.equal(bookmark, 'opaque-bookmark'); active++; opened++;
+    return () => { active--; };
+  });
+  await imports.enqueue([root], ['opaque-bookmark']);
+  assert.equal(active, 0);
+  const first = imports.take().files[0];
+  assert.equal(Object.hasOwn(first, 'bookmark'), false);
+  assert.equal((await imports.read(first.id)).toString(), '%PDF-private');
+  assert.equal(active, 0); assert.equal(opened, 2);
+  await imports.enqueue([root], ['opaque-bookmark']);
+  const second = imports.take().files[0];
+  await rm(file);
+  await assert.rejects(imports.read(second.id), { code: 'ENOENT' });
+  assert.equal(active, 0); assert.equal(opened, 4);
+});

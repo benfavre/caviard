@@ -3,8 +3,8 @@ import { randomUUID, createHash } from 'node:crypto';
 import path from 'node:path';
 // PDF paths/hashes remain local. The server only receives a random operation ID.
 export class AccountExports {
-  constructor({ directory, account, io = { readFile, writeFile, rename, unlink, mkdir } }) {
-    Object.assign(this, { directory, account, io }); this.queue = Promise.resolve();
+  constructor({ directory, account, openAccess = () => () => {}, io = { readFile, writeFile, rename, unlink, mkdir } }) {
+    Object.assign(this, { directory, account, openAccess, io }); this.queue = Promise.resolve();
   }
   exclusive(fn) { const next = this.queue.then(fn); this.queue = next.catch(() => {}); return next; }
   async entries() {
@@ -23,7 +23,9 @@ export class AccountExports {
     const pending = await this.entries(), retained = [];
     for (const item of pending) {
       if (item.owner !== owner) { retained.push(item); continue; }
+      let stopAccess;
       try {
+        stopAccess = this.openAccess(item.bookmark);
         let saved = item.saved;
         if (!saved && item.saving) {
           let temporaryExists = true;
@@ -41,18 +43,21 @@ export class AccountExports {
         catch (error) { if (error.code !== 'operation_not_found' || saved) throw error; }
         await this.io.unlink(item.temporary).catch(() => {});
       } catch { retained.push(item); }
+      finally { stopAccess?.(); }
     }
     await this.journal(retained);
   }
   reconcile() { return this.exclusive(() => this.reconcileUnlocked()); }
-  save(filePath, bytes) {
+  save(filePath, bytes, bookmark) {
     return this.exclusive(async () => {
+      const stopAccess = this.openAccess(bookmark);
+      try {
       await this.account.refresh();
       const owner = this.account.account?.accountId;
       if (!owner) throw new Error('Connectez-vous à Inklura pour exporter.');
       await this.reconcileUnlocked();
       const pending = await this.entries();
-      const item = { owner, operation: randomUUID(), filePath, temporary: path.join(path.dirname(filePath), '.inklura-' + randomUUID() + '.tmp'), digest: createHash('sha256').update(bytes).digest('hex'), saved: false, saving: false };
+      const item = { owner, operation: randomUUID(), filePath, temporary: path.join(path.dirname(filePath), '.inklura-' + randomUUID() + '.tmp'), digest: createHash('sha256').update(bytes).digest('hex'), saved: false, saving: false, ...(bookmark ? { bookmark } : {}) };
       // Persist intent BEFORE the network: even a lost reservation response can be recovered.
       pending.push(item); await this.journal(pending);
       try {
@@ -76,6 +81,7 @@ export class AccountExports {
       await this.account.refresh().catch(() => {});
       const unsettled = await this.entries().then(entries => entries.some(entry => entry.operation === item.operation)).catch(() => true);
       return { saved: true, accountingPending: unsettled };
+      } finally { stopAccess(); }
     });
   }
 }

@@ -1,0 +1,21 @@
+Inklura PDF — confidentialité de l’application Windows
+Version du 30 octobre 2026
+
+Éditeur et contact
+Inklura PDF est distribué par BEO PLUS (ACTIV communication). Pour toute question ou demande relative à vos données : contact@activ-communication.com. La politique générale de BEO PLUS est consultable sur https://www.activ-communication.com/politique-de-confidentialite/ ; les précisions ci-dessous concernent le fonctionnement de l’application Inklura PDF.
+
+Documents et traitement local
+Les PDF que vous ouvrez, leur texte, les zones de caviardage et les instructions données à l’assistant sont traités sur votre ordinateur. Ils ne sont pas transmis à nos services de compte ou de facturation. La reconnaissance de texte et l’analyse par les modèles facultatifs s’exécutent localement. Les documents ne sont pas envoyés à un service d’IA distant pour cette analyse.
+
+Les exports sont enregistrés à l’emplacement choisi. Les projets et la récupération facultative conservent des copies locales des PDF originaux non caviardés et des informations de travail ; vous pouvez les supprimer dans l’application. La suppression d’un projet ne supprime pas vos fichiers sources ou vos exports. Un emplacement synchronisé par vos propres outils de sauvegarde ou de partage reste soumis aux paramètres de ces outils. Protégez l’accès à votre ordinateur et à ces fichiers.
+
+Compte, crédits et paiement
+Un compte et une connexion Internet sont nécessaires pour exporter. Les services de connexion Inklura et de gestion des crédits utilisent l’identifiant du compte, les informations d’identité fournies lors de la connexion, les soldes, réservations et opérations de crédits, ainsi que les références et états des paiements. Ils permettent de vous identifier, d’autoriser les exports, d’éviter les doubles débits et de gérer les achats. Les noms et contenus de vos PDF ne sont pas nécessaires à ce service et ne lui sont pas envoyés. Le paiement est traité par Stripe dans le navigateur ; l’application ne collecte pas votre numéro de carte bancaire.
+
+Connexions et prestataires
+Les connexions aux services de compte et de facturation utilisent HTTPS. Les téléchargements facultatifs des modèles passent par Hugging Face et GitHub ; ces hébergeurs reçoivent les informations techniques nécessaires à une requête Internet, notamment l’adresse IP. Le contenu de vos documents ne figure pas dans ces requêtes. Cette édition reçoit ses mises à jour par le Microsoft Store. Les sites de connexion, de paiement, les hébergeurs de modèles et Microsoft appliquent également leurs propres politiques aux données qu’ils traitent ; leurs traitements peuvent impliquer des pays hors de l’Union européenne.
+
+Conservation et droits
+Les données locales restent sur votre ordinateur jusqu’à leur suppression. Pour les données du compte et de facturation, les finalités, bases légales, durées de conservation, destinataires et garanties de transfert sont détaillés dans la politique générale BEO PLUS précitée. La gestion du service et des achats relève de l’exécution du contrat ; certaines données de facturation doivent être conservées au titre des obligations légales.
+
+Vous pouvez demander l’accès, la rectification, l’effacement ou la portabilité de vos données, ainsi que la limitation ou l’opposition dans les cas applicables, à contact@activ-communication.com. L’effacement d’un compte n’efface pas les copies restées sur votre ordinateur et peut être limité par les obligations de conservation comptable. Vous pouvez également saisir la CNIL : https://www.cnil.fr/.

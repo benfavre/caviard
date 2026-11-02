@@ -1,0 +1,43 @@
+Inklura PDF — confidentialité de l’édition Mac App Store
+Notice du 30 octobre 2026
+
+Éditeur et contact
+Inklura PDF est distribué par BEO PLUS (ACTIV communication). Pour toute question sur vos données : contact@activ-communication.com. Cette notice décrit l’application Mac et complète la politique générale de BEO PLUS : https://www.activ-communication.com/politique-de-confidentialite/.
+
+Vos documents
+Les PDF, leur texte, les zones de caviardage et les instructions de l’assistant sont traités sur votre Mac. Ils ne sont pas transmis au service de compte, de crédits ou de paiement. La reconnaissance de texte et les modèles facultatifs s’exécutent localement. Les exports sont enregistrés à l’emplacement que vous choisissez.
+
+Les projets et la récupération facultative conservent des copies locales des PDF originaux non caviardés et des informations de travail. Vous pouvez supprimer ces copies dans « Projets et récupération ». Les fichiers sources et les exports que vous avez enregistrés ailleurs restent à leur emplacement. Un dossier synchronisé par votre propre outil de sauvegarde ou de partage dépend des réglages de cet outil. Les mots de passe des PDF ne sont pas conservés par l’application.
+
+Compte et décompte des exports
+La connexion utilise votre identifiant Inklura et les informations fournies à la création du compte, notamment le nom et l’adresse e-mail. Le service conserve le solde et les opérations de crédits afin d’autoriser les exports, d’éviter les doubles débits et de reprendre une opération interrompue. Il reçoit un identifiant aléatoire d’opération et son état ; il ne reçoit ni le nom, ni le chemin, ni le contenu du PDF. Ces opérations sont rattachées au compte.
+
+Un journal local conserve temporairement les informations nécessaires à la reprise d’un export, notamment son emplacement et l’autorisation macOS associée. Les autorisations portent sur les fichiers ou dossiers choisis par l’utilisateur.
+
+Achats Apple
+Les achats intégrés sont traités par Apple. L’application ne collecte pas votre numéro de carte bancaire. Le service Inklura vérifie les transactions auprès d’Apple et conserve les références, produits, quantités et états nécessaires à l’attribution des crédits, à la prévention de la fraude et au traitement des remboursements. Un identifiant aléatoire relie les achats au compte Inklura ; il ne contient ni nom ni adresse e-mail. Les transactions interrompues sont conservées localement jusqu’à leur vérification pour éviter de perdre l’achat ou de créditer deux fois le compte.
+
+Les crédits des packs Apple n’ont pas de date d’expiration. L’application n’utilise pas ces données pour du ciblage publicitaire et n’intègre pas de SDK publicitaire ou de mesure d’audience.
+
+Connexions et prestataires
+L’authentification et la gestion des crédits utilisent HTTPS. Les modèles facultatifs sont téléchargés depuis Hugging Face et GitHub. Ces services reçoivent les informations techniques nécessaires à la connexion, notamment l’adresse IP ; ils ne reçoivent pas les documents analysés. Les mises à jour de cette édition sont fournies par l’App Store. Les services tiers appliquent également leurs propres politiques aux données qu’ils traitent ; leur utilisation peut impliquer des traitements hors de l’Union européenne.
+
+Suppression du compte PDF
+Dans l’application, ouvrez « Compte Inklura », puis « Supprimer mon compte PDF ». Lisez les conséquences et saisissez la confirmation demandée. La demande est enregistrée immédiatement et traitée automatiquement ; en cas d’indisponibilité du prestataire de paiement, elle reprend sans nouvelle demande. Les accès PDF sont bloqués dès l’enregistrement. Les abonnements PDF souscrits sur le web sont résiliés sans nouveau prélèvement ; les achats ne sont pas automatiquement remboursés.
+
+Le profil PDF, les crédits inutilisés et l’historique d’exports sont supprimés. L’identité partagée et l’accès aux autres produits Inklura sont conservés, ainsi que vos fichiers sources, projets et exports sur votre appareil. Pour une demande portant sur l’ensemble de votre identité Inklura, contactez contact@activ-communication.com en précisant les produits concernés.
+
+Conservation
+Les données du compte et des crédits sont conservées pendant l’utilisation du service, puis effacées lors de la suppression, sauf les pièces de facturation et références de paiement nécessaires aux obligations comptables et aux remboursements. Les justificatifs comptables sont soumis à une conservation légale de dix ans à compter de la clôture de l’exercice. La conservation peut être prolongée lorsqu’un litige ou une obligation légale l’exige.
+
+Une empreinte cryptographique de l’identifiant partagé et la date de suppression sont conservées pour empêcher une ancienne session de recréer automatiquement le compte PDF supprimé. Cette empreinte ne contient pas votre nom ni votre adresse e-mail. Les sauvegardes de la base de crédits tournent sur trente jours : une donnée supprimée peut subsister dans ces sauvegardes protégées jusqu’à leur expiration, sans être utilisée en fonctionnement courant.
+
+Les journaux techniques du serveur de crédits contiennent les informations nécessaires au fonctionnement et à la sécurité, notamment l’adresse IP, la date, l’URL du service appelée et le statut de réponse. Ils ne contiennent pas les PDF ni le contenu des requêtes d’authentification. Les journaux d’accès sont renouvelés quotidiennement avec vingt et une archives ; les données peuvent donc y subsister environ vingt-deux jours. Le service de compte ne journalise pas les mots de passe ni les jetons d’accès.
+
+Bases et destinataires des traitements
+La fourniture du compte, des crédits et des achats repose sur l’exécution du service demandé. Les contrôles de sécurité et de prévention des doubles crédits reposent sur notre intérêt légitime à protéger le service et ses utilisateurs. Les pièces comptables sont conservées au titre de nos obligations légales. Les données sont accessibles aux personnes habilitées à gérer le service, à ses prestataires techniques et de paiement pour leurs fonctions respectives, ainsi qu’aux autorités lorsque la loi l’impose. Elles ne sont pas vendues.
+
+Le serveur de crédits est hébergé en France chez OVHcloud. L’authentification passe par le service partagé Inklura (auth.1clic.pro et manage.inklura.fr). Apple gère les achats de cette édition. Stripe peut intervenir pour les achats ou abonnements antérieurs effectués sur le web ; aucun paiement Stripe n’est proposé dans l’édition Mac App Store. Les téléchargements facultatifs de modèles utilisent Hugging Face et GitHub. Leurs traitements et éventuels transferts internationaux relèvent aussi de leurs propres politiques de confidentialité.
+
+Vos droits et contact
+Vous pouvez demander l’accès, la rectification, l’effacement, la limitation ou la portabilité de vos données, ou vous opposer à un traitement fondé sur l’intérêt légitime, en écrivant à contact@activ-communication.com. Indiquez « Inklura PDF » et l’adresse de votre compte, sans joindre de PDF confidentiel ni de mot de passe. Certaines obligations légales peuvent limiter l’effacement immédiat. Vous pouvez saisir la CNIL : https://www.cnil.fr/.
