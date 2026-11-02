@@ -1,12 +1,16 @@
 # Inklura PDF store release preparation
 
 This prepares **Mac App Store** and **Microsoft Store** packages alongside the
-existing direct downloads. Microsoft submission `1152921505702276768` was sent
-for certification on 30 October 2026; the 2 November review failed under policy
-10.1.1.1 concerning the French listing title. The product is not live. See the
-Microsoft certification follow-up below; no resubmission has been made.
-The public version remains 1.4.0. Do not submit the current MAS build: Apple
-native StoreKit acceptance, encryption compliance and review completion below are still outstanding. The corrected package was uploaded successfully on 30 October at 15:46 UTC; Apple processing is complete/VALID. TestFlight is blocked by missing encryption compliance documentation.
+existing direct downloads. Following the 2 November title rejection (10.1.1.1),
+the Microsoft edition was renamed **BEO Caviardage** and version 1.4.1.0 was
+resubmitted on the same product/submission. Partner Center confirms **En cours de
+certification**, preprocessing step 2/4, with automatic publication after approval.
+The product is not live. The public direct version remains 1.4.0.
+
+The uploaded Apple build 1.4.56 remains VALID. The ANSSI attestation has been
+uploaded to Apple and its encryption declaration remains IN_REVIEW (checked
+2 November). TestFlight distribution and App Review have not been submitted;
+native StoreKit acceptance and review completion remain outstanding.
 
 ## Distribution and updates
 
@@ -578,3 +582,34 @@ State is retained in `microsoft-mail-followup.json` in the protected local
 monitoring directory. Replies and delivery failures must be read before taking
 further action; do not infer a reply from the timer alone. Existing Bruno ticket
 and Apple review monitors remain active.
+
+
+### Microsoft naming correction (2 November 2026)
+
+Ben confirmed that inklura.com is unrelated and instructed us to fix the naming
+conflict. The Microsoft edition is now **BEO Caviardage**, reserved on the same
+Store product 9PLQZNJTGPCW. Its package identity BEOPLUS.InkluraPDF, publisher CN,
+application ID and user-data directory are preserved. Apple and direct-channel
+product names remain Inklura PDF. The existing shared Inklura account service is
+identified as BEO PLUS / inklura.fr in the French listing and review notes.
+
+Release 1.4.1, built from 14db66b in run 41420699990, passed AppX manifest checks
+and actual Windows packaged launch, PDF import, search, three redactions and page
+review. Native app name, page title and profile path are checked during capture.
+Artifact: BEO-Caviardage-1.4.1-microsoft-store-x64.appx (210365220 bytes), SHA-256
+`d4f60db2102cc2f331956bcf9374d0eba7f0fa4872dbedaa9d7e5fab41f0e58e`.
+Partner Center validates 1.4.1.0; the superseded 1.4.0.0 package is removed from
+the submission, with its original local/CI artifact retained. All three replacement
+screenshots were verified against the Windows artifact and saved. Partner Center
+confirmed the resubmission on 2 November: En cours de certification, preprocessing
+step 2/4, automatic publication after approval. The app is not yet published.
+
+The test kit run 41421200008 signs a copy of these exact payload bytes with a
+short-lived test certificate. Artifact 13129028701 is for Bruno's Windows PC;
+it does not constitute installed acceptance, WACK or Store-update validation.
+
+All 70 desktop unit tests passed locally and in the initial Windows PR run
+41420708655. A later Windows runner exposed an existing timing race in the mock
+download-cancellation test: its timer could abort before the mock registered its
+listener. Commit 6596f76 waits for the mocked download to start; no app payload
+changed. The subsequent Windows PR check 41421834363 passed.

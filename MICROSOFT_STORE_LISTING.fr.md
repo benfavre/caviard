@@ -3,19 +3,20 @@
 Mise à jour du 2 novembre : Ben confirme qu’inklura.com ne leur appartient pas
 et demande de corriger le nom. « BEO Caviardage » est réservé sur le produit
 existant 9PLQZNJTGPCW et sélectionné dans la fiche française. Paquet 1.4.1.0
-compilé et contrôlé sur Windows, run 41420699990 ; dépôt en cours.
+compilé et contrôlé sur Windows, run 41420699990 ; dépôt validé.
 
-Soumission BEO PLUS envoyée en certification le 30 octobre 2026 : produit
-`9PLQZNJTGPCW`, soumission `1152921505702276768`, AppX x64 `1.4.0.0`.
-Le contrôle du 2 novembre 2026 a échoué sur la règle 10.1.1.1 : Microsoft estime
-que le nom contient celui d’un autre logiciel/service, sans identifier lequel.
-Le champ vérifié dans Partner Center est exactement « Inklura PDF ». Aucune
-modification du nom ni nouvelle soumission effectuée. Une demande de clarification
-a été envoyée à reportapp@microsoft.com le 2 novembre à 10 h Paris ; copie dans
-`docs/microsoft-store/certification-clarification-20261102.txt`. L’application n’est pas publiée.
-Toutes les sections sont
-complètes, avec trois captures réelles Windows, légendes et mots-clés français.
-L’installation native, WACK et la mise à jour via le Store restent à valider.
+Produit BEO PLUS `9PLQZNJTGPCW`, soumission `1152921505702276768`.
+Le refus initial du 2 novembre (10.1.1.1) portait sur « Inklura PDF ».
+Le nom réservé, la description et le nom du développeur sont maintenant
+« BEO Caviardage » / BEO PLUS. La connexion reste le service Inklura de BEO PLUS
+sur inklura.fr ; aucune affiliation avec inklura.com.
+
+Le paquet x64 1.4.1.0 est marqué Validated dans Partner Center et remplace
+1.4.0.0. Les trois nouvelles captures proviennent du véritable exécutable.
+La nouvelle soumission a été envoyée le 2 novembre : Partner Center confirme
+« En cours de certification », étape Prétraitement (2/4). Publication automatique
+après approbation ; l’application n’est pas encore publiée.
+L’installation sur le PC de Bruno, WACK et la mise à jour Store restent à valider.
 
 ## Champs de la fiche
 
