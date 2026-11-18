@@ -157,8 +157,9 @@ Only its verification report is retained, not a customer installer.
 7. Verify in-app account deletion, privacy disclosures, sign-in/account web pages
    without inappropriate purchase links, store-compliant local model handling,
    screenshots, reviewer account, content rights and export compliance. Upload
-   verified packages to the exact BEO PLUS app record, exercise TestFlight and a
-   Store-delivered update, then submit the completed version for review.
+   verified packages to the exact BEO PLUS app record. Use the development
+   build for StoreKit acceptance and the Mac App Store for Store-delivered
+   update verification. Submit the completed version directly for App Review.
 
 ## Local commands
 
