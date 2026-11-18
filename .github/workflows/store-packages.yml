@@ -252,17 +252,25 @@ jobs:
           apps=(release-mac-app-store/mas*/"Inklura PDF.app")
           test "${#apps[@]}" -eq 1
           test -d "${apps[0]}"
-          ditto -c -k --sequesterRsrc --keepParent "${apps[0]}" "$RUNNER_TEMP/inklura-pdf-sandbox.zip"
-          gpg --batch --pinentry-mode loopback --passphrase-fd 0 \
-            --no-symkey-cache --cipher-algo AES256 --compress-algo none --symmetric \
-            --output "$RUNNER_TEMP/inklura-pdf-sandbox.zip.gpg" "$RUNNER_TEMP/inklura-pdf-sandbox.zip" \
-            <<< "$MAS_DEV_ARTIFACT_PASSPHRASE"
+          source="$RUNNER_TEMP/inklura-pdf-sandbox-image"
+          image="$RUNNER_TEMP/inklura-pdf-sandbox.dmg"
+          mount="$RUNNER_TEMP/inklura-pdf-sandbox-mounted"
+          mkdir "$source" "$mount"
+          ditto "${apps[0]}" "$source/Inklura PDF.app"
+          cp MAC_TEST.fr.txt "$source/"
+          printf '%s\0' "$MAS_DEV_ARTIFACT_PASSPHRASE" | hdiutil create \
+            -srcfolder "$source" -volname "Inklura PDF Sandbox" -format UDZO \
+            -encryption AES-256 -stdinpass "$image"
+          printf '%s\0' "$MAS_DEV_ARTIFACT_PASSPHRASE" | hdiutil attach \
+            -readonly -nobrowse -mountpoint "$mount" -stdinpass "$image"
+          trap 'hdiutil detach "$mount"' EXIT
+          codesign --verify --deep --strict "$mount/Inklura PDF.app"
       - uses: actions/upload-artifact@v4
         if: inputs.channel == 'mac-app-store-sandbox'
         with:
           name: mac-app-store-sandbox-encrypted
           path: |
-            ${{ runner.temp }}/inklura-pdf-sandbox.zip.gpg
+            ${{ runner.temp }}/inklura-pdf-sandbox.dmg
             release-mac-app-store/verification.json
           if-no-files-found: error
       - name: Remove the ephemeral signing keychain

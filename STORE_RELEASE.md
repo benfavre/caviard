@@ -194,9 +194,9 @@ Development certificate. Set `MAS_DEV_PROFILE_BASE64` and
 `MAS_DEV_ARTIFACT_PASSPHRASE` in the `release` environment alongside
 `MAS_DEV_CSC_LINK` and `MAS_DEV_CSC_KEY_PASSWORD`. Run **Store package preparation
 → mac-app-store-sandbox**. The runner verifies the signed universal app and
-uploads an encrypted ZIP plus a verification report. Decrypt the ZIP with
-`gpg --output inklura-pdf-sandbox.zip --decrypt inklura-pdf-sandbox.zip.gpg`
-on the authorized machine. Deliver the app and test credentials privately.
+uploads an AES-256-encrypted disk image and a verification report. Open the
+disk image in Finder on the authorized Mac. Deliver its passphrase and the
+test credentials privately.
 Use [the Mac acceptance steps](MAC_TEST.fr.txt) to test all three packs and
 capture the live offers. The development app runs only on registered devices.
 Submit the distribution build and the three purchases to App Review once

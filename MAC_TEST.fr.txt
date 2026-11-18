@@ -4,7 +4,8 @@ Utiliser des documents fictifs et un compte Inklura réservé aux achats sandbox
 
 1. Installation
    Utiliser le Mac inclus dans le profil de développement de BEO PLUS.
-   Décompresser l’archive de test reçue en privé, puis ouvrir « Inklura PDF.app ».
+   Ouvrir l’image disque de test dans le Finder. Copier « Inklura PDF.app »
+   dans Applications, puis l’ouvrir à partir de ce dossier.
    Noter le modèle du Mac, la version de macOS et le numéro du build.
    Vérifier que l’app démarre avec la signature Apple Development.
 
