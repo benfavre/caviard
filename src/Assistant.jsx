@@ -156,8 +156,7 @@ export default function Assistant({
           </p>
           {!bridge?.models ? (
             <p className="ai-notice">
-              L’assistant est disponible dans l’application de bureau {PRODUCT_NAME}
-              PDF. Le caviardage manuel reste disponible ici.
+              L’assistant est disponible dans l’application de bureau {PRODUCT_NAME}. Le caviardage manuel reste disponible ici.
             </p>
           ) : (
             <>

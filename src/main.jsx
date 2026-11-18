@@ -565,7 +565,7 @@ function App() {
         <a
           href="/"
           className="logo"
-          aria-label={`${PRODUCT_NAME}, accueil`}
+          aria-label={MICROSOFT_EDITION ? `${PRODUCT_NAME}, accueil` : "Inklura, accueil"}
           onClick={(event) => event.preventDefault()}
         >
           <img src="/inklura-icon.svg" alt="" />
