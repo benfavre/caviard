@@ -22,7 +22,10 @@ run(['create-keychain', '-p', password, keychain]);
 try {
   run(['set-keychain-settings', '-lut', '21600', keychain]);
   run(['unlock-keychain', '-p', password, keychain]);
-  for (const kind of ['MAS_CSC', 'MAS_INSTALLER']) {
+  const certificates = process.env.INKLURA_MAS_DEVELOPMENT === 'true'
+    ? ['MAS_DEV_CSC']
+    : ['MAS_CSC', 'MAS_INSTALLER'];
+  for (const kind of certificates) {
     if (!process.env[kind + '_LINK'] || !process.env[kind + '_KEY_PASSWORD'])
       throw new Error(`Missing ${kind} signing secret`);
     const file = path.join(process.env.RUNNER_TEMP, `${kind}.p12`);

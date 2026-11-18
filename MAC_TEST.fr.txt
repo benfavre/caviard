@@ -1,14 +1,12 @@
-Inklura PDF — validation Mac App Store / TestFlight
+Inklura PDF — validation Mac App Store avec le sandbox Apple
 
-État : le build signé doit d’abord être accepté par Apple et rendu disponible
-au groupe TestFlight. Ce document ne signifie pas qu’une invitation est envoyée.
-Utiliser uniquement une copie de documents fictifs, sans données clients.
+Utiliser des documents fictifs et un compte Inklura réservé aux achats sandbox.
 
 1. Installation
-   Installer TestFlight depuis Apple : https://testflight.apple.com/
-   Ouvrir l’invitation Inklura PDF fournie séparément, puis installer le build.
-   Noter la version de macOS, le modèle du Mac et le numéro du build TestFlight.
-   Vérifier le lancement sans erreur de signature ou d’autorisation.
+   Utiliser le Mac inclus dans le profil de développement de BEO PLUS.
+   Décompresser l’archive de test reçue en privé, puis ouvrir « Inklura PDF.app ».
+   Noter le modèle du Mac, la version de macOS et le numéro du build.
+   Vérifier que l’app démarre avec la signature Apple Development.
 
 2. Fichiers et export
    Ouvrir un PDF fictif, tracer une zone, rechercher du texte, puis relire la page.
@@ -30,16 +28,17 @@ Utiliser uniquement une copie de documents fictifs, sans données clients.
    Le mode manuel doit fonctionner sans télécharger ces modèles.
    Noter toute erreur de sandbox, de téléchargement, de mémoire ou de traitement.
 
-5. Achats de test
-   Utiliser le build TestFlight et le compte Inklura explicitement autorisé pour
-   les achats sandbox. Un autre compte ne reçoit pas les crédits de test.
-   Vérifier les trois offres et les prix affichés par Apple ; capturer cet écran
-   pour le dossier de vérification des achats intégrés.
-   Effectuer un achat uniquement dans l’environnement de test indiqué par Apple.
-   Vérifier le montant de crédits, puis « Actualiser » et relancer l’application :
-   le même achat ne doit être crédité qu’une fois. Vérifier également l’annulation.
-   La reprise d’un achat interrompu et le remboursement sandbox demandent une
-   coordination avec Ben pour contrôler les événements reçus par le serveur.
+5. Achats et captures
+   Dans Inklura PDF, se connecter avec le compte Inklura dédié au sandbox.
+   À la première demande de connexion de StoreKit, utiliser le compte Apple
+   Sandbox France fourni séparément. Confirmer uniquement dans le sandbox Apple.
+   Ouvrir les offres Apple, puis vérifier les packs de 100, 500 et 1 000 exports.
+   Pour chaque pack, prendre une capture de l’offre dans l’app ou de la fenêtre
+   d’achat montrant clairement le pack et son prix, avant la confirmation.
+   Utiliser des captures du Mac sans identifiants de connexion ni données clients.
+   Acheter chaque pack et vérifier la hausse correspondante du solde.
+   Après « Actualiser » puis relance, vérifier que chaque hausse apparaît une seule fois.
+   Annuler un achat supplémentaire et vérifier que le solde n’augmente pas.
 
 6. Suppression du compte PDF
    Cette opération est irréversible. Ne pas l’effectuer sur un compte personnel,
@@ -50,7 +49,7 @@ Utiliser uniquement une copie de documents fictifs, sans données clients.
    Les PDF et projets enregistrés sur le Mac doivent rester présents.
 
 7. Mise à jour
-   Une seconde version distribuée par TestFlight / l’App Store sera nécessaire.
+   Vérifier les mises à jour sur une future version distribuée par le Mac App Store.
    Vérifier après cette mise à jour la conservation des projets, modèles et crédits.
    Un simple relancement ne prouve pas le fonctionnement des mises à jour Store.
 

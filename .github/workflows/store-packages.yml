@@ -15,7 +15,7 @@ on:
         description: Prepare/test packages, or explicitly validate/upload the reviewed MAS package
         required: true
         type: choice
-        options: [microsoft-store, microsoft-store-test, microsoft-store-screenshots, mac-app-store, mac-app-store-screenshots, mac-app-store-inspect-upload, mac-app-store-validate, mac-app-store-upload]
+        options: [microsoft-store, microsoft-store-test, microsoft-store-screenshots, mac-app-store, mac-app-store-sandbox, mac-app-store-screenshots, mac-app-store-inspect-upload, mac-app-store-validate, mac-app-store-upload]
 permissions:
   contents: read
 jobs:
@@ -180,13 +180,14 @@ jobs:
           path: output/store-screenshots/*
           if-no-files-found: error
   mac-store:
-    if: github.event_name == 'workflow_dispatch' && inputs.channel == 'mac-app-store'
+    if: github.event_name == 'workflow_dispatch' && (inputs.channel == 'mac-app-store' || inputs.channel == 'mac-app-store-sandbox')
     runs-on: macos-latest
     timeout-minutes: 30
     environment: release
     env:
       INKLURA_DISTRIBUTION_CHANNEL: mac-app-store
       INKLURA_APPLE_TEAM_ID: ${{ vars.INKLURA_APPLE_TEAM_ID }}
+      INKLURA_MAS_DEVELOPMENT: ${{ inputs.channel == 'mac-app-store-sandbox' && 'true' || 'false' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -195,16 +196,19 @@ jobs:
           cache: npm
       - name: Prepare the BEO PLUS provisioning profile
         env:
-          MAS_PROFILE_BASE64: ${{ secrets.MAS_PROFILE_BASE64 }}
+          MAS_PROFILE_BASE64: ${{ inputs.channel == 'mac-app-store' && secrets.MAS_PROFILE_BASE64 || '' }}
+          MAS_DEV_PROFILE_BASE64: ${{ inputs.channel == 'mac-app-store-sandbox' && secrets.MAS_DEV_PROFILE_BASE64 || '' }}
         run: |
           node --input-type=module <<'NODE'
           import { writeFileSync, appendFileSync } from 'node:fs';
           import path from 'node:path';
-          if (!process.env.MAS_PROFILE_BASE64) throw new Error('Missing MAS_PROFILE_BASE64');
+          const name = process.env.INKLURA_MAS_DEVELOPMENT === 'true' ? 'MAS_DEV_PROFILE_BASE64' : 'MAS_PROFILE_BASE64';
+          const profile = process.env[name];
+          if (!profile) throw new Error(`Missing ${name}`);
           const file = path.join(process.env.RUNNER_TEMP, 'inklura-pdf.provisionprofile');
           // Provisioning profiles contain public certificates, not private keys.
           // electron-osx-sign preserves this mode in the installed app.
-          writeFileSync(file, Buffer.from(process.env.MAS_PROFILE_BASE64, 'base64'), { mode: 0o644 });
+          writeFileSync(file, Buffer.from(profile, 'base64'), { mode: 0o644 });
           appendFileSync(process.env.GITHUB_ENV, `INKLURA_MAS_PROVISIONING_PROFILE=${file}\n`);
           NODE
       - run: node -e "require('./electron-builder.config.cjs')"
@@ -212,21 +216,53 @@ jobs:
       - run: npm run build
       - name: Import certificates into a dedicated ephemeral keychain
         env:
-          MAS_CSC_LINK: ${{ secrets.MAS_CSC_LINK }}
-          MAS_CSC_KEY_PASSWORD: ${{ secrets.MAS_CSC_KEY_PASSWORD }}
-          MAS_INSTALLER_LINK: ${{ secrets.MAS_INSTALLER_LINK }}
-          MAS_INSTALLER_KEY_PASSWORD: ${{ secrets.MAS_INSTALLER_KEY_PASSWORD }}
+          MAS_CSC_LINK: ${{ inputs.channel == 'mac-app-store' && secrets.MAS_CSC_LINK || '' }}
+          MAS_CSC_KEY_PASSWORD: ${{ inputs.channel == 'mac-app-store' && secrets.MAS_CSC_KEY_PASSWORD || '' }}
+          MAS_INSTALLER_LINK: ${{ inputs.channel == 'mac-app-store' && secrets.MAS_INSTALLER_LINK || '' }}
+          MAS_INSTALLER_KEY_PASSWORD: ${{ inputs.channel == 'mac-app-store' && secrets.MAS_INSTALLER_KEY_PASSWORD || '' }}
+          MAS_DEV_CSC_LINK: ${{ inputs.channel == 'mac-app-store-sandbox' && secrets.MAS_DEV_CSC_LINK || '' }}
+          MAS_DEV_CSC_KEY_PASSWORD: ${{ inputs.channel == 'mac-app-store-sandbox' && secrets.MAS_DEV_CSC_KEY_PASSWORD || '' }}
         run: node scripts/prepare-mas-keychain.mjs
       - run: node scripts/mas-icon.mjs
-      - name: Build one signed universal MAS package for Intel and Apple Silicon
-        run: npx electron-builder --config electron-builder.config.cjs --mac mas --universal --config.buildVersion=1.4.${{ github.run_number }} --publish never
+      - name: Build the signed universal MAS app
+        run: |
+          target=mas
+          if [ "$INKLURA_MAS_DEVELOPMENT" = true ]; then
+            target=mas-dev
+          fi
+          npx electron-builder --config electron-builder.config.cjs --mac "$target" --universal --config.buildVersion=1.4.${{ github.run_number }} --publish never
       - name: Verify app signatures and sandbox
         run: python3 scripts/verify-store-mas.py
       - uses: actions/upload-artifact@v4
+        if: inputs.channel == 'mac-app-store'
         with:
           name: mac-app-store-internal-review
           path: |
             release-mac-app-store/mas*/*.pkg
+            release-mac-app-store/verification.json
+          if-no-files-found: error
+      - name: Encrypt the development app before uploading an artifact
+        if: inputs.channel == 'mac-app-store-sandbox'
+        env:
+          MAS_DEV_ARTIFACT_PASSPHRASE: ${{ secrets.MAS_DEV_ARTIFACT_PASSPHRASE }}
+        run: |
+          : "${MAS_DEV_ARTIFACT_PASSPHRASE:?Missing development artifact passphrase}"
+          # The embedded profile identifies the registered Mac. GitHub artifacts
+          # on this public repository must never contain the clear-text app.
+          apps=(release-mac-app-store/mas*/"Inklura PDF.app")
+          test "${#apps[@]}" -eq 1
+          test -d "${apps[0]}"
+          ditto -c -k --sequesterRsrc --keepParent "${apps[0]}" "$RUNNER_TEMP/inklura-pdf-sandbox.zip"
+          gpg --batch --pinentry-mode loopback --passphrase-fd 0 \
+            --no-symkey-cache --cipher-algo AES256 --compress-algo none --symmetric \
+            --output "$RUNNER_TEMP/inklura-pdf-sandbox.zip.gpg" "$RUNNER_TEMP/inklura-pdf-sandbox.zip" \
+            <<< "$MAS_DEV_ARTIFACT_PASSPHRASE"
+      - uses: actions/upload-artifact@v4
+        if: inputs.channel == 'mac-app-store-sandbox'
+        with:
+          name: mac-app-store-sandbox-encrypted
+          path: |
+            ${{ runner.temp }}/inklura-pdf-sandbox.zip.gpg
             release-mac-app-store/verification.json
           if-no-files-found: error
       - name: Remove the ephemeral signing keychain

@@ -187,10 +187,20 @@ npx electron-builder --config electron-builder.config.cjs --mac mas --universal 
 python3 scripts/verify-store-mas.py
 ```
 
-For native development, set `INKLURA_MAS_DEVELOPMENT=true`, supply the matching
-development profile/certificate, and use `--mac mas-dev`. Do not submit this build.
-The ordinary release workflow still uses the default `direct` channel. Bump
-versions for the eventual releases; never replace published 1.4.0 bytes.
+For native StoreKit tests, register the test Mac under BEO PLUS and create a
+macOS development provisioning profile for `com.benfavre.caviard` with the Apple
+Development certificate. Set `MAS_DEV_PROFILE_BASE64` and
+`MAS_DEV_ARTIFACT_PASSPHRASE` in the `release` environment alongside
+`MAS_DEV_CSC_LINK` and `MAS_DEV_CSC_KEY_PASSWORD`. Run **Store package preparation
+→ mac-app-store-sandbox**. The runner verifies the signed universal app and
+uploads an encrypted ZIP plus a verification report. Decrypt the ZIP with
+`gpg --output inklura-pdf-sandbox.zip --decrypt inklura-pdf-sandbox.zip.gpg`
+on the authorized machine. Deliver the app and test credentials privately.
+Use [the Mac acceptance steps](MAC_TEST.fr.txt) to test all three packs and
+capture the live offers. The development app runs only on registered devices.
+Submit the distribution build and the three purchases to App Review once
+Apple approves the encryption documentation and the review materials are complete.
+The ordinary release workflow still uses the default `direct` channel.
 
 ## Evidence and remaining limits
 
