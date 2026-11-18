@@ -1,3 +1,4 @@
+import { PRODUCT_NAME } from "./branding.mjs";
 import React, { useEffect, useRef, useState } from "react";
 import { LocalAI } from "./ai/client.mjs";
 import { analyzeDocument } from "./ai/analyze.mjs";
@@ -155,8 +156,7 @@ export default function Assistant({
           </p>
           {!bridge?.models ? (
             <p className="ai-notice">
-              L’assistant est disponible dans l’application de bureau Inklura
-              PDF. Le caviardage manuel reste disponible ici.
+              L’assistant est disponible dans l’application de bureau {PRODUCT_NAME}. Le caviardage manuel reste disponible ici.
             </p>
           ) : (
             <>

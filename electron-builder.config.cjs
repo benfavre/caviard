@@ -4,8 +4,11 @@ for (const name of ["CSC_LINK", "WIN_CSC_LINK"]) {
   if (!process.env[name]?.trim()) delete process.env[name];
 }
 
-const signing = require("./build/signing.cjs")(process.env, process.platform);
-module.exports = {
+const { channel, applyStoreOptions } = require("./build/store-options.cjs");
+const signing = channel(process.env) === "direct"
+  ? require("./build/signing.cjs")(process.env, process.platform)
+  : { force: false, mac: false, notarize: false };
+module.exports = applyStoreOptions({
   forceCodeSigning: signing.force,
   appId: "com.benfavre.caviard",
   productName: "Inklura PDF",
@@ -64,4 +67,4 @@ module.exports = {
     entitlements: "build/entitlements.mac.plist",
     entitlementsInherit: "build/entitlements.mac.plist",
   },
-};
+}, process.env);

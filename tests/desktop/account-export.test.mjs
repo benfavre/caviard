@@ -63,3 +63,27 @@ test('a missing reservation for an already saved PDF retains the recovery journa
  const f=await fixture(({action})=>{if(action==='commit')throw Object.assign(Error('missing'),{code:'operation_not_found'});});
  try{assert.equal((await f.exports.save(f.file,bytes)).accountingPending,true);assert.equal((await f.exports.entries()).length,1);}finally{await f.cleanup();}
 });
+test('MAS recovery reopens the persisted directory bookmark before checking an interrupted rename',async()=>{
+ let offline=true,active=0; const calls=[];
+ const f=await fixture(({action})=>{calls.push(action);if(action==='commit'&&offline)throw Error('offline');});
+ const openAccess=bookmark=>{assert.equal(bookmark,'private-bookmark');active++;return()=>{active--;};};
+ const io={readFile:async(file,...args)=>{if(file===f.file)assert.ok(active>0);return readFile(file,...args);},writeFile,rename,unlink,mkdir};
+ try{
+  const exports=new AccountExports({...f.options,io,openAccess});
+  await exports.save(f.file,bytes,'private-bookmark');
+  assert.equal(active,0);
+  const pending=await exports.entries();pending[0].saved=false;pending[0].saving=true;await exports.journal(pending);
+  offline=false;const reopened=new AccountExports({...f.options,io,openAccess});await reopened.reconcile();
+  assert.equal(active,0);assert.deepEqual([...f.states.values()],['committed']);assert.equal((await reopened.entries()).length,0);
+ }finally{await f.cleanup();}
+});
+test('an inaccessible MAS recovery bookmark retains the hold instead of assuming no file was saved',async()=>{
+ const f=await fixture(({action})=>{if(action==='commit')throw Error('offline');});
+ try{
+  await f.exports.save(f.file,bytes,'private-bookmark');
+  const pending=await f.exports.entries();pending[0].saved=false;pending[0].saving=true;await f.exports.journal(pending);
+  let networkCalls=0;f.controller.request=async()=>{networkCalls++;};
+  const reopened=new AccountExports({...f.options,openAccess:()=>{throw Error('bookmark denied');}});
+  await reopened.reconcile();assert.equal(networkCalls,0);assert.equal((await reopened.entries()).length,1);assert.deepEqual([...f.states.values()],['reserved']);
+ }finally{await f.cleanup();}
+});

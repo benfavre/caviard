@@ -1,0 +1,110 @@
+Inklura PDF - réponses préparées pour le formulaire ANSSI
+Brouillon du 30 octobre 2026. Ne constitue pas un dépôt ni une attestation signée.
+
+Formulaire officiel :
+https://demarche.numerique.gouv.fr/commencer/declaration-relative-a-un-moyen-de-cryptologie
+Formulaire vierge public :
+https://demarche.numerique.gouv.fr/commencer/declaration-relative-a-un-moyen-de-cryptologie/dossier_vide
+
+QUALITÉ DU DÉCLARANT
+À confirmer selon la personne qui dépose : BEO PLUS pour elle-même ou mandataire
+pour le bénéficiaire. Benjamin ne doit pas se déclarer salarié de BEO PLUS sans
+confirmation. La notice prévoit la possibilité d'inviter un tiers à modifier
+le brouillon ; cette invitation ne vaut pas signature de l'attestation.
+
+BÉNÉFICIAIRE
+Nature : personne morale.
+Dénomination connue du compte éditeur : BEO PLUS.
+Prérempli : SIRET 79001688500028, nationalité France, siège 18 rue Jim Sévellec,
+35740 Pacé. Le portail confirme BEO PLUS SARL au capital de 5 000 euros via SIRET.
+Source publique adresse : https://entreprises.lefigaro.fr/beo-plus-35/entreprise-790016885
+Téléphone et relecture des données : à confirmer par son représentant.
+Responsable administratif et signataire : à confirmer par BEO PLUS.
+Responsable technique : Benjamin Favre proposé ; coordonnées et rôle à valider
+avant leur transmission à l'ANSSI.
+
+MOYEN
+Marque de distribution : Inklura.
+Dénomination : Inklura PDF.
+Version : 1.4.0 (build Mac App Store 1.4.56).
+Référence commerciale : inklura-pdf-macos ; com.benfavre.caviard ; Apple 6828817692.
+Date de mise sur le marché Mac : 01/11/2026 renseignée par Bruno.
+Date prévisionnelle, sous réserve des validations ANSSI et Apple.
+Bénéficiaire fabricant : Oui, confirmé par Bruno dans le brouillon et
+le commentaire 6533114444. BEO PLUS est le fabricant déclaré.
+Catégorie : logiciel.
+
+DESCRIPTION GÉNÉRALE PROPOSÉE
+Application macOS de caviardage local de documents PDF. Lecture et recherche,
+sélection de zones à masquer, projets et export de copies caviardées. Lecture
+des PDF protégés avec le mot de passe de l'utilisateur. Connexion HTTPS au
+service de compte et de crédits ; achats intégrés via StoreKit. Aucun service
+VPN ou de messagerie ; aucune fonction de chiffrement des PDF exportés.
+
+FONCTION PRINCIPALE
+Proposition descriptive : traitement local et caviardage de documents PDF.
+Sélection du champ à confirmer dans le formulaire ; la notice permet une
+« autre option » si les catégories proposées ne conviennent pas. Ne pas
+qualifier automatiquement le produit de bibliothèque cryptographique.
+
+FONCTIONS CRYPTOGRAPHIQUES
+Confidentialité, authentification et intégrité : déchiffrement des PDF protégés,
+transport HTTPS/TLS, contrôle des certificats et des empreintes de modèles.
+Protocoles : SSL/TLS ; protection PDF Standard Security Handler pour les fichiers.
+Algorithmes : voir les tableaux et le relevé macOS 41089292464 de la brochure
+technique. Copie temporaire ad hoc du runtime exact, huit connexions TLS vérifiées ;
+ce diagnostic ne remplace pas les essais installés TestFlight et sandbox MAS.
+
+PIÈCES PRÉPARÉES
+- inklura-pdf-brochure-commerciale-projet.pdf : produit, offre, distribution.
+- inklura-pdf-brochure-technique-projet.pdf : architecture, inventaire et preuves.
+- MAC_TEST.fr.txt à la racine du dépôt : protocole de validation Mac, ce n'est pas
+  un manuel utilisateur complet.
+
+PIÈCES ET VALIDATIONS À OBTENIR
+- Kbis de moins de trois mois et présentation de la société si BEO PLUS n'a
+  jamais effectué de déclaration ANSSI (la réponse de Bruno ne concerne pour
+  l'instant que l'absence d'une déclaration couvrant Inklura PDF).
+- Modèle officiel d'attestation disponible dans « Pièces à joindre » du brouillon.
+- Relecture des données exactes puis signature de l'attestation par le déclarant.
+- Autorisation du dépôt et de la transmission de ses données/pièces une fois
+  le dossier complet et consultable. Aucun dépôt automatique n'est préparé.
+
+APRÈS DÉPÔT
+Conserver séparément l'accusé de réception et l'attestation ANSSI délivrée après
+acceptation ; le brouillon ou les brochures ne remplacent pas ces documents.
+Charger le document demandé dans App Store Connect, puis attendre sa validation
+Apple avant de renseigner un code de conformité ou de prétendre l'app approuvée.
+
+BROUILLON PARTAGÉ RENSEIGNÉ
+https://demarche.numerique.gouv.fr/dossiers/35079529/brouillon
+Les deux brochures sont jointes. La partie technique est renseignée ;
+le dépôt final est réservé au titulaire Bruno par le portail.
+
+MISE À JOUR APRÈS RÉPONSE 6533114444
+Le titulaire a complété les données administratives et le portail ne signale
+plus qu'une pièce obligatoire manquante : l'attestation signée. Les justificatifs
+conditionnels (Kbis récent et présentation société si première déclaration
+ANSSI de BEO PLUS) restent absents. La validation automatique ne remplace pas
+cette exigence. Les brochures v2-20261030 remplacent les précédentes versions
+qui restent présentes dans le brouillon ; aucun dépôt effectué.
+
+MISE À JOUR APRÈS RÉPONSE 6533489853
+Kbis joint par Bruno, à jour au 02/10/2026. Présentation générale de société
+préparée à partir des renseignements publics du Kbis et jointe au brouillon.
+Reste l'attestation officielle à relire, compléter, signer et joindre par Bruno.
+Modèle direct :
+https://demarche.numerique.gouv.fr/champs/35079529/5607937/piece_justificative/template
+Aucun dépôt ni signature effectués par l'agent.
+
+MISE À JOUR APRÈS RÉPONSE 6533755405
+Dépôt effectué par Bruno à 22:23 Paris le 30/10/2026. Suivi accepté et message
+automatique d'acceptation Inklura PDF observés. PDF de l'attestation refusé
+à l'accès invité ; demandé au titulaire. Aucune transmission Apple effectuée.
+
+MISE À JOUR APRÈS RÉPONSE 6533855521
+Attestation officielle ANSSI reçue, lue et vérifiée. Document transmis à Apple
+le 30/10/2026 à 22:33 Paris : réception COMPLETE, déclaration IN_REVIEW.
+Déclaration Apple : 6d24792a-64dc-4aba-b4cb-eb022079728c.
+L'approbation Apple reste en attente ; suivi automatique actif toutes les deux
+minutes. Le build 1.4.56 déjà traité n'a pas été renvoyé.

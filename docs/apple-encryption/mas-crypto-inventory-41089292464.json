@@ -1,0 +1,251 @@
+{
+  "package_sha256": "2955e874fe75fcb27ba37f56ec886eccfe16e979db85ff9d9eea28d9d470e023",
+  "installed_acceptance": false,
+  "build": "1.4.56",
+  "exit_code": -9,
+  "runtime_unavailable": true,
+  "diagnostic": "",
+  "diagnostic_copy_exit_code": 0,
+  "diagnostic_copy_runtime": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "versions": {
+      "node": "24.21.0",
+      "acorn": "8.18.0",
+      "ada": "4.0.0",
+      "amaro": "1.1.11",
+      "ares": "1.34.8",
+      "brotli": "1.2.0",
+      "cldr": "48.0",
+      "icu": "78.2",
+      "llhttp": "9.4.3",
+      "merve": "1.2.2",
+      "modules": "149",
+      "napi": "10",
+      "nbytes": "0.1.4",
+      "ncrypto": "0.0.1",
+      "nghttp2": "1.70.0",
+      "nghttp3": "",
+      "ngtcp2": "",
+      "openssl": "0.0.0",
+      "simdjson": "4.6.7",
+      "simdutf": "7.7.0",
+      "sqlite": "3.53.4",
+      "tz": "2025c",
+      "undici": "7.29.1",
+      "unicode": "17.0",
+      "uv": "1.52.1",
+      "uvwasi": "0.0.23",
+      "v8": "15.2.124.28-electron.0",
+      "zlib": "1.3.2.1-motley",
+      "zstd": "1.6.0",
+      "electron": "44.4.5",
+      "chrome": "152.0.7977.130"
+    },
+    "defaultMin": "TLSv1.2",
+    "defaultMax": "TLSv1.3",
+    "defaultCiphers": "TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_GCM_SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA256:ECDHE-RSA-AES256-SHA384:DHE-RSA-AES256-SHA384:ECDHE-RSA-AES256-SHA256:DHE-RSA-AES256-SHA256:HIGH:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!SRP:!CAMELLIA",
+    "enabledCipherSuites": [
+      "aes128-gcm-sha256",
+      "aes128-sha",
+      "aes256-gcm-sha384",
+      "aes256-sha",
+      "ecdhe-ecdsa-aes128-gcm-sha256",
+      "ecdhe-ecdsa-aes128-sha",
+      "ecdhe-ecdsa-aes256-gcm-sha384",
+      "ecdhe-ecdsa-aes256-sha",
+      "ecdhe-ecdsa-chacha20-poly1305",
+      "ecdhe-psk-aes128-cbc-sha",
+      "ecdhe-psk-aes256-cbc-sha",
+      "ecdhe-psk-chacha20-poly1305",
+      "ecdhe-rsa-aes128-gcm-sha256",
+      "ecdhe-rsa-aes128-sha",
+      "ecdhe-rsa-aes256-gcm-sha384",
+      "ecdhe-rsa-aes256-sha",
+      "ecdhe-rsa-chacha20-poly1305",
+      "psk-aes128-cbc-sha",
+      "psk-aes256-cbc-sha",
+      "tls_aes_128_ccm_8_sha256",
+      "tls_aes_128_ccm_sha256",
+      "tls_aes_128_gcm_sha256",
+      "tls_aes_256_gcm_sha384",
+      "tls_chacha20_poly1305_sha256"
+    ],
+    "defaultGroups": "auto",
+    "handshakes": [
+      {
+        "host": "outils.inklura.fr",
+        "requestedVersion": "TLSv1.2",
+        "authorized": true,
+        "protocol": "TLSv1.2",
+        "cipher": {
+          "name": "ECDHE-ECDSA-AES128-GCM-SHA256",
+          "standardName": "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
+          "version": "TLSv1/SSLv3"
+        },
+        "ephemeralKey": {
+          "type": "TLSGroup",
+          "name": "X25519"
+        },
+        "peerPublicKey": {
+          "type": "ec",
+          "details": {
+            "namedCurve": "prime256v1"
+          }
+        }
+      },
+      {
+        "host": "outils.inklura.fr",
+        "requestedVersion": "TLSv1.3",
+        "authorized": true,
+        "protocol": "TLSv1.3",
+        "cipher": {
+          "name": "TLS_AES_128_GCM_SHA256",
+          "standardName": "TLS_AES_128_GCM_SHA256",
+          "version": "TLSv1/SSLv3"
+        },
+        "ephemeralKey": {
+          "type": "TLSGroup",
+          "name": "X25519"
+        },
+        "peerPublicKey": {
+          "type": "ec",
+          "details": {
+            "namedCurve": "prime256v1"
+          }
+        }
+      },
+      {
+        "host": "auth.1clic.pro",
+        "requestedVersion": "TLSv1.2",
+        "authorized": true,
+        "protocol": "TLSv1.2",
+        "cipher": {
+          "name": "ECDHE-ECDSA-AES128-GCM-SHA256",
+          "standardName": "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
+          "version": "TLSv1/SSLv3"
+        },
+        "ephemeralKey": {
+          "type": "TLSGroup",
+          "name": "X25519"
+        },
+        "peerPublicKey": {
+          "type": "ec",
+          "details": {
+            "namedCurve": "prime256v1"
+          }
+        }
+      },
+      {
+        "host": "auth.1clic.pro",
+        "requestedVersion": "TLSv1.3",
+        "authorized": true,
+        "protocol": "TLSv1.3",
+        "cipher": {
+          "name": "TLS_AES_128_GCM_SHA256",
+          "standardName": "TLS_AES_128_GCM_SHA256",
+          "version": "TLSv1/SSLv3"
+        },
+        "ephemeralKey": {
+          "type": "TLSGroup",
+          "name": "X25519MLKEM768"
+        },
+        "peerPublicKey": {
+          "type": "ec",
+          "details": {
+            "namedCurve": "prime256v1"
+          }
+        }
+      },
+      {
+        "host": "huggingface.co",
+        "requestedVersion": "TLSv1.2",
+        "authorized": true,
+        "protocol": "TLSv1.2",
+        "cipher": {
+          "name": "ECDHE-RSA-AES128-GCM-SHA256",
+          "standardName": "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+          "version": "TLSv1/SSLv3"
+        },
+        "ephemeralKey": {
+          "type": "TLSGroup",
+          "name": "X25519"
+        },
+        "peerPublicKey": {
+          "type": "rsa",
+          "details": {
+            "modulusLength": 2048,
+            "publicExponent": "65537"
+          }
+        }
+      },
+      {
+        "host": "huggingface.co",
+        "requestedVersion": "TLSv1.3",
+        "authorized": true,
+        "protocol": "TLSv1.3",
+        "cipher": {
+          "name": "TLS_AES_128_GCM_SHA256",
+          "standardName": "TLS_AES_128_GCM_SHA256",
+          "version": "TLSv1/SSLv3"
+        },
+        "ephemeralKey": {
+          "type": "TLSGroup",
+          "name": "X25519MLKEM768"
+        },
+        "peerPublicKey": {
+          "type": "rsa",
+          "details": {
+            "modulusLength": 2048,
+            "publicExponent": "65537"
+          }
+        }
+      },
+      {
+        "host": "raw.githubusercontent.com",
+        "requestedVersion": "TLSv1.2",
+        "authorized": true,
+        "protocol": "TLSv1.2",
+        "cipher": {
+          "name": "ECDHE-RSA-AES128-GCM-SHA256",
+          "standardName": "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+          "version": "TLSv1/SSLv3"
+        },
+        "ephemeralKey": {
+          "type": "TLSGroup",
+          "name": "X25519"
+        },
+        "peerPublicKey": {
+          "type": "rsa",
+          "details": {
+            "modulusLength": 2048,
+            "publicExponent": "65537"
+          }
+        }
+      },
+      {
+        "host": "raw.githubusercontent.com",
+        "requestedVersion": "TLSv1.3",
+        "authorized": true,
+        "protocol": "TLSv1.3",
+        "cipher": {
+          "name": "TLS_AES_128_GCM_SHA256",
+          "standardName": "TLS_AES_128_GCM_SHA256",
+          "version": "TLSv1/SSLv3"
+        },
+        "ephemeralKey": {
+          "type": "TLSGroup",
+          "name": "X25519MLKEM768"
+        },
+        "peerPublicKey": {
+          "type": "rsa",
+          "details": {
+            "modulusLength": 2048,
+            "publicExponent": "65537"
+          }
+        }
+      }
+    ]
+  },
+  "evidence_scope": "Exact package runtime, ad-hoc signed diagnostic copy; not MAS sandbox acceptance"
+}

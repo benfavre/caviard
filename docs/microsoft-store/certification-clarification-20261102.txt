@@ -1,0 +1,23 @@
+SENT — 2 November 2026, 09:00:10 UTC (10:00:10 Paris)
+From: ben@webdesign29.net
+Gmail thread: 1a19b7cce6fdf977
+To: reportapp@microsoft.com
+Subject: Certification clarification — Inklura PDF — 9PLQZNJTGPCW — policy 10.1.1.1
+
+Hello Microsoft Store certification team,
+
+We are preparing the release of Inklura PDF under publisher BEO PLUS.
+Product ID: 9PLQZNJTGPCW
+Submission ID: 1152921505702276768
+Review completed: 2 November 2026
+Report: https://partner.microsoft.com/fr-fr/dashboard/products/9PLQZNJTGPCW/certification/reports/57ecae4f-a638-4890-87f2-a181919937a6
+
+The report flags policy 10.1.1.1 for the French (France) listing, stating that the product name contains the title of another piece of software or service.
+
+We checked the submitted Product Name field: it is exactly "Inklura PDF". The packaged application uses the same display name. Our product website presents this application under the same name: https://pdf.inklura.fr/ . It is a desktop application for local PDF redaction; "PDF" refers to the document format it processes.
+
+Could you identify the specific third-party software or service, and the part of our title, that triggered this finding? Please clarify the change or publisher evidence you require so that we can address the issue accurately before resubmitting. If this is a mistaken identification, please review the finding.
+
+Thank you,
+Benjamin Favre
+For the Inklura PDF release team

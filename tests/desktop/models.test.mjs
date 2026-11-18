@@ -59,19 +59,25 @@ test("bad or oversized downloads never become installed models", async () => {
 test("cancel interrupts an in-progress download and removes partial files", async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), "inklura-model-"));
   try {
+    let signalDownloadStarted;
+    const downloadStarted = new Promise(resolve => { signalDownloadStarted = resolve; });
     const store = new ModelStore(root, {
       files: [file],
       fetcher: async (_url, { signal }) =>
-        new Promise((_resolve, reject) =>
+        new Promise((_resolve, reject) => {
+          signal.throwIfAborted();
           signal.addEventListener(
             "abort",
             () => reject(new DOMException("Aborted", "AbortError")),
             { once: true },
-          ),
-        ),
+          );
+          signalDownloadStarted();
+        }),
     });
     const installing = store.install();
-    setTimeout(() => store.cancel(), 10);
+    // Wait for the mocked download, not a timer that can precede Windows I/O.
+    await downloadStarted;
+    store.cancel();
     assert.equal((await installing).phase, "missing");
     await assert.rejects(readFile(store.file(file.path)));
   } finally {

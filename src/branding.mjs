@@ -1,0 +1,2 @@
+export const PRODUCT_NAME = __PRODUCT_NAME__;
+export const MICROSOFT_EDITION = __MICROSOFT_EDITION__;
